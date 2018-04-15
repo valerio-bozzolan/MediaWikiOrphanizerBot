@@ -66,7 +66,7 @@ class Months {
 	 * @param $month_name string Month name e.g. 'gennaio'
 	 * @return int Month number 0-11 e.g. 0
 	 */
-	public static function monthName2MonthNumber( $month_name ) {
+	public static function name2number( $month_name ) {
 		$i = array_search( $month_name, self::months(), true );
 		if( false === $i ) {
 			throw new \InvalidArgumentException( 'unexpected month name' );
@@ -80,7 +80,7 @@ class Months {
 	 * @param $month_number int Month number 0-11 e.g. 0
 	 * @return string Month name e.g. 'gennaio'
 	 */
-	public static function monthNumber2MonthName( $month_number ) {
+	public static function number2name( $month_number ) {
 		if( $month_number < 0 || $month_number > 11 ) {
 			throw new \InvalidArgumentException( 'unexpected month number' );
 		}
