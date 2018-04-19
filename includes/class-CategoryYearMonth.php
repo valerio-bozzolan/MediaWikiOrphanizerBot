@@ -89,7 +89,8 @@ class CategoryYearMonth extends CategoryTemplated {
 	 * Title of a monthly category
 	 *
 	 * @param $year int e.g. 2018
-	 * @return string Category name e.g. 'Categoria:Cancellazioni - 2018'
+	 * @param $month int e.g. 4
+	 * @return string Category name e.g. 'Categoria:Cancellazioni - aprile 2018'
 	 */
 	public static function title( $year, $month ) {
 		$human_month = Months::number2name( $month - 1 );
