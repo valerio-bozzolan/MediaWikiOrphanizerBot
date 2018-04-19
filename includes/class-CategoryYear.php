@@ -74,24 +74,18 @@ class CategoryYear {
 	 * @param $summary string
 	 */
 	private static function create( $year ) {
-		$summary = sprintf(
-			Template::get( 'CATEGORY_YEAR_SUMMARY' ),
+		$template_args = [
 			self::MAIN_CATEGORY_TITLE,
 			$year
-		);
-		$text = sprintf(
-			Template::get( 'CATEGORY_YEAR_CONTENT' ),
-			self::MAIN_CATEGORY_TITLE,
-			$year
-		);
+		];
 		$wit = WikipediaIt::getInstance();
 		$args = [
 			'action'  => 'edit',
 			'title'   => self::title( $year ),
-			'text'    => $text,
-			'summary' => $summary,
-			'bot'     => 1,
+			'text'    => Template::get( 'CATEGORY_YEAR_CONTENT', $template_args ),
+			'summary' => Template::get( 'CATEGORY_YEAR_SUMMARY', $template_args ),
 			'token'   => $wit->login()->getToken( Tokens::CSRF ),
+			'bot'     => 1,
 		];
 		$wit->post( $args );
 	}

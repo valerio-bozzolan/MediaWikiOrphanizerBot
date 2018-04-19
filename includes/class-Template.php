@@ -18,25 +18,34 @@ namespace itwikidelbot;
 /**
  * Handle templates of text
  *
- * Templates are 'something.template' stuff into the /template directory
+ * Template files are 'something.template' into the /template directory
  */
 class Template {
 
+	/**
+	 * Placeholder used to mark where the template content starts
+	 */
 	const START_PLACEHOLDER = "<!-- START TEMPLATE -->\n";
 
 	/**
+	 * Get the content of a template passing its arguments
+	 *
 	 * @param $name string Template name
-	 * @return string
+	 * @param $args array Template arguments
+	 * @return string Template content
 	 */
-	static function get( $name ) {
+	static function get( $name, $args ) {
+
+		// ../templates/$name.template
 		$path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $name . '.template';
 		if( ! file_exists( $path ) ) {
 			throw new \InvalidArgumentException( 'unexisting template' );
 		}
 
+		// template content with also documentation
 		$content = file_get_contents( $path );
 
-		// stripping header
+		// stripping documentation etc.
 		$pos = strpos( $content, self::START_PLACEHOLDER );
 		if( false === $pos ) {
 			throw new \Exception( 'missing header in template' );
@@ -44,6 +53,10 @@ class Template {
 		$pos += strlen( self::START_PLACEHOLDER );
 		$content = substr( $content, $pos );
 
-		return rtrim( $content );
+		// text-editors usually put an unuseful newline before the EOF
+		$content = rtrim( $content );
+
+		// pass arguments
+		return vsprintf( $content, $args );
 	}
 }
