@@ -23,15 +23,26 @@
 
 namespace itwikidelbot;
 
-use \wm\WikipediaIt;
-use \mw\Tokens;
-
 /**
  * Handle a yearly category
  *
  * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_-_2017
  */
-class CategoryYear {
+class CategoryYear extends CategoryTemplated {
+
+	/**
+	 * Year
+	 *
+	 * @var int
+	 */
+	private $year;
+
+	/**
+	 * The template name for a yearly category
+	 *
+	 * @override CategoryTemplated::TEMPLATE_NAME
+	 */
+	const TEMPLATE_NAME = 'CATEGORY_YEAR';
 
 	/**
 	 * Format of the generic title of a yearly category
@@ -43,46 +54,29 @@ class CategoryYear {
 	/**
 	 * Parent category title
 	 */
-	const MAIN_CATEGORY_TITLE = 'Categoria:Pagine in cancellazione per anno';
+	const PARENT_CATEGORY_TITLE = 'Categoria:Pagine in cancellazione per anno';
 
 	/**
-	 * Create the yearly category if it does not exist
+	 * Constructor
 	 *
-	 * @param $year int e.g. 2018
+	 * @param $year int
 	 */
-	public static function createIfNotExists( $year ) {
-		$categoryinfo = WikipediaIt::getInstance()->fetch( [
-			'action' => 'query',
-			'prop'   => 'categoryinfo',
-			'titles' => self::title( $year ),
-		] );
-		foreach( $categoryinfo->query->pages as $pageid => $page ) {
-			if( $pageid < 0 && isset( $page->missing ) ) {
-				self::create( $year );
-			}
-		}
+	public function __construct( $year ) {
+		parent::__construct( self::title( $year ) ) ;
+		$this->year = $year;
 	}
 
 	/**
-	 * Create the yearly category
+	 * Get the template arguments
 	 *
-	 * @param $year int e.g. 2018
+	 * @override CategoryTemplated::getTemplateArguments()
+	 * @return array
 	 */
-	private static function create( $year ) {
-		$template_args = [
-			self::MAIN_CATEGORY_TITLE,
-			$year
+	protected function getTemplateArguments() {
+		return [
+			self::PARENT_CATEGORY_TITLE,
+			$this->year,
 		];
-		$wit = WikipediaIt::getInstance();
-		$args = [
-			'action'  => 'edit',
-			'title'   => self::title( $year ),
-			'text'    => Template::get( 'CATEGORY_YEAR_CONTENT', $template_args ),
-			'summary' => Template::get( 'CATEGORY_YEAR_SUMMARY', $template_args ),
-			'token'   => $wit->login()->getToken( Tokens::CSRF ),
-			'bot'     => 1,
-		];
-		$wit->post( $args );
 	}
 
 	/**
