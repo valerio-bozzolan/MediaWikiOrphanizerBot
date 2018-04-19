@@ -22,10 +22,17 @@ require __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'auto
 // load credentials
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 
-// create the category year
+// create the yearly category
 $year = date( 'Y' );
-( new CategoryYear( $year ) )->saveIfNotExists();
+( new CategoryYear( $year ) )
+	->saveIfNotExists();
 
-// create the month category
+// create the monthly category
 $month = date( 'n' ); // 1-12
-( new CategoryYearMonth( $year, $month ) )->saveIfNotExists();
+( new CategoryYearMonth( $year, $month ) )
+	->saveIfNotExists();
+
+// create the daily category
+$day = date( 'j' );
+( new CategoryYearMonthDay( $year, $month, $day ) )
+	->saveIfNotExists();
