@@ -8,7 +8,10 @@ The script was originally developed by Mauro762 (aka MauroBot) in 2013 using Jav
 
 ## TODO
 
-Everything :)
+* [X] Yearly category creation
+* [X] Monthy category creation
+* [X] Daily categori creation
+* [ ] Most of the work :)
 
 ## Installation
 
@@ -22,6 +25,10 @@ Fill `config-example.php` and save-as `config.php`.
 ## Usage
 
     ./bot.php
+
+## Hacking
+
+The content of the categories and the text of edit summaries can be changed hacking in the [/templates](/templates) directory.
 
 ## License
 
