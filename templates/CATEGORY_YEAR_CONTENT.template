@@ -1,0 +1,12 @@
+<!-- START DOCUMENTATION -->
+This is the template for the content of a yearly category.
+
+Placeholdes:
+	%1$s: category title
+	%2$d: year
+
+<!-- START SPECIFIC EXAMPLE -->
+[[Categoria:Cancellazioni - 2018| 2018]]
+
+<!-- START TEMPLATE -->
+[[%1$s| %2$d]]

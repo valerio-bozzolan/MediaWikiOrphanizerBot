@@ -1,0 +1,12 @@
+<!-- START DOCUMENTATION -->
+This is the template for the summary of a yearly category.
+
+Placeholdes:
+	%1$s: category title
+	%2$d: year
+
+<!-- START SPECIFIC EXAMPLE -->
+Bot: creazione categoria annuale di servizio
+
+<!-- START TEMPLATE -->
+Bot: creazione categoria annuale di servizio
