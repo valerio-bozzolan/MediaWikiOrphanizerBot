@@ -27,71 +27,72 @@ use \wm\WikipediaIt;
 use \mw\Tokens;
 
 /**
- * Handle a yearly category
+ * Handle a monthly category
  *
- * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_-_2017
+ * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_-_aprile_2018
  */
-class CategoryYear {
+class CategoryYearMonth {
 
 	/**
 	 * Format of the generic title of a yearly category
 	 *
-	 * e.g. 'Categoria:Cancellazioni - 2018'
+	 * e.g. 'Categoria:Cancellazioni - aprile 2017'
 	 */
-	const GENERIC_TITLE = 'Categoria:Cancellazioni - %d';
+	const GENERIC_TITLE = 'Categoria:Cancellazioni - %2$s %1$d';
 
 	/**
-	 * Parent category title
-	 */
-	const MAIN_CATEGORY_TITLE = 'Categoria:Pagine in cancellazione per anno';
-
-	/**
-	 * Create the yearly category if it does not exist
+	 * Create the monthly category if it does not exist
 	 *
 	 * @param $year int e.g. 2018
+	 * @param $month int e.g. 4
 	 */
-	public static function createIfNotExists( $year ) {
+	public static function createIfNotExists( $year, $month ) {
 		$categoryinfo = WikipediaIt::getInstance()->fetch( [
 			'action' => 'query',
 			'prop'   => 'categoryinfo',
-			'titles' => self::title( $year ),
+			'titles' => self::title( $year, $month ),
 		] );
 		foreach( $categoryinfo->query->pages as $pageid => $page ) {
 			if( $pageid < 0 && isset( $page->missing ) ) {
-				self::create( $year );
+				self::create( $year, $month );
 			}
 		}
 	}
 
 	/**
-	 * Create the yearly category
+	 * Create the monthly category
 	 *
 	 * @param $year int e.g. 2018
+	 * @param $month int e.g. 4
 	 */
-	private static function create( $year ) {
+	private static function create( $year, $month ) {
 		$template_args = [
-			self::MAIN_CATEGORY_TITLE,
-			$year
+			CategoryYear::title( $year, $month ),
+			$year,
+			$month,
+			Months::number2name( $month - 1 ),
 		];
 		$wit = WikipediaIt::getInstance();
 		$args = [
 			'action'  => 'edit',
-			'title'   => self::title( $year ),
-			'text'    => Template::get( 'CATEGORY_YEAR_CONTENT', $template_args ),
-			'summary' => Template::get( 'CATEGORY_YEAR_SUMMARY', $template_args ),
+			'title'   => self::title( $year, $month ),
+			'text'    => Template::get( 'CATEGORY_MONTH_CONTENT', $template_args ),
+			'summary' => Template::get( 'CATEGORY_MONTH_SUMMARY', $template_args ),
 			'token'   => $wit->login()->getToken( Tokens::CSRF ),
 			'bot'     => 1,
 		];
+		var_dump( $args ); exit;
 		$wit->post( $args );
 	}
 
 	/**
-	 * Title of the category in the specified year
+	 * Title of the category in the specified month
 	 *
 	 * @param $year int e.g. 2018
 	 * @return string Category name e.g. 'Categoria:Cancellazioni - 2018'
 	 */
-	public static function title( $year ) {
-		return sprintf( self::GENERIC_TITLE, $year );
+	private static function title( $year, $month ) {
+		$human_month = Months::number2name( $month - 1 );
+		return sprintf( self::GENERIC_TITLE, $year, $human_month );
 	}
 }

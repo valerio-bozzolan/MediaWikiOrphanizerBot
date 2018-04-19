@@ -6,7 +6,7 @@ Placeholdes:
 	%2$d: year
 
 <!-- START SPECIFIC EXAMPLE -->
-Bot: creazione categoria annuale di servizio
+Bot: creazione categoria annuale di servizio per il 2018
 
 <!-- START TEMPLATE -->
-Bot: creazione categoria annuale di servizio
+Bot: creazione categoria annuale di servizio per il %2$d

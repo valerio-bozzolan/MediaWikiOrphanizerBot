@@ -25,3 +25,7 @@ require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 // create the category year
 $year = date( 'Y' );
 CategoryYear::createIfNotExists( $year );
+
+// create the month category
+$month = date( 'n' ); // 1-12
+CategoryYearMonth::createIfNotExists( $year, $month );
