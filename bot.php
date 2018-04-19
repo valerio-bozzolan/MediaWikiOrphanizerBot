@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+namespace itwikidelbot;
+
 // autoload classes
 require __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'autoload.php';
 
@@ -22,4 +24,4 @@ require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 
 // create the category year
 $year = date( 'Y' );
-itwikidelbot\CategoryYear::createIfNotExists( $year );
+CategoryYear::createIfNotExists( $year );
