@@ -1,14 +1,15 @@
 <!-- START DOCUMENTATION -->
-This is the template for the content of a montly category.
+This is the template for the edit summary of a montly category.
 
-Placeholdes:
-	%1$s: category title
-	%2$d: year
-	%3$d: month
-	%4$s: human month
+Placeholders:
+	%1$s:   category title
+	%2$d:   year
+	%3$d:   month  1-12
+	%3$02s: month 01-12
+	%4$s:   month name
 
 <!-- START SPECIFIC EXAMPLE -->
-Bot: creazione categoria annuale di servizio per aprile 2018
+Bot: creazione categoria mensile di servizio per aprile 2018
 
 <!-- START TEMPLATE -->
 Bot: creazione categoria mensile di servizio per %4$s %2$d
