@@ -10,6 +10,19 @@ The script was originally developed by Mauro762 (aka MauroBot) in 2013 using Jav
 
 Everything :)
 
+## Installation
+
+	apt-get install php-cli
+    git clone --recursive https://github.com/valerio-bozzolan/ItalianWikipediaDeletionBot
+
+## Configuration
+
+Fill `config-example.php` and save-as `config.php`.
+
+## Usage
+
+    ./bot.php
+
 ## License
 
 Original files released under [Creative Commons BY-SA 3.0 International](https://creativecommons.org/licenses/by-sa/3.0/) and [WMF terms](https://wikimediafoundation.org/wiki/Special:MyLanguage/Terms_of_Use/it) by [Mauro742](https://it.wikipedia.org/wiki/Utente:Mauro742)/[MauroBot](https://it.wikipedia.org/wiki/Utente:MauroBot):
@@ -35,4 +48,3 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
-
