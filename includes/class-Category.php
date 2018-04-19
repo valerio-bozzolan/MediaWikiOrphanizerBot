@@ -25,6 +25,20 @@ use \mw\Tokens;
 class Category {
 
 	/**
+	 * Do nothing
+	 *
+	 * @var bool
+	 */
+	public static $PORCELAIN = false;
+
+	/**
+	 * Debug mode
+	 *
+	 * @var bool
+	 */
+	public static $INSPECT = false;
+
+	/**
 	 * @var string Category title with prefix
 	 */
 	private $title;
@@ -96,8 +110,12 @@ class Category {
 			'token'   => $wit->login()->getToken( Tokens::CSRF ),
 			'bot'     => 1,
 		];
-		var_dump( $args );exit;
-		return $wit->post( $args );
+		if( self::$INSPECT ) {
+			print_r( $args );
+		}
+		if( ! self::$PORCELAIN ) {
+			return $wit->post( $args );
+		}
 	}
 
 	/**
