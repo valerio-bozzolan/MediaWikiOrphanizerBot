@@ -22,5 +22,5 @@ spl_autoload_register( function( $name ) {
 	}
 } );
 
-// autoload boz-php classes
+// autoload boz-mw classes
 require __DIR__ . DIRECTORY_SEPARATOR . 'boz-mw' . DIRECTORY_SEPARATOR . 'autoload.php';
