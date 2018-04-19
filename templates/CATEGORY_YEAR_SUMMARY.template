@@ -1,7 +1,7 @@
 <!-- START DOCUMENTATION -->
 This is the template for the summary of a yearly category.
 
-Placeholdes:
+Placeholders:
 	%1$s: category title
 	%2$d: year
 
