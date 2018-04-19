@@ -10,7 +10,7 @@ The script was originally developed by Mauro762 (aka MauroBot) in 2013 using Jav
 
 * [X] Yearly category creation
 * [X] Monthy category creation
-* [X] Daily categori creation
+* [X] Daily category creation
 * [ ] Most of the work :)
 
 ## Installation
@@ -29,6 +29,8 @@ Fill `config-example.php` and save-as `config.php`.
 ## Hacking
 
 The content of the categories and the text of edit summaries can be changed hacking in the [/templates](/templates) directory.
+
+You may not want to know this: HTTP connections, MediaWiki APIs (including login and tokens etc.), and other stuff, is handled by the [boz-mw](https://github.com/valerio-bozzolan/boz-mw) framework.
 
 ## License
 
