@@ -73,13 +73,4 @@ abstract class CategoryTemplated extends Category {
 		}
 		return false;
 	}
-
-	/**
-	 * Check if this category exists
-	 *
-	 * @return bool
-	 */
-	public function exists() {
-		return $this->existsByTitle( $this->getTitle() );
-	}
 }
