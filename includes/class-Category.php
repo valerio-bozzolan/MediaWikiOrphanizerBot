@@ -101,13 +101,13 @@ class Category {
 	 * @return mixed Response
 	 */
 	public static function saveByTitleContentSummary( $title, $content, $summary ) {
-		$wit = WikipediaIt::getInstance();
+		$api = $this->getApi();
 		$args = [
 			'action'  => 'edit',
 			'title'   => $title,
 			'text'    => $content,
 			'summary' => $summary,
-			'token'   => $wit->login()->getToken( Tokens::CSRF ),
+			'token'   => $api->login()->getToken( Tokens::CSRF ),
 			'bot'     => 1,
 		];
 		if( self::$INSPECT ) {
@@ -140,7 +140,7 @@ class Category {
 	 * @return bool
 	 */
 	public static function existsByTitle( $title ) {
-		$categoryinfo = WikipediaIt::getInstance()->fetch( [
+		$categoryinfo = $this->getApi()->fetch( [
 			'action' => 'query',
 			'prop'   => 'categoryinfo',
 			'titles' => $title,
@@ -149,5 +149,14 @@ class Category {
 			return ! isset( $page->missing );
 		}
 		return false;
+	}
+
+	/**
+	 * Get the API related to this category
+	 *
+	 * @return mw\API
+	 */
+	protected function getApi() {
+		return WikipediaIt::getInstance();
 	}
 }
