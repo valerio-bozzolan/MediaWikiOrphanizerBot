@@ -40,7 +40,7 @@ abstract class CategoryTemplated extends Category {
 	 *
 	 * @return string
 	 */
-	public function getTemplateSummary() {
+	public function getTemplatedSummary() {
 		return Template::get( static::TEMPLATE_NAME . '_SUMMARY', $this->getTemplateArguments() );
 	}
 
@@ -49,7 +49,7 @@ abstract class CategoryTemplated extends Category {
 	 *
 	 * @return string
 	 */
-	public function getTemplateContent() {
+	public function getTemplatedContent() {
 		return Template::get( static::TEMPLATE_NAME . '_CONTENT', $this->getTemplateArguments() );
 	}
 
@@ -59,7 +59,7 @@ abstract class CategoryTemplated extends Category {
 	 * @return mixed
 	 */
 	public function save() {
-		return $this->saveByTitleContentSummary( $this->getTitle(), $this->getTemplateContent(), $this->getTemplateSummary() );
+		return $this->saveByTitleContentSummary( $this->getTemplatedTitle(), $this->getTemplatedContent(), $this->getTemplatedSummary() );
 	}
 
 	/**
