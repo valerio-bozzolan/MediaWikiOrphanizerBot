@@ -2,11 +2,10 @@
 This is the template for the content of a yearly category.
 
 Placeholders:
-	%1$s: category title
-	%2$d: year
+	%1$d: year
 
 <!-- START SPECIFIC EXAMPLE -->
-[[Categoria:Cancellazioni - 2018| 2018]]
+[[Categoria:Pagine in cancellazione per anno| 2018]]
 
 <!-- START TEMPLATE -->
-[[%1$s| %2$d]]
+[[Categoria:Pagine in cancellazione per anno| %1$d]]

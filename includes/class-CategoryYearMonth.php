@@ -45,55 +45,23 @@ class CategoryYearMonth extends CategoryTemplated {
 	private $month;
 
 	/**
-	 * The template name for a monthly category
-	 *
-	 * @override CategoryTemplated::TEMPLATE_NAME
-	 */
-	const TEMPLATE_NAME = 'CATEGORY_MONTH';
-
-	/**
-	 * Format of the generic title of a monthly category
-	 *
-	 * e.g. 'Categoria:Cancellazioni - aprile 2018'
-	 */
-	const GENERIC_TITLE = 'Categoria:Cancellazioni - %2$s %1$d';
-
-	/**
 	 * Constructor
 	 *
 	 * @param $year int
 	 * @param $month int 1-12
+	 * @see CategoryTemplated::__construct()
 	 */
 	public function __construct( $year, $month ) {
-		parent::__construct( self::title( $year, $month ) );
+
+		parent::__construct( 'CATEGORY_MONTH', [
+			$parent_title = ( new CategoryYear( $year ) )
+				->getTemplatedTitle(),
+			$year,
+			$month,
+			Months::number2name( $month - 1 ),
+		] );
+
 		$this->year = $year;
 		$this->month = $month;
-	}
-
-	/**
-	 * Get the template arguments
-	 *
-	 * @override CategoryTemplated::getTemplateArguments()
-	 * @return array
-	 */
-	protected function getTemplateArguments() {
-		return [
-			CategoryYear::title( $this->year ),
-			$this->year,
-			$this->month,
-			Months::number2name( $this->month - 1 ),
-		];
-	}
-
-	/**
-	 * Title of a monthly category
-	 *
-	 * @param $year int e.g. 2018
-	 * @param $month int e.g. 4
-	 * @return string Category name e.g. 'Categoria:Cancellazioni - aprile 2018'
-	 */
-	public static function title( $year, $month ) {
-		$human_month = Months::number2name( $month - 1 );
-		return sprintf( self::GENERIC_TITLE, $year, $human_month );
 	}
 }

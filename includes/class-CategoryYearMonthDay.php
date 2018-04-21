@@ -52,59 +52,26 @@ class CategoryYearMonthDay extends CategoryTemplated {
 	private $day;
 
 	/**
-	 * The template name for a daily category
-	 *
-	 * @override CategoryTemplated::TEMPLATE_NAME
-	 */
-	const TEMPLATE_NAME = 'CATEGORY_DAY';
-
-	/**
-	 * Format of the generic title of a daily category
-	 *
-	 * e.g. 'Categoria:Cancellazioni del 19 aprile 2018'
-	 */
-	const GENERIC_TITLE = 'Categoria:Cancellazioni del %3$s %2$s %1$d';
-
-	/**
 	 * Constructor
 	 *
 	 * @param $year int
 	 * @param $month int 1-12
 	 * @param $day int 1-31
+	 * @see CategoryTemplated::__construct()
 	 */
 	public function __construct( $year, $month, $day ) {
-		parent::__construct( self::title( $year, $month, $day ) );
+
+		parent::__construct( 'CATEGORY_DAY', [
+			( new CategoryYearMonth( $year, $month ) )
+				->getTemplatedTitle(),
+			$year,
+			$month,
+			Months::number2name( $month - 1 ),
+			$day,
+		] );
+
 		$this->year = $year;
 		$this->month = $month;
 		$this->day = $day;
-	}
-
-	/**
-	 * Get the template arguments
-	 *
-	 * @override CategoryTemplated::getTemplateArguments()
-	 * @return array
-	 */
-	protected function getTemplateArguments() {
-		return [
-			CategoryYearMonth::title( $this->year, $this->month ),
-			$this->year,
-			$this->month,
-			Months::number2name( $this->month - 1 ),
-			$this->day,
-		];
-	}
-
-	/**
-	 * Title of a daily category
-	 *
-	 * @param $year int
-	 * @param $month int 1-12
-	 * @param $day int 1-31
-	 * @return string Category name e.g. 'Categoria:Cancellazioni del 19 febbraio 2018'
-	 */
-	public static function title( $year, $month, $day ) {
-		$human_month = Months::number2name( $month - 1 );
-		return sprintf( self::GENERIC_TITLE, $year, $human_month, $day );
 	}
 }

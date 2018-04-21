@@ -38,54 +38,17 @@ class CategoryYear extends CategoryTemplated {
 	private $year;
 
 	/**
-	 * The template name for a yearly category
-	 *
-	 * @override CategoryTemplated::TEMPLATE_NAME
-	 */
-	const TEMPLATE_NAME = 'CATEGORY_YEAR';
-
-	/**
-	 * Format of the generic title of a yearly category
-	 *
-	 * e.g. 'Categoria:Cancellazioni - 2018'
-	 */
-	const GENERIC_TITLE = 'Categoria:Cancellazioni - %d';
-
-	/**
-	 * Parent category title
-	 */
-	const PARENT_CATEGORY_TITLE = 'Categoria:Pagine in cancellazione per anno';
-
-	/**
 	 * Constructor
 	 *
 	 * @param $year int
+	 * @see CategoryTemplated::__construct()
 	 */
 	public function __construct( $year ) {
-		parent::__construct( self::title( $year ) ) ;
+
+		parent::__construct( 'CATEGORY_YEAR', [
+			$year
+		] );
+
 		$this->year = $year;
-	}
-
-	/**
-	 * Get the template arguments
-	 *
-	 * @override CategoryTemplated::getTemplateArguments()
-	 * @return array
-	 */
-	protected function getTemplateArguments() {
-		return [
-			self::PARENT_CATEGORY_TITLE,
-			$this->year,
-		];
-	}
-
-	/**
-	 * Title of the category in the specified year
-	 *
-	 * @param $year int e.g. 2018
-	 * @return string Category name e.g. 'Categoria:Cancellazioni - 2018'
-	 */
-	public static function title( $year ) {
-		return sprintf( self::GENERIC_TITLE, $year );
 	}
 }

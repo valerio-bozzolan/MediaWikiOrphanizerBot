@@ -19,21 +19,76 @@ namespace itwikidelbot;
 /**
  * Handle a generic category associated to a template
  */
-abstract class CategoryTemplated extends Category {
+class CategoryTemplated extends Category {
 
 	/**
 	 * Template name of this category
+	 *
+	 * @param $name
 	 */
-	const TEMPLATE_NAME = 'TEMPLATE_NAME';
+	private $name;
+
+	/**
+	 * Arguments to be passed to the template
+	 *
+	 * @var array
+	 */
+	private $args;
+
+	/**
+	 * Constructor
+	 *
+	 * @param $name Template name
+	 * @param $args Template arguments
+	 */
+	public function __construct( $name, $args ) {
+		$this->name = $name;
+		$this->args = $args;
+		parent::__construct( $this->getTemplatedTitle() );
+	}
+
+	/**
+	 * Get the name of the template
+	 *
+	 * @return string
+	 */
+	public function getTemplateName() {
+		return $this->name;
+	}
+
+	/**
+	 * Get the name of the template for the page title
+	 *
+	 * @return string
+	 */
+	public function getTemplateTitleName() {
+		return $this->getTemplateName() . '_TITLE';
+	}
+
+	/**
+	 * Get the name of the template for the summary
+	 *
+	 * @return string
+	 */
+	public function getTemplateSummaryName() {
+		return $this->getTemplateName() . '_SUMMARY';
+	}
+
+	/**
+	 * Get the name of the template for the content
+	 */
+	public function getTemplateContentName() {
+		return $this->getTemplateName() . '_CONTENT';
+	}
 
 	/**
 	 * Get the template arguments
 	 *
-	 * To be overrided
-	 *
 	 * @return array
 	 */
-	abstract protected function getTemplateArguments();
+	public function getTemplateArguments() {
+		return $this->args;
+	}
 
 	/**
 	 * Get the edit summary for this category from its template
@@ -41,7 +96,16 @@ abstract class CategoryTemplated extends Category {
 	 * @return string
 	 */
 	public function getTemplatedSummary() {
-		return Template::get( static::TEMPLATE_NAME . '_SUMMARY', $this->getTemplateArguments() );
+		return Template::get( $this->getTemplateSummaryName(), $this->getTemplateArguments() );
+	}
+
+	/**
+	 * Get the page title from its template
+	 *
+	 * @return string
+	 */
+	public function getTemplatedTitle() {
+		return Template::get( $this->getTemplateTitleName(), $this->getTemplateArguments() );
 	}
 
 	/**
@@ -50,7 +114,7 @@ abstract class CategoryTemplated extends Category {
 	 * @return string
 	 */
 	public function getTemplatedContent() {
-		return Template::get( static::TEMPLATE_NAME . '_CONTENT', $this->getTemplateArguments() );
+		return Template::get( $this->getTemplateContentName(), $this->getTemplateArguments() );
 	}
 
 	/**
@@ -63,7 +127,7 @@ abstract class CategoryTemplated extends Category {
 	}
 
 	/**
-	 * Save this category from the content of its template if not exists
+	 * Save this category from the content of its template if it does not exist
 	 *
 	 * @return bool|mixed
 	 */
