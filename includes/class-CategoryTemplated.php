@@ -59,7 +59,7 @@ abstract class CategoryTemplated extends Category {
 	 * @return mixed
 	 */
 	public function save() {
-		return $this->saveByTitleContentSummary( $this->getTemplatedTitle(), $this->getTemplatedContent(), $this->getTemplatedSummary() );
+		return $this->saveByContentSummary( $this->getTemplatedContent(), $this->getTemplatedSummary() );
 	}
 
 	/**
