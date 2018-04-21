@@ -37,7 +37,7 @@ class Template {
 	static function get( $name, $args ) {
 
 		// ../templates/$name.template
-		$path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $name . '.template';
+		$path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $name . '.tpl';
 		if( ! file_exists( $path ) ) {
 			throw new \InvalidArgumentException( 'unexisting template' );
 		}
