@@ -101,7 +101,7 @@ class Category {
 	 * @return mixed Response
 	 */
 	public static function saveByTitleContentSummary( $title, $content, $summary ) {
-		$api = $this->getApi();
+		$api = self::api();
 		$args = [
 			'action'  => 'edit',
 			'title'   => $title,
@@ -140,7 +140,7 @@ class Category {
 	 * @return bool
 	 */
 	public static function existsByTitle( $title ) {
-		$categoryinfo = $this->getApi()->fetch( [
+		$categoryinfo = self::api()->fetch( [
 			'action' => 'query',
 			'prop'   => 'categoryinfo',
 			'titles' => $title,
@@ -156,7 +156,7 @@ class Category {
 	 *
 	 * @return mw\API
 	 */
-	protected function getApi() {
+	protected static function api() {
 		return WikipediaIt::getInstance();
 	}
 }
