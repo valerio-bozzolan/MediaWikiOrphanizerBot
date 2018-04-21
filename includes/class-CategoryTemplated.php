@@ -68,7 +68,7 @@ abstract class CategoryTemplated extends Category {
 	 * @return bool|mixed
 	 */
 	public function saveIfNotExists() {
-		if( $this->exists() ) {
+		if( ! $this->exists() ) {
 			return $this->save();
 		}
 		return false;

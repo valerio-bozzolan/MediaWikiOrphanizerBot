@@ -146,7 +146,7 @@ class Category {
 			'titles' => $title,
 		] );
 		foreach( $categoryinfo->query->pages as $pageid => $page ) {
-			return $pageid < 0 && isset( $page->missing );
+			return ! isset( $page->missing );
 		}
 		return false;
 	}
