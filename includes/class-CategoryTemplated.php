@@ -52,7 +52,7 @@ abstract class CategoryTemplated extends Category {
 	 * @return string
 	 */
 	public function getTemplateTitleName() {
-		return $this->getTemplateName() . '_TITLE';
+		return $this->getTemplateName() . '.title';
 	}
 
 	/**
@@ -61,14 +61,14 @@ abstract class CategoryTemplated extends Category {
 	 * @return string
 	 */
 	public function getTemplateSummaryName() {
-		return $this->getTemplateName() . '_SUMMARY';
+		return $this->getTemplateName() . '.summary';
 	}
 
 	/**
 	 * Get the name of the template for the content
 	 */
 	public function getTemplateContentName() {
-		return $this->getTemplateName() . '_CONTENT';
+		return $this->getTemplateName() . '.content';
 	}
 
 	/**
