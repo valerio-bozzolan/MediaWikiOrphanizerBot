@@ -112,10 +112,9 @@ class Category {
 		];
 		if( self::$INSPECT ) {
 			print_r( $args );
-			exit;
 		}
 		if( ! self::$PORCELAIN ) {
-			return $wit->post( $args );
+			return $api->post( $args );
 		}
 	}
 
