@@ -19,31 +19,21 @@ namespace itwikidelbot;
 /**
  * Handle a generic category associated to a template
  */
-class CategoryTemplated extends Category {
+abstract class CategoryTemplated extends Category {
 
 	/**
 	 * Template name of this category
 	 *
-	 * @param $name
+	 * To be overrided
 	 */
-	private $name;
-
-	/**
-	 * Arguments to be passed to the template
-	 *
-	 * @var array
-	 */
-	private $args;
+	const TEMPLATE_NAME = 'EXAMPLE_NAME';
 
 	/**
 	 * Constructor
 	 *
-	 * @param $name Template name
 	 * @param $args Template arguments
 	 */
-	public function __construct( $name, $args ) {
-		$this->name = $name;
-		$this->args = $args;
+	public function __construct() {
 		parent::__construct( $this->getTemplatedTitle() );
 	}
 
@@ -53,7 +43,7 @@ class CategoryTemplated extends Category {
 	 * @return string
 	 */
 	public function getTemplateName() {
-		return $this->name;
+		return static::TEMPLATE_NAME;
 	}
 
 	/**
@@ -86,9 +76,7 @@ class CategoryTemplated extends Category {
 	 *
 	 * @return array
 	 */
-	public function getTemplateArguments() {
-		return $this->args;
-	}
+	abstract public function getTemplateArguments();
 
 	/**
 	 * Get the edit summary for this category from its template

@@ -31,6 +31,13 @@ namespace itwikidelbot;
 class CategoryYear extends CategoryTemplated {
 
 	/**
+	 * Template name of this category
+	 *
+	 * @override CategoryTemplated::TEMPLATE_NAME
+	 */
+	const TEMPLATE_NAME = 'CATEGORY_YEAR';
+
+	/**
 	 * Year
 	 *
 	 * @var int
@@ -44,11 +51,16 @@ class CategoryYear extends CategoryTemplated {
 	 * @see CategoryTemplated::__construct()
 	 */
 	public function __construct( $year ) {
-
-		parent::__construct( 'CATEGORY_YEAR', [
-			$year
-		] );
-
 		$this->year = $year;
+		parent::__construct();
+	}
+
+	/**
+	 * Template arguments
+	 *
+	 * @override CategoryTemplated::getTemplateArguments()
+	 */
+	public function getTemplateArguments() {
+		return [ $this->year ];
 	}
 }
