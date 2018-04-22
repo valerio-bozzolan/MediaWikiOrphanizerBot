@@ -28,7 +28,7 @@ namespace itwikidelbot;
  *
  * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_del_19_febbraio_2018
  */
-class CategoryYearMonthDay extends CategoryTemplated {
+class CategoryYearMonthDay extends CategoryYearMonth {
 
 	/**
 	 * Template name
@@ -36,20 +36,6 @@ class CategoryYearMonthDay extends CategoryTemplated {
 	 * @override CategoryTemplated::TEMPLATE_NAME
 	 */
 	const TEMPLATE_NAME = 'CATEGORY_DAY';
-
-	/**
-	 * Year
-	 *
-	 * @var int
-	 */
-	private $year;
-
-	/**
-	 * Month
-	 *
-	 * @var int 1-12
-	 */
-	private $month;
 
 	/**
 	 * Day
@@ -64,14 +50,22 @@ class CategoryYearMonthDay extends CategoryTemplated {
 	 * @param $year int
 	 * @param $month int 1-12
 	 * @param $day int 1-31
-	 * @see CategoryTemplated::__construct()
+	 * @see CategoryYearMonth::__construct()
 	 */
 	public function __construct( $year, $month, $day ) {
-		$this->year  = $year;
-		$this->month = $month;
 		$this->day   = $day;
-		parent::__construct();
+		parent::__construct( $year, $month );
 	}
+
+	/**
+	 * Get the day
+	 *
+	 * @return int 1-13
+	 */
+	public function getDay() {
+		return $this->day;
+	}
+
 
 	/**
 	 * Template arguments
@@ -80,12 +74,12 @@ class CategoryYearMonthDay extends CategoryTemplated {
 	 */
 	public function getTemplateArguments() {
 		return [
-			( new CategoryYearMonth( $this->year, $this->month ) )
+			( new parent( $this->getYear(), $this->getMonth() ) )
 				->getTemplatedTitle(),
-			$this->year,
-			$this->month,
-			Months::number2name( $this->month - 1 ),
-			$this->day,
+			$this->getYear(),
+			$this->getMonth(),
+			Months::number2name( $this->getMonth() - 1 ),
+			$this->getDay(),
 		];
 	}
 }

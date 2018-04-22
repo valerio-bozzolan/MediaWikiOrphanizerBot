@@ -56,11 +56,20 @@ class CategoryYear extends CategoryTemplated {
 	}
 
 	/**
+	 * Get the year
+	 *
+	 * @return int
+	 */
+	public function getYear() {
+		return $this->year;
+	}
+
+	/**
 	 * Template arguments
 	 *
 	 * @override CategoryTemplated::getTemplateArguments()
 	 */
 	public function getTemplateArguments() {
-		return [ $this->year ];
+		return [ $this->getYear() ];
 	}
 }

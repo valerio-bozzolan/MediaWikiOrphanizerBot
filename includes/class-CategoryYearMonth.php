@@ -28,7 +28,7 @@ namespace itwikidelbot;
  *
  * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_-_aprile_2018
  */
-class CategoryYearMonth extends CategoryTemplated {
+class CategoryYearMonth extends CategoryYear {
 
 	/**
 	 * Template name of this category
@@ -36,13 +36,6 @@ class CategoryYearMonth extends CategoryTemplated {
 	 * @override CategoryTemplated::TEMPLATE_NAME
 	 */
 	const TEMPLATE_NAME = 'CATEGORY_MONTH';
-
-	/**
-	 * Year
-	 *
-	 * @var int
-	 */
-	private $year;
 
 	/**
 	 * Month
@@ -56,12 +49,20 @@ class CategoryYearMonth extends CategoryTemplated {
 	 *
 	 * @param $year int
 	 * @param $month int 1-12
-	 * @see CategoryTemplated::__construct()
+	 * @see CategoryYear::__construct()
 	 */
 	public function __construct( $year, $month ) {
-		$this->year  = $year;
 		$this->month = $month;
-		parent::__construct();
+		parent::__construct( $year );
+	}
+
+	/**
+	 * Get the month
+	 *
+	 * @return int 1-12
+	 */
+	public function getMonth() {
+		return $this->month;
 	}
 
 	/**
@@ -71,11 +72,11 @@ class CategoryYearMonth extends CategoryTemplated {
 	 */
 	public function getTemplateArguments() {
 		return [
-			( new CategoryYear( $this->year ) )
+			( new parent( $this->getYear() ) )
 				->getTemplatedTitle(),
-			$this->year,
-			$this->month,
-			Months::number2name( $this->month - 1 ),
+			$this->getYear(),
+			$this->getMonth(),
+			Months::number2name( $this->getMonth() - 1 ),
 		];
 	}
 }
