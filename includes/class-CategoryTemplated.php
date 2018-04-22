@@ -129,12 +129,12 @@ class CategoryTemplated extends Category {
 	/**
 	 * Save this category from the content of its template if it does not exist
 	 *
-	 * @return bool|mixed
+	 * @return self
 	 */
 	public function saveIfNotExists() {
 		if( ! $this->exists() ) {
-			return $this->save();
+			$this->save();
 		}
-		return false;
+		return $this;
 	}
 }
