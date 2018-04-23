@@ -17,12 +17,12 @@
 namespace itwikidelbot;
 
 /**
- * Handle a generic category associated to a template
+ * Handle a generic page associated to a template
  */
-abstract class CategoryTemplated extends Category {
+abstract class PageTemplated extends Page {
 
 	/**
-	 * Template name of this category
+	 * Template name of this page
 	 *
 	 * To be overrided
 	 */
@@ -79,7 +79,7 @@ abstract class CategoryTemplated extends Category {
 	abstract public function getTemplateArguments();
 
 	/**
-	 * Get the edit summary for this category from its template
+	 * Get the edit summary for this page from its template
 	 *
 	 * @return string
 	 */
@@ -97,7 +97,7 @@ abstract class CategoryTemplated extends Category {
 	}
 
 	/**
-	 * Get the page content for this category from its template
+	 * Get the page content for this page from its template
 	 *
 	 * @return string
 	 */
@@ -106,7 +106,7 @@ abstract class CategoryTemplated extends Category {
 	}
 
 	/**
-	 * Save this category from the content of its template
+	 * Save this page from the content of its template
 	 *
 	 * @return mixed
 	 */
@@ -115,7 +115,7 @@ abstract class CategoryTemplated extends Category {
 	}
 
 	/**
-	 * Save this category from the content of its template if it does not exist
+	 * Save this page from the content of its template if it does not exist
 	 *
 	 * @return self
 	 */

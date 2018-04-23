@@ -20,9 +20,9 @@ use \wm\WikipediaIt;
 use \mw\Tokens;
 
 /**
- * Handle a category
+ * Handle a page
  */
-class Category {
+class Page {
 
 	/**
 	 * Do nothing
@@ -39,21 +39,21 @@ class Category {
 	public static $INSPECT = false;
 
 	/**
-	 * @var string Category title with prefix
+	 * @var string Page title with prefix
 	 */
 	private $title;
 
 	/**
-	 * Construct a Category
+	 * Construct a Page
 	 *
-	 * @param $title Category title with its prefix
+	 * @param $title Page title with its prefix
 	 */
 	public function __construct( $title ) {
 		$this->title = $title;
 	}
 
 	/**
-	 * Get the category title with its prefix
+	 * Get the page title with its prefix
 	 *
 	 * @return string
 	 */
@@ -62,9 +62,9 @@ class Category {
 	}
 
 	/**
-	 * Save this category
+	 * Save this page
 	 *
-	 * @param $content string Category content
+	 * @param $content string Page content
 	 * @param $summary string Edit summary
 	 * @return bool|mixed False if not created
 	 */
@@ -73,9 +73,9 @@ class Category {
 	}
 
 	/**
-	 * Save this category if it does not exist
+	 * Save this page if it does not exist
 	 *
-	 * @param $content string Category content
+	 * @param $content string Page content
 	 * @param $summary string Edit summary
 	 * @return bool|mixed False if not created
 	 */
@@ -84,7 +84,7 @@ class Category {
 	}
 
 	/**
-	 * Check if this category exists
+	 * Check if this page exists
 	 *
 	 * @return bool
 	 */
@@ -93,10 +93,10 @@ class Category {
 	}
 
 	/**
-	 * Save a category
+	 * Save a page
 	 *
-	 * @param $title string Category name with prefix
-	 * @param $content string Category content
+	 * @param $title string Page name with prefix
+	 * @param $content string Page content
 	 * @param $summary string Edit summary
 	 * @return mixed Response
 	 */
@@ -112,6 +112,9 @@ class Category {
 		];
 		if( self::$INSPECT ) {
 			print_r( $args );
+			$handle = fopen( 'php://stdin', 'r' );
+			$line = fgets( $handle );
+			fclose( $handle );
 		}
 		if( ! self::$PORCELAIN ) {
 			return $api->post( $args );
@@ -119,10 +122,10 @@ class Category {
 	}
 
 	/**
-	 * Save a category if it does not exist
+	 * Save a page if it does not exist
 	 *
-	 * @param $title string Category name with prefix
-	 * @param $content string Category content
+	 * @param $title string Page name with prefix
+	 * @param $content string Page content
 	 * @param $summary string Edit summary
 	 * @return bool|mixed False if not created
 	 */
@@ -134,25 +137,25 @@ class Category {
 	}
 
 	/**
-	 * Check if a category title exists
+	 * Check if a page title exists
 	 *
-	 * @param $title string Category name with prefix
+	 * @param $title string Page name with prefix
 	 * @return bool
 	 */
 	public static function existsByTitle( $title ) {
-		$categoryinfo = self::api()->fetch( [
+		$result = self::api()->fetch( [
 			'action' => 'query',
-			'prop'   => 'categoryinfo',
+			'prop'   => 'info',
 			'titles' => $title,
 		] );
-		foreach( $categoryinfo->query->pages as $pageid => $page ) {
+		foreach( $result->query->pages as $pageid => $page ) {
 			return ! isset( $page->missing );
 		}
 		return false;
 	}
 
 	/**
-	 * Get the API related to this category
+	 * Get the API related to this page
 	 *
 	 * @return mw\API
 	 */

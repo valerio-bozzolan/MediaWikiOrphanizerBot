@@ -28,7 +28,7 @@ namespace itwikidelbot;
  *
  * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_-_2017
  */
-class CategoryYear extends CategoryTemplated {
+class CategoryYear extends PageTemplated {
 
 	/**
 	 * Template name of this category

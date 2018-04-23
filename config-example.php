@@ -2,8 +2,8 @@
 // fill and save-as "config.php"
 
 // debug modes
-// itwikidelbot\Category::$PORCELAIN = true;
-// itwikidelbot\Category::$INSPECT   = true;
+// itwikidelbot\Page::$PORCELAIN = true;
+// itwikidelbot\Page::$INSPECT   = true;
 
 // Wikimedia bot credentials
 mw\API::$DEFAULT_USERNAME = 'Foo';
