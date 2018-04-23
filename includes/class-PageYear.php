@@ -1,12 +1,5 @@
 <?php
 # it.wiki deletion bot in PHP
-# Copyright (C) 2013 Mauro742, MauroBot
-# 	https://it.wikipedia.org/wiki/Utente:Mauro742
-# 	https://it.wikipedia.org/wiki/Utente:MauroBot
-# 	Originally under Creative Commons BY SA 3.0 International
-# 	Utente:MauroBot/BotCancellazioni/category.js
-# 	https://creativecommons.org/licenses/by-sa/3.0/
-#   https://wikimediafoundation.org/wiki/Special:MyLanguage/Terms_of_Use/it
 # Copyright (C) 2018 Valerio Bozzolan
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,25 +17,35 @@
 namespace itwikidelbot;
 
 /**
- * Handle a yearly category
- *
- * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_-_2017
+ * Abstraction of a page related to a year
  */
-class CategoryYear extends PageYear {
+abstract class PageYear extends PageTemplated {
 
 	/**
-	 * Template name of this category
+	 * Year
 	 *
-	 * @override CategoryTemplated::TEMPLATE_NAME
+	 * @var int
 	 */
-	const TEMPLATE_NAME = 'CATEGORY_YEAR';
+	private $year;
 
 	/**
-	 * Template arguments
+	 * Constructor
 	 *
-	 * @override CategoryTemplated::getTemplateArguments()
+	 * @param $year int
+	 * @see PageTemplated::__construct()
 	 */
-	public function getTemplateArguments() {
-		return [ $this->getYear() ];
+	public function __construct( $year ) {
+		$this->year = $year;
+		parent::__construct();
 	}
+
+	/**
+	 * Get the year
+	 *
+	 * @return int
+	 */
+	public function getYear() {
+		return $this->year;
+	}
+
 }

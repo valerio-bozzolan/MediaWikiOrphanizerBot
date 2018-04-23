@@ -24,11 +24,11 @@
 namespace itwikidelbot;
 
 /**
- * Handle a daily category
+ * Handle a daily category that contains semplified PDC pages
  *
  * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_del_19_febbraio_2018
  */
-class CategoryYearMonthDay extends CategoryYearMonth {
+class CategoryYearMonthDay extends PageYearMonthDay {
 
 	/**
 	 * Template name
@@ -38,43 +38,13 @@ class CategoryYearMonthDay extends CategoryYearMonth {
 	const TEMPLATE_NAME = 'CATEGORY_DAY';
 
 	/**
-	 * Day
-	 *
-	 * @var int 1-31
-	 */
-	private $day;
-
-	/**
-	 * Constructor
-	 *
-	 * @param $year int
-	 * @param $month int 1-12
-	 * @param $day int 1-31
-	 * @see CategoryYearMonth::__construct()
-	 */
-	public function __construct( $year, $month, $day ) {
-		$this->day   = $day;
-		parent::__construct( $year, $month );
-	}
-
-	/**
-	 * Get the day
-	 *
-	 * @return int 1-13
-	 */
-	public function getDay() {
-		return $this->day;
-	}
-
-
-	/**
 	 * Template arguments
 	 *
 	 * @override CategoryTemplated::getTemplateArguments()
 	 */
 	public function getTemplateArguments() {
 		return [
-			( new parent( $this->getYear(), $this->getMonth() ) )
+			( new CategoryYearMonth( $this->getYear(), $this->getMonth() ) )
 				->getTemplatedTitle(),
 			$this->getYear(),
 			$this->getMonth(),
@@ -82,4 +52,5 @@ class CategoryYearMonthDay extends CategoryYearMonth {
 			$this->getDay(),
 		];
 	}
+
 }

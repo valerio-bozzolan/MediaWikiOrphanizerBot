@@ -1,12 +1,5 @@
 <?php
 # it.wiki deletion bot in PHP
-# Copyright (C) 2013 Mauro742, MauroBot
-# 	https://it.wikipedia.org/wiki/Utente:Mauro742
-# 	https://it.wikipedia.org/wiki/Utente:MauroBot
-# 	Originally under Creative Commons BY SA 3.0 International
-# 	Utente:MauroBot/BotCancellazioni/category.js
-# 	https://creativecommons.org/licenses/by-sa/3.0/
-#   https://wikimediafoundation.org/wiki/Special:MyLanguage/Terms_of_Use/it
 # Copyright (C) 2018 Valerio Bozzolan
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,25 +17,37 @@
 namespace itwikidelbot;
 
 /**
- * Handle a yearly category
- *
- * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_-_2017
+ * Abstraction of a page related to a day (in a certain month of a certain year)
  */
-class CategoryYear extends PageYear {
+abstract class PageYearMonthDay extends PageYearMonth {
 
 	/**
-	 * Template name of this category
+	 * Day
 	 *
-	 * @override CategoryTemplated::TEMPLATE_NAME
+	 * @var int 1-31
 	 */
-	const TEMPLATE_NAME = 'CATEGORY_YEAR';
+	private $day;
 
 	/**
-	 * Template arguments
+	 * Constructor
 	 *
-	 * @override CategoryTemplated::getTemplateArguments()
+	 * @param $year int
+	 * @param $month int 1-12
+	 * @param $day int 1-31
+	 * @see PageYearMonth::__construct()
 	 */
-	public function getTemplateArguments() {
-		return [ $this->getYear() ];
+	public function __construct( $year, $month, $day ) {
+		$this->day = $day;
+		parent::__construct( $year, $month );
 	}
+
+	/**
+	 * Get the day
+	 *
+	 * @return int 1-13
+	 */
+	public function getDay() {
+		return $this->day;
+	}
+
 }
