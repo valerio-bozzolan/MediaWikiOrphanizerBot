@@ -48,4 +48,13 @@ abstract class PageYear extends PageTemplated {
 		return $this->year;
 	}
 
+	/**
+	 * Template arguments
+	 *
+	 * @override CategoryTemplated::getTemplateArguments()
+	 */
+	public function getTemplateArguments() {
+		return [ $this->getYear() ];
+	}
+
 }

@@ -37,12 +37,4 @@ class CategoryYear extends PageYear {
 	 */
 	const TEMPLATE_NAME = 'CATEGORY_YEAR';
 
-	/**
-	 * Template arguments
-	 *
-	 * @override CategoryTemplated::getTemplateArguments()
-	 */
-	public function getTemplateArguments() {
-		return [ $this->getYear() ];
-	}
 }

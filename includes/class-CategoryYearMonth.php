@@ -43,12 +43,11 @@ class CategoryYearMonth extends PageYearMonth {
 	 * @override CategoryTemplated::getTemplateArguments()
 	 */
 	public function getTemplateArguments() {
-		return [
-			( new CategoryYear( $this->getYear() ) )
-				->getTemplatedTitle(),
-			$this->getYear(),
-			$this->getMonth(),
-			Months::number2name( $this->getMonth() - 1 ),
-		];
+		return array_merge( [
+				( new CategoryYear( $this->getYear() ) )
+					->getTemplatedTitle()
+			],
+			parent::getTemplateArguments()
+		);
 	}
 }

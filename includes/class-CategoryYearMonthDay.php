@@ -40,17 +40,15 @@ class CategoryYearMonthDay extends PageYearMonthDay {
 	/**
 	 * Template arguments
 	 *
-	 * @override CategoryTemplated::getTemplateArguments()
+	 * @override CategoryYearMonth::getTemplateArguments()
 	 */
 	public function getTemplateArguments() {
-		return [
-			( new CategoryYearMonth( $this->getYear(), $this->getMonth() ) )
-				->getTemplatedTitle(),
-			$this->getYear(),
-			$this->getMonth(),
-			Months::number2name( $this->getMonth() - 1 ),
-			$this->getDay(),
-		];
+		return array_merge( [
+				( new CategoryYearMonth( $this->getYear(), $this->getMonth() ) )
+					->getTemplatedTitle()
+			],
+			parent::getTemplateArguments()
+		);
 	}
 
 }

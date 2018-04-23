@@ -49,4 +49,16 @@ abstract class PageYearMonth extends PageYear {
 		return $this->month;
 	}
 
+	/**
+	 * Template arguments
+	 *
+	 * @override PageYear::getTemplateArguments()
+	 */
+	public function getTemplateArguments() {
+		return array_merge( parent::getTemplateArguments(), [
+			$this->getMonth(),
+			Months::number2name( $this->getMonth() - 1 ),
+		] );
+	}
+
 }

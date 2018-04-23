@@ -50,4 +50,15 @@ abstract class PageYearMonthDay extends PageYearMonth {
 		return $this->day;
 	}
 
+	/**
+	 * Template arguments
+	 *
+	 * @override PageYearMonth::getTemplateArguments()
+	 */
+	public function getTemplateArguments() {
+		return array_merge( parent::getTemplateArguments(), [
+			$this->getDay()
+		] );
+	}
+
 }
