@@ -24,41 +24,39 @@
 namespace itwikidelbot;
 
 /**
- * Abstraction of a daily category with a specified PDC type
+ * Handle a daily category of semplified PDCs
+ *
+ * Pratically, a semplified PDC category is the daily PDC category.
+ * So the template of this class cames from CategoryYearMonthDay.
+ *
+ * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_del_1_aprile_2017
  */
-abstract class CategoryYearMonthDayType extends CategoryYearMonthDay {
+class CategoryYearMonthDayTypeSimple extends CategoryYearMonthDayType {
+
+	/**
+	 * PDC type
+	 *
+	 * @override CategoryYearMonthDayType::PDC_TYPE
+	 */
+	const PDC_TYPE = 'semplificate';
 
 	/**
 	 * Template name of this category
 	 *
-	 * @override CategoryTemplated::TEMPLATE_NAME
+	 * @override CategoryTemplated::getTemplateName()
+	 * @see CategoryYearMonthDay::TEMPLATE_NAME
 	 */
-	const TEMPLATE_NAME = 'CATEGORY_DAY_PDCTYPE';
-
-	/**
-	 * PDC type e.g. 'consensuale'
-	 *
-	 * To be overrided
-	 */
-	const PDC_TYPE = 'EXAMPLE';
-
-	/**
-	 * Get the PDC type
-	 *
-	 * @return string e.g. 'consensuale'
-	 */
-	public function getPDCType() {
-		return static::PDC_TYPE;
+	public function getTemplateName() {
+		return CategoryYearMonthDay::TEMPLATE_NAME;
 	}
 
 	/**
-	 * Get template arguments
+	 * Template arguments
 	 *
-	 * @override CategoryTemplated::getTemplateArguments()
+	 * @override CategoryYearMonth::getTemplateArguments()
 	 */
 	public function getTemplateArguments() {
-		$parent_arguments = parent::getTemplateArguments();
-		$parent_arguments[] = $this->getPDCType();
-		return $parent_arguments;
+		return CategoryYearMonthDay::getTemplateArguments();
 	}
+
 }

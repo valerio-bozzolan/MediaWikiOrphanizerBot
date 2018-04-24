@@ -24,7 +24,8 @@
 namespace itwikidelbot;
 
 /**
- * Handle a daily category that contains semplified PDC pages
+ * Handle a daily category that directly contains semplified ("semplificate") PDC pages
+ * It contains other sub-categories.
  *
  * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_del_19_febbraio_2018
  */
@@ -62,7 +63,7 @@ class CategoryYearMonthDay extends PageYearMonthDay {
 			CategoryYearMonthDayTypeProlonged::class,
 			CategoryYearMonthDayTypeConsensual::class,
 			CategoryYearMonthDayTypeOrdinary::class,
-			self::class, // semplified
+			CategoryYearMonthDayTypeSimple::class,
 		];
 
 		$pages_by_type = [];
