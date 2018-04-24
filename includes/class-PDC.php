@@ -76,20 +76,29 @@ class PDC extends Page {
 	private $date;
 
 	/**
+	 * Is Protected?
+	 *
+	 * @var bool
+	 */
+	private $isProtected;
+
+	/**
 	 * Constructor
 	 *
-	 * @param $id Page id
-	 * @param $title string Page title
-	 * @param $length Page length
-	 * @param $date Page last update
+	 * @param $id int Page id
+	 * @param $title string string Page title
+	 * @param $length int Page length
+	 * @param $date Page DateTime last update
+	 * @param $is_protected bool Is protected?
 	 * @see Page::__construct()
 	 */
-	public function __construct( $type, $id, $title, $length, $date ) {
-		$this->type   = $type;
-		$this->id     = $id;
-		$this->title  = $title;
-		$this->length = $length;
-		$this->date   = $date;
+	public function __construct( $type, $id, $title, $length, DateTime $date, $is_protected ) {
+		$this->type        = $type;
+		$this->id          = $id;
+		$this->title       = $title;
+		$this->length      = $length;
+		$this->date        = $date;
+		$this->isProtected = $is_protected;
 		parent::__construct( $title );
 	}
 
@@ -103,12 +112,22 @@ class PDC extends Page {
 		if( ! isset( $page->touched, $page->pageid, $page->title, $page->length ) ) {
 			throw new \Exception( 'invalid PDC' );
 		}
+
+		$is_protected = false;
+		foreach( $page->protection as $protection ) {
+			if( 'edit' === $protection->type && 'sysop' === $protection->level ) {
+				$is_protected = true;
+				break;
+			}
+		}
+
 		return new self(
 			$type,
 			$page->pageid,
 			$page->title,
 			$page->length,
-			DateTime::createFromFormat( DateTime::ISO8601, $page->touched ) // e.g. 2018-04-22T14:07:49Z
+			DateTime::createFromFormat( DateTime::ISO8601, $page->touched ), // e.g. 2018-04-22T14:07:49Z
+			$is_protected
 		);
 	}
 
@@ -137,6 +156,15 @@ class PDC extends Page {
 	 */
 	public function getType() {
 		return $this->type::getPDCType();
+	}
+
+	/**
+	 * Check if this page is protected
+	 *
+	 * @return bool
+	 */
+	public function isProtected() {
+		return $this->isProtected;
 	}
 
 	/**
