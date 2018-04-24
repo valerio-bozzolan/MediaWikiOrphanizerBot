@@ -4,13 +4,15 @@ This projects aims to handle the public deletion log of Italian Wikipedia pages.
 
 ## History of the project
 
-The script was originally developed by Mauro762 (aka MauroBot) in 2013 using JavaScript.
+The script was originally developed by Mauro762 (aka MauroBot) in 2013 using JavaScript. {{Citation needed}}
 
 ## TODO
 
 * [X] Yearly category creation
 * [X] Monthy category creation
 * [X] Daily category creation
+* [X] Daily log page update
+* [ ] Daily counting page update
 * [ ] Most of the work :)
 
 ## Installation
@@ -18,17 +20,34 @@ The script was originally developed by Mauro762 (aka MauroBot) in 2013 using Jav
 	apt-get install php-cli
     git clone --recursive https://github.com/valerio-bozzolan/ItalianWikipediaDeletionBot
 
-## Configuration
+## Basic configuration
 
 Fill `config-example.php` and save-as `config.php`.
 
-## Usage
+## Basic usage
 
     ./bot.php
 
 ## Hacking
 
-The content of the categories and the text of edit summaries can be changed hacking in the [/templates](/templates) directory.
+Most of the behaviours — as the content of the categories, the pages, their edit summaries, etc. — can be changed simply hacking the content of the files from the [/templates](/templates) directory. Trust me, you are able to do it.
+
+Start becoming familiar with their structure:
+
+	<!-- START DOCUMENTATION -->
+	This is the place for some documentation, expecially about "placeholders".
+	<!-- START SPECIFIC EXAMPLE -->
+	This is the place for a specific example
+	<!-- START TEMPLATE -->
+	This is the place for the most important part of this file.
+	This part is what this template will generates.
+	It uses stuff like "$1" or "%1%02d" as generic placeholders.
+
+To be honest: everything above the `<!-- START TEMPLATE -->` line it's pure documentation sugar. It's written to help you. I've spent some minutes on them. Please RTFM. asd
+
+A non-traumatic template example can be found [here](templates/CATEGORY_YEAR.content.tpl). It describes the generation of the yearly category.
+
+## Credits
 
 You may not want to know this: HTTP connections, MediaWiki APIs (including login and tokens etc.), and other stuff, is handled by the [boz-mw](https://github.com/valerio-bozzolan/boz-mw) framework.
 
@@ -57,3 +76,4 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
+
