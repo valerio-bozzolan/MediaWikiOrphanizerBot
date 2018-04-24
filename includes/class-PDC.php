@@ -186,6 +186,47 @@ class PDC extends Page {
 	}
 
 	/**
+	 * Get the PDC temperature
+	 *
+	 * The temperature is a value betweeen 0-100
+	 *
+	 * @return int
+	 */
+	public function getTemperature() {
+		$slope  = null;
+		$offset = null;
+		switch( $this->getType() ) {
+			case CategoryYearMonthDayTypeSimple::PDC_TYPE:
+				$slope  =  0.0365;
+				$offset = -24.0;
+				break;
+			case CategoryYearMonthDayTypeConsensual::PDC_TYPE:
+				$slope  =  0.0075;
+				$offset = -12.81;
+				break;
+			case CategoryYearMonthDayTypeProlonged::PDC_TYPE:
+				$slope  =  0.0035;
+				$offset = -9.76;
+				break;
+			case CategoryYearMonthDayTypeOrdinary::PDC_TYPE:
+			case CategoryYearMonthDayTypeVoting::PDC_TYPE:
+				$slope  =  0.0025;
+				$offset = -16.43;
+				break;
+			default:
+				throw new \Exception( 'unexpected type' );
+		}
+
+		$temp = round( $slope * $len + $offset );
+		if ( $temp > 100 ) {
+			$temp = 100;
+		} elseif ( $temp < 0 ) {
+			$temp = 0;
+		}
+		return $temp;
+	}
+
+	/**
 	 * Check if the title has a certain prefix
 	 *
 	 * @param $prefix string
