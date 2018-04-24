@@ -51,4 +51,128 @@ class CategoryYearMonthDay extends PageYearMonthDay {
 		);
 	}
 
+	/**
+	 * Operate on every children page
+	 */
+	public function operateEveryChildrenPage() {
+
+		// Categories for PDCs in order of importance (I think)
+		$Categories = [
+			CategoryYearMonthDayTypeVoting::class,
+			CategoryYearMonthDayTypeProlonged::class,
+			CategoryYearMonthDayTypeConsensual::class,
+			CategoryYearMonthDayTypeOrdinary::class,
+			self::class, // semplified
+		];
+
+		$pages_by_type = [];
+		foreach( $Categories as $Category ) {
+			$category = new $Category( $this->getYear(), $this->getMonth(), $this->getDay() );
+
+			// fetch the pages in this category
+			$pages = $category->fetchChildrenPages();
+			if( count( $pages ) ) {
+				$category->saveIfNotExists();
+			}
+
+			// sort by last update
+			usort( $pages, function ( $a, $b ) {
+				return $a->getDate() > $b->getDate();
+			} );
+
+			$pages_by_type[ $Category ] = $pages;
+		}
+
+//		PageYearMonthDayPDCsCount::createFromPagePDCs( $this, $pages_by_type )
+//			->save();
+
+		PageYearMonthDayPDCsLog::createFromPagePDCs( $this, $pages_by_type )
+			->save();
+	}
+
+	/**
+	 * Fetch children PDC pages from this category
+	 *
+	 * @return array
+	 */
+	protected function fetchChildrenPages() {
+		$api = self::api()->setApiData( [
+			'action' => 'query',
+
+			// generator=categorymembers: get pages in category
+			// gmtitle=:                  specify the category title
+			// gmtype=page:               get sub-pages
+			// gmsort=timestamp:          order by insertion date in that category (completly unuseful)
+			// gmdir=asc:                 ascending order
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Bcategorymembers
+			// Note: Generator parameter names must be prefixed with a 'g'
+			'generator'   => 'categorymembers',
+			'gcmtitle'    => $this->getTitle(),
+			'gcmnamespace' => 4, // Wikipedia namespace (not category)
+//			'gcmtype'     => 'page', // Note: Ignored when cmsort=timestamp is set.
+//			'gcmsort'     => 'timestamp',
+//			'gcmdir'      => 'asc',
+
+			// for each page load infos, categories and latest revision
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Binfo
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Bcategories
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Brevisions
+			// TODO: probably the revisions parameter is unuseful. Info already provides "touched" (sometimes ._.)
+			'prop' => [ 'info' , 'categories', /* 'revisions' */ ],
+
+			// inprop=protecion: list of the protection level of each page
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Bcategories
+			'inprop' => 'protection',
+
+			// clprop=sortkey:   adds the sortkey and sortkey prefix for the category
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Binfo
+			'clprop' => 'sortkey',
+
+			// timestamp of the latest revision
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Brevisions
+//			'rvprop' => 'timestamp',
+		] );
+
+		$all = [];
+		while( $api->hasNext() ) {
+			$next = $api->fetchNext();
+
+			if( isset( $next->query->pages ) ) {
+				foreach( $next->query->pages as $page ) {
+
+					// multiple call will add more infos on the same page
+					// https://www.mediawiki.org/wiki/API:Query#Generators_and_continuation
+					// TODO: use batchcomplete for better memory usage
+					// Note: pages are not directly saved with their pageid to preserve their order
+					$pageid = $page->pageid;
+					if( isset( $all[ $pageid ] ) ) {
+						foreach( $page as $property => $value ) {
+							$all[ $pageid ]->{$property} = $value;
+						}
+					} else {
+						$all[ $pageid ] = $page;
+					}
+				}
+			}
+		}
+
+		$all_pdc = [];
+		foreach( $all as $page ) {
+			$pdc = $this->createPDCFromRaw( $page );
+			if( $pdc && $pdc->isValid() ) {
+				$all_pdc[] = $pdc;
+			}
+		}
+		return $all_pdc;
+	}
+
+	/**
+	 * Create a PDF from raw (of this type)
+	 *
+	 * @param $pdc mixed
+	 */
+	public function createPDCFromRaw( $pdc ) {
+		return PDC::createFromRaw( static::class, $pdc );
+	}
+
 }

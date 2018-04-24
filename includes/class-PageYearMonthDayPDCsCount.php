@@ -1,5 +1,5 @@
-#!/usr/bin/php
 <?php
+# it.wiki deletion bot in PHP
 # Copyright (C) 2018 Valerio Bozzolan
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,24 +16,16 @@
 
 namespace itwikidelbot;
 
-// autoload classes
-require __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'autoload.php';
+/**
+ * Abstraction of a page containing PDCs' log of the day
+ */
+class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 
-// load credentials
-require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+	/**
+	 * Template name of this page
+	 *
+	 * @override CategoryTemplated::TEMPLATE_NAME
+	 */
+	const TEMPLATE_NAME = 'PAGE_COUNT';
 
-// create the yearly category
-$year = date( 'Y' );
-( new CategoryYear( $year ) )
-	->saveIfNotExists();
-
-// create the monthly category
-$month = date( 'n' ); // 1-12
-( new CategoryYearMonth( $year, $month ) )
-	->saveIfNotExists();
-
-// create the daily category
-$day = date( 'j' );
-( new CategoryYearMonthDay( $year, $month, $day ) )
-	->saveIfNotExists()
-	->operateEveryChildrenPage();
+}
