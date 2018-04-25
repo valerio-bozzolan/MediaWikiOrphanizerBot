@@ -34,7 +34,7 @@ class Template {
 	 * @param $args array Template arguments
 	 * @return string Template content
 	 */
-	static function get( $name, $args ) {
+	static function get( $name, $args = [] ) {
 
 		// ../templates/$name.template
 		$path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $name . '.tpl';
