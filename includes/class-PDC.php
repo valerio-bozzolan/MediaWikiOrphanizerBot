@@ -27,6 +27,8 @@ use DateTime;
 
 /**
  * Handle a "Procedura di cancellazione"
+ *
+ * It is a page like "Wikipedia:Pagine da cancellare/ASD"
  */
 class PDC extends Page {
 
@@ -43,7 +45,7 @@ class PDC extends Page {
 	/**
 	 * PDC type
 	 *
-	 * @var class
+	 * @var string
 	 */
 	private $type;
 
@@ -55,11 +57,13 @@ class PDC extends Page {
 	private $id;
 
 	/**
-	 * Page title with prefix
+	 * Title of the PDC subject page (the Wikipedia article title)
+	 *
+	 * Obtained from {{DEFAULTSORT}} category sortkey
 	 *
 	 * @var string
 	 */
-	private $title;
+	private $titleSubject;
 
 	/**
 	 * Page length in bytes
@@ -69,11 +73,18 @@ class PDC extends Page {
 	private $length;
 
 	/**
-	 * Page date
+	 * Date of the PDC
 	 *
 	 * @var date
 	 */
-	private $date;
+	private $creationDate;
+
+	/**
+	 * Last update
+	 *
+	 * @var date
+	 */
+	private $lasteditDate;
 
 	/**
 	 * Is Protected?
@@ -85,50 +96,47 @@ class PDC extends Page {
 	/**
 	 * Constructor
 	 *
-	 * @param $id int Page id
-	 * @param $title string string Page title
-	 * @param $length int Page length
-	 * @param $date Page DateTime last update
-	 * @param $is_protected bool Is protected?
+	 * @param $type string PDC type
+	 * @param $id int PDC page id
+	 * @param $title string PDC title prefixed
+	 * @param $title_subject string Title of the subject page (the Wikipedia article title)
+	 * @param $length int PDC length
+	 * @param $creation DateTime PDC creation date
+	 * @param $lastedit DateTime PDC lastedit date
+	 * @param $is_protected bool Is the PDC protected?
 	 * @see Page::__construct()
+	 * @throws PDCException
 	 */
-	public function __construct( $type, $id, $title, $length, DateTime $date, $is_protected ) {
-		$this->type        = $type;
-		$this->id          = $id;
-		$this->title       = $title;
-		$this->length      = $length;
-		$this->date        = $date;
-		$this->isProtected = $is_protected;
+	public function __construct( $type, $id, $title, $title_subject, $length, DateTime $creation, DateTime $lastedit, $is_protected ) {
+		$this->type         = $type;
+		$this->id           = $id;
+		$this->titleSubject = $title_subject;
+		$this->length       = $length;
+		$this->creationDate = $creation;
+		$this->lasteditDate = $lastedit;
+		$this->isProtected  = $is_protected;
+
 		parent::__construct( $title );
+
+		if( ! $this->isTitlePrefixValid() ) {
+			throw new PDCException( 'not a PDC' );
+
+		}
+
+		if( ! $this->isTitleSubjectConsistent() ) {
+			throw new PDCException( 'inconsistent title subject' );
+		}
 	}
 
 	/**
-	 * Statical constructor
+	 * Get the title of the subject page (the Wikipedia article title)
 	 *
-	 * @param $type string Specified PDC class name
-	 * @param $page mixed|null
+	 * Obtained from {{DEFAULTSORT}} category sortkey
+	 *
+	 * @return string
 	 */
-	public static function createFromRaw( $type, $page ) {
-		if( ! isset( $page->touched, $page->pageid, $page->title, $page->length ) ) {
-			throw new \Exception( 'invalid PDC' );
-		}
-
-		$is_protected = false;
-		foreach( $page->protection as $protection ) {
-			if( 'edit' === $protection->type && 'sysop' === $protection->level ) {
-				$is_protected = true;
-				break;
-			}
-		}
-
-		return new self(
-			$type,
-			$page->pageid,
-			$page->title,
-			$page->length,
-			DateTime::createFromFormat( DateTime::ISO8601, $page->touched ), // e.g. 2018-04-22T14:07:49Z
-			$is_protected
-		);
+	public function getTitleSubject() {
+		return $this->titleSubject;
 	}
 
 	/**
@@ -141,12 +149,21 @@ class PDC extends Page {
 	}
 
 	/**
+	 * Get the creation date
+	 *
+	 * @return DateTime
+	 */
+	public function getCreationDate() {
+		return $this->creationDate;
+	}
+
+	/**
 	 * Get the latest update date
 	 *
 	 * @return DateTime
 	 */
-	public function getDate() {
-		return $this->date;
+	public function getLasteditDate() {
+		return $this->lasteditDate;
 	}
 
 	/**
@@ -168,11 +185,11 @@ class PDC extends Page {
 	}
 
 	/**
-	 * Check if this is a valid PDC
+	 * Check if this PDC has a known prefix
 	 *
 	 * @return bool
 	 */
-	public function isValid() {
+	private function isTitlePrefixValid() {
 		return $this->titlehasPrefix( self::PREFIX );
 	}
 
@@ -186,44 +203,23 @@ class PDC extends Page {
 	}
 
 	/**
-	 * Get the PDC temperature
+	 * Get the title prefix
 	 *
-	 * The temperature is a value betweeen 0-100
-	 *
-	 * @return int
+	 * @return string
 	 */
-	public function getTemperature() {
-		$slope  = null;
-		$offset = null;
-		switch( $this->getType() ) {
-			case CategoryYearMonthDayTypeSimple::PDC_TYPE:
-				$slope  =  0.0365;
-				$offset = -24.0;
-				break;
-			case CategoryYearMonthDayTypeConsensual::PDC_TYPE:
-				$slope  =  0.0075;
-				$offset = -12.81;
-				break;
-			case CategoryYearMonthDayTypeProlonged::PDC_TYPE:
-				$slope  =  0.0035;
-				$offset = -9.76;
-				break;
-			case CategoryYearMonthDayTypeOrdinary::PDC_TYPE:
-			case CategoryYearMonthDayTypeVoting::PDC_TYPE:
-				$slope  =  0.0025;
-				$offset = -16.43;
-				break;
-			default:
-				throw new \Exception( 'unexpected type' );
-		}
+	private function getTitlePrefix() {
+		return $this->isMultiple()
+			? self::PREFIX_MULTIPLE
+			: self::PREFIX;
+	}
 
-		$temp = round( $slope * $len + $offset );
-		if ( $temp > 100 ) {
-			$temp = 100;
-		} elseif ( $temp < 0 ) {
-			$temp = 0;
-		}
-		return $temp;
+	/**
+	 * Get the title unprefixed
+	 *
+	 * @return string
+	 */
+	private function getTitleUnprefixed() {
+		return substr( $this->getTitle(), strlen( $this->getTitlePrefix() ) );
 	}
 
 	/**
@@ -234,5 +230,124 @@ class PDC extends Page {
 	 */
 	private function titleHasPrefix( $prefix ) {
 		return 0 === strpos( $this->getTitle(), $prefix );
+	}
+
+	/**
+	 * Verify if the title of the subject is consistent with the PDC title
+	 *
+	 * @return bool
+	 */
+	private function isTitleSubjectConsistent() {
+		// subject from {{DEFAULTSORT}} category prefix
+		$subject = $this->getTitleSubject();
+
+		// subject generated unprefixing page title
+		$subject_gen = $this->getTitleUnprefixed();
+
+		if( $subject !== $subject_gen ) {
+			// Check if the PDC title ends with an enumeration e.g. 'asd/14'
+			$status = preg_match( '@(.*)/[0-9]+$@', $subject_gen, $matches );
+			if( 1 === $status ) {
+				// Get the interesting part e.g. 'asd'
+				$subject_gen = $matches[ 1 ];
+			}
+		}
+
+		return $subject === $subject_gen;
+	}
+
+	/**
+	 * Statical constructor
+	 *
+	 * @param $type string Specified PDC class name
+	 * @param $creation DateTime Creation date (PDC date)
+	 * @param $page mixed
+	 * @return self
+	 * @throws PDCException
+	 */
+	public static function createFromRaw( $type, DateTime $creation, $page ) {
+
+		// verify consistence
+		if( ! isset(
+				$page->pageid,
+				$page->title,
+				$page->length,
+				$page->touched,
+				$page->protection,
+				$page->categories
+			) ) {
+				throw new PDCException( 'invalid PDC' );
+		}
+
+		// read the title of the subject from the {{DEFAULTSORT}} category sortkey prefix
+		$title_subject = '';
+		foreach( $page->categories as $category ) {
+			if( ! isset( $category->sortkeyprefix ) ) {
+				throw new PDCException( 'missing category sortkey prefix' );
+			}
+			$title_subject = $category->sortkeyprefix;
+			break;
+		}
+
+		// read protection status
+		$is_protected = false;
+		foreach( $page->protection as $protection ) {
+			if( 'edit' === $protection->type && 'sysop' === $protection->level ) {
+				$is_protected = true;
+				break;
+			}
+		}
+
+		return new self(
+			$type,
+			$page->pageid,
+			$page->title,
+			$title_subject,
+			$page->length,
+			$creation,
+			DateTime::createFromFormat( DateTime::ISO8601, $page->touched ),
+			$is_protected
+		);
+	}
+
+	/**
+	 * Get the PDC temperature
+	 *
+	 * The temperature is a value betweeen 0-100
+	 *
+	 * @return int
+	 */
+	public function getTemperature() {
+		$slope  = null;
+		$offset = null;
+		switch( $this->getType() ) {
+			case CategoryYearMonthDayTypeSimple::getPDCType():
+				$slope  =   0.0365;
+				$offset = -24.0;
+				break;
+			case CategoryYearMonthDayTypeConsensual::getPDCType():
+				$slope  =   0.0075;
+				$offset = -12.81;
+				break;
+			case CategoryYearMonthDayTypeProlonged::getPDCType():
+				$slope  =  0.0035;
+				$offset = -9.76;
+				break;
+			case CategoryYearMonthDayTypeOrdinary::getPDCType():
+			case CategoryYearMonthDayTypeVoting  ::getPDCType():
+				$slope  =   0.0025;
+				$offset = -16.43;
+				break;
+			default:
+				throw new \Exception( 'unexpected type' );
+		}
+
+		$temp = round( $slope * $this->getLength() + $offset );
+		if ( $temp > 100 ) {
+			$temp = 100;
+		} elseif ( $temp < 0 ) {
+			$temp = 0;
+		}
+		return $temp;
 	}
 }
