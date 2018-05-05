@@ -28,4 +28,41 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 	 */
 	const TEMPLATE_NAME = 'PAGE_COUNT';
 
+	/**
+	 * Get the template arguments
+	 *
+	 * @override PageTemplated::getTemplateArguments()
+	 * @return array
+	 */
+	public function getTemplateArguments() {
+		$args = parent::getTemplateArguments();
+
+		$sections = [];
+		foreach( $this->getPDCsByType() as $pdcs ) {
+			if( $pdcs ) {
+				$type = $pdcs[ 0 ]->getType();
+
+				// call the entry template for each PDC
+				$entries = [];
+				foreach( $pdcs as $pdc ) {
+					$entries[] = Template::get( self::TEMPLATE_NAME . '.entry', [
+						$pdc->getTitle(),
+						$pdc->getTemperature(),
+					] );
+				}
+
+				// call the section template for each PDC type
+				$entries_txt = implode( "\n", $entries );
+				$sections[] = Template::get( self::TEMPLATE_NAME . '.section', [
+					$pdc->getType(),
+					$entries_txt
+				] );
+			}
+		}
+
+		$args[] = implode( "\n", $sections );
+
+		return $args;
+	}
+
 }

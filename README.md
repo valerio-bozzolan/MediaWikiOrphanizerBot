@@ -1,10 +1,10 @@
 # Italian Wikipedia Deletion Bot
 
-This projects aims to handle the public deletion log of Italian Wikipedia pages.
+This project aims to handle the public deletion log of Italian Wikipedia pages.
 
 ## History of the project
 
-The script was originally developed by Mauro762 (aka MauroBot) in 2013 using JavaScript. {{Citation needed}}
+The script was originally developed by Mauro762 (aka MauroBot) in 2013 using JavaScript and previously developed in Python {{Citation needed}}.
 
 ## TODO
 
@@ -49,7 +49,7 @@ A non-traumatic template example can be found [here](templates/CATEGORY_YEAR.con
 
 ## Credits
 
-You may not want to know this: HTTP connections, MediaWiki APIs (including login and tokens etc.), and other stuff, is handled by the [boz-mw](https://github.com/valerio-bozzolan/boz-mw) framework.
+You may not want to know this: HTTP connections, MediaWiki APIs (including login and tokens etc.), and other stuff, are handled by the [boz-mw](https://github.com/valerio-bozzolan/boz-mw) framework.
 
 ## License
 
@@ -76,4 +76,3 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
-
