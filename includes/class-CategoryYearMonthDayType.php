@@ -61,4 +61,96 @@ abstract class CategoryYearMonthDayType extends CategoryYearMonthDay {
 		$parent_arguments[] = $this->getPDCType();
 		return $parent_arguments;
 	}
+
+	/**
+	 * Create a PDF of this type (from raw)
+	 *
+	 * @param $pdc_raw mixed Raw PDC data
+	 * @see PDC::createFromRaw()
+	 */
+	public function createPDCFromRaw( $pdc_raw ) {
+		return PDC::createFromRaw( static::getPDCType(), $this->getDateTime(), $pdc_raw );
+	}
+
+	/**
+	 * Fetch PDCs of this type
+	 *
+	 * @return array
+	 */
+	public function fetchPDCs() {
+		$api = self::api()->setApiData( [
+			'action' => 'query',
+
+			// generator=categorymembers: get pages in category
+			// gmtitle=:                  specify the category title
+			// gmtype=page:               get sub-pages
+			// gmsort=timestamp:          order by insertion date in that category (completly unuseful)
+			// gmdir=asc:                 ascending order
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Bcategorymembers
+			// Note: Generator parameter names must be prefixed with a 'g'
+			'generator'   => 'categorymembers',
+			'gcmtitle'    => $this->getTitle(),
+			'gcmtype'     => 'page', // Note: Ignored when cmsort=timestamp is set.
+			'gcmlimit'    => 100,
+//			'gcmsort'     => 'timestamp',
+//			'gcmdir'      => 'asc',
+
+			// for each page load infos, categories and latest revision
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Binfo
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Bcategories
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Brevisions
+			// Note: probably the revisions parameter is unuseful for last update date (already provided by "touched").
+			// Note: revisions can be still useful to know the creation date
+			'prop' => [ 'info' , 'categories', /*'revisions'*/ ],
+
+			// inprop=protecion: list of the protection level of each page
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Bcategories
+			'inprop' => 'protection',
+
+			// clprop=sortkey:   adds the sortkey and sortkey prefix for the category
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Binfo
+			'clprop' => 'sortkey',
+
+			// rvprop=timestamp: timestamp of the revision
+			// rvlimit=1: only 1 revision
+			// rvdir=older: order by oldest
+			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Brevisions
+//			'rvprop'  => 'timestamp',
+//			'rvdir'   => 'older',
+//			'rvlimit' => 1,
+		] );
+
+		$all = [];
+		while( $api->hasNext() ) {
+			$next = $api->fetchNext();
+
+			if( isset( $next->query->pages ) ) {
+				foreach( $next->query->pages as $page ) {
+
+					// multiple call will add more infos on the same page
+					// https://www.mediawiki.org/wiki/API:Query#Generators_and_continuation
+					// TODO: use batchcomplete for better memory usage
+					// Note: pages are not directly saved with their pageid to preserve their order
+					$pageid = $page->pageid;
+					if( isset( $all[ $pageid ] ) ) {
+						foreach( $page as $property => $value ) {
+							$all[ $pageid ]->{$property} = $value;
+						}
+					} else {
+						$all[ $pageid ] = $page;
+					}
+				}
+			}
+		}
+
+		$pdcs = [];
+		foreach( $all as $page ) {
+			$pdc = $this->createPDCFromRaw( $page );
+			if( $pdc ) {
+				$pdcs[] = $pdc;
+			}
+		}
+		return $pdcs;
+	}
+
 }

@@ -34,21 +34,18 @@ namespace itwikidelbot;
 class CategoryYearMonthDayTypeSimple extends CategoryYearMonthDayType {
 
 	/**
+	 * The same value for CategoryYearMonthDay::TEMPLATE_NAME.
+	 *
+	 * @see CategoryYearMonthDayType::TEMPLATE_NAME
+	 */
+	const TEMPLATE_NAME = 'CATEGORY_DAY';
+
+	/**
 	 * PDC type
 	 *
 	 * @override CategoryYearMonthDayType::PDC_TYPE
 	 */
 	const PDC_TYPE = 'semplificate';
-
-	/**
-	 * Template name of this category
-	 *
-	 * @override CategoryTemplated::getTemplateName()
-	 * @see CategoryYearMonthDay::TEMPLATE_NAME
-	 */
-	public function getTemplateName() {
-		return CategoryYearMonthDay::TEMPLATE_NAME;
-	}
 
 	/**
 	 * Template arguments
