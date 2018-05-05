@@ -16,6 +16,8 @@
 
 namespace itwikidelbot;
 
+use DateTime;
+
 /**
  * Abstraction of a page related to a day (in a certain month of a certain year)
  */
@@ -42,12 +44,35 @@ abstract class PageYearMonthDay extends PageYearMonth {
 	}
 
 	/**
+	 * Static constructor
+	 *
+	 * @param $date_time DateTime
+	 */
+	public static function createFromDateTime( DateTime $datetime ) {
+		return new self( $datetime->format('Y'), $datetime->format('m'), $datetime->format('d') );
+	}
+
+	/**
 	 * Get the day
 	 *
 	 * @return int 1-13
 	 */
 	public function getDay() {
 		return $this->day;
+	}
+
+	/**
+	 * Get a DateTime object
+	 *
+	 * @return DateTime
+	 */
+	public function getDateTime() {
+		return DateTime::createFromFormat( 'Y-m-d', sprintf(
+			'%d-%d-%d',
+			$this->getYear(),
+			$this->getMonth(),
+			$this->getDay()
+		) );
 	}
 
 	/**
