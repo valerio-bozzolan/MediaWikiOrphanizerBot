@@ -39,7 +39,7 @@ class Template {
 		// ../templates/$name.template
 		$path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $name . '.tpl';
 		if( ! file_exists( $path ) ) {
-			throw new \InvalidArgumentException( 'unexisting template' );
+			throw new \InvalidArgumentException( "unexisting template $name" );
 		}
 
 		// template content with also documentation
