@@ -18,6 +18,10 @@ spl_autoload_register( function( $name ) {
 	$prefix = substr( $name, 0, 13 );
 	if( 'itwikidelbot\\' === $prefix ) {
 		$name = substr( $name, 13 );
+		$path = __DIR__ . DIRECTORY_SEPARATOR . "class-$name.php";
+		if( ! file_exists( $path ) ) {
+			throw new Exception( "missing class $name" );
+		}
 		require __DIR__ . DIRECTORY_SEPARATOR . "class-$name.php";
 	}
 } );
