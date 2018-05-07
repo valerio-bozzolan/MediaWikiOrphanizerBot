@@ -29,21 +29,43 @@ namespace itwikidelbot;
 class CategoryYearMonthDayTypes extends CategoryYearMonthDay {
 
 	/**
+	 * PDC types
+	 *
+	 * Categories in order of importance (I think)
+	 *
+	 * @var array
+	 */
+	public static $TYPES = [
+		CategoryYearMonthDayTypeVoting    ::class,
+		CategoryYearMonthDayTypeProlonged ::class,
+		CategoryYearMonthDayTypeConsensual::class,
+		CategoryYearMonthDayTypeOrdinary  ::class,
+		CategoryYearMonthDayTypeSimple    ::class,
+	];
+
+	/**
+	 * Return the more precise PDC type between two
+	 *
+	 * @param $type1 Class name
+	 * @param $type2 Class name
+	 * @return Class name
+	 */
+	public static function bestType( $type1, $type2 ) {
+		$i1 = array_search( self::$TYPES, $type1 );
+		$i2 = array_search( self::$TYPES, $type2 );
+		if( $i1 === false || $i2 === false ) {
+			throw new \InvalidArgumentException( 'cannot compare unknown types' );
+		}
+		return $i1 < $i2 ? $type1 : $type2;
+	}
+
+	/**
 	 * Operate on every PDC type
 	 */
 	public function run() {
 
-		// Categories for PDCs in order of importance (I think)
-		$Categories = [
-			CategoryYearMonthDayTypeVoting    ::class,
-			CategoryYearMonthDayTypeProlonged ::class,
-			CategoryYearMonthDayTypeConsensual::class,
-			CategoryYearMonthDayTypeOrdinary  ::class,
-			CategoryYearMonthDayTypeSimple    ::class,
-		];
-
-		$pdcs_by_type = [];
-		foreach( $Categories as $Category ) {
+		$pdcs_by_id = [];
+		foreach( self::$TYPES as $Category ) {
 			$category = new $Category( $this->getYear(), $this->getMonth(), $this->getDay() );
 
 			$pdcs = $category->fetchPDCs();
@@ -51,32 +73,40 @@ class CategoryYearMonthDayTypes extends CategoryYearMonthDay {
 				$category->saveIfNotExists();
 			}
 
-			// sort PDCs by last update
-			usort( $pdcs, function ( $a, $b ) {
-				return $a->getLasteditDate() > $b->getLasteditDate();
-			} );
-
-			$pdcs_by_type[ $Category::getPDCType() ] = $pdcs;
+			// merge the same PDCs
+			foreach( $pdcs as $pdc ) {
+				$id = $pdc->getId();
+				if( isset( $pdcs_by_id[ $id ] ) ) {
+					$pdcs_by_id[ $id ]->setType( self::bestType(
+						$pdcs_by_id[ $id ]->getTypeClass(),
+						$pdc              ->getTypeClass()
+					) );
+				} else {
+					$pdcs_by_id[ $id ] = $pdc;
+				}
+			}
 		}
 
-		$pdcs_by_type = self::filterPDCs( $pdcs_by_type );
+		// sort PDCs by start date
+		usort( $pdcs_by_id, function ( $a, $b ) {
+			return $a->getStartDate() < $b->getStartDate();
+		} );
 
-		PageYearMonthDayPDCsCount::createFromPagePDCs( $this->getDateTime(), $pages_by_type )
+		// index PDcs by their type
+		$pdcs_by_type = [];
+		foreach( $pdcs_by_id as $pdc ) {
+			$type = $pdc->getType();
+			if( ! isset( $pdcs_by_type[ $type ] ) ) {
+				$pdcs_by_type[ $type ] = [];
+			}
+			$pdcs_by_type[ $type ][] = $pdc;
+		}
+
+		PageYearMonthDayPDCsCount::createFromDateTimePDCs( $this->getDateTime(), $pdcs_by_type )
 			->save();
 
-		PageYearMonthDayPDCsLog::createFromPagePDCs( $this->getDateTime(), $pages_by_type )
+		PageYearMonthDayPDCsLog::createFromDateTimePDCs( $this->getDateTime(), $pdcs_by_type )
 			->save();
-	}
-
-	/**
-	 * Make a bit of consistence in the specified PDCs
-	 *
-	 * @param $pdcs_by_type array
-	 * @return array
-	 * @TODO
-	 */
-	private static function filterPDCs( $pdcs_by_type ) {
-		return $pdcs_by_type;
 	}
 
 }

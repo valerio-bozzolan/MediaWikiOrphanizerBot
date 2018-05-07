@@ -1,5 +1,5 @@
-#!/usr/bin/php
 <?php
+# it.wiki deletion bot in PHP
 # Copyright (C) 2018 Valerio Bozzolan
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,24 +16,8 @@
 
 namespace itwikidelbot;
 
-// autoload classes
-require __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'autoload.php';
-
-// load credentials
-require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
-
-// create the yearly category
-$year = date( 'Y' );
-( new CategoryYear( $year ) )
-	->saveIfNotExists();
-
-// create the monthly category
-$month = date( 'n' ); // 1-12
-( new CategoryYearMonth( $year, $month ) )
-	->saveIfNotExists();
-
-// create the daily category
-$day = date( 'j' );
-( new CategoryYearMonthDayTypes( $year, $month, $day ) )
-	->saveIfNotExists()
-	->run();
+/**
+ * Exceptions to be thrown when a PDC is not anymore of a certain type
+ * because it expired.
+ */
+class PDCExpiredException extends PDCException {};

@@ -10,16 +10,7 @@ Placeholders:
 	%4$02d: day   01-31
 	%5$s:   mega table of PDCs
 
-<!-- START SPECIFIC EXAMPLE -->
-{{#ifexpr:{{#timel:U}}-{{#timel:U|2018-4-20}}<8*24*3600|{{Utente:MauroBot/BotCancellazioni/Avvisi}}}}
-
-<table>PDCs...</table>
-
-__NOTOC__
-
 <!-- START TEMPLATE -->
-{{#ifexpr:{{#timel:U}}-{{#timel:U|2018-4-20}}<8*24*3600|{{Utente:MauroBot/BotCancellazioni/Avvisi}}}}
-
+{{#ifexpr:{{#timel:U}}-{{#timel:U|2018-4-28}}<8*24*3600|{{Utente:MauroBot/BotCancellazioni/Avvisi}}}}
 %5$s
-
 __NOTOC__

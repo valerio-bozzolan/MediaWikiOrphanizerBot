@@ -12,8 +12,9 @@ The script was originally developed by Mauro762 (aka MauroBot) in 2013 using Jav
 * [X] Monthy category creation
 * [X] Daily category creation
 * [X] Daily log page update
-* [ ] Daily counting page update
-* [ ] Most of the work :)
+* [X] Daily counting page update
+* [X] Most of the work :)
+* [ ] Be sure that It doesn't destroy anything
 
 ## Installation
 

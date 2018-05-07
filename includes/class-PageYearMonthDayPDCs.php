@@ -43,14 +43,14 @@ abstract class PageYearMonthDayPDCs extends PageYearMonthDay {
 	}
 
 	/**
-	 * Static constructor from a PageYearMonthDay object
+	 * Static constructor
 	 *
-	 * @param $page PageYearMonthDay
-	 * @param $pdcs PDCs by type
+	 * @param $datetime DateTime
+	 * @param $pdcs_by_type PDCs by type
 	 * @return self
 	 */
-	public static function createFromPagePDCs( PageYearMonthDay $page, $pdcs_by_type ) {
-		return new static( $page->getYear(), $page->getMonth(), $page->getDay(), $pdcs_by_type );
+	public static function createFromDateTimePDCs( $datetime, $pdcs_by_type ) {
+		return new static( $datetime->format('Y'), $datetime->format('m'), $datetime->format('d'), $pdcs_by_type );
 	}
 
 	/**
@@ -60,6 +60,42 @@ abstract class PageYearMonthDayPDCs extends PageYearMonthDay {
 	 */
 	public function getPDCsByType() {
 		return $this->pdcsByType;
+	}
+
+	/**
+	 * Get the running PDCs indexed by type
+	 *
+	 * @return array
+	 */
+	public function getRunningPDCsByType() {
+		return $this->getPDCsByTypeFilteringProtection( false );
+	}
+
+	/**
+	 * Get the ended PDCs indexed by type
+	 *
+	 * @return array
+	 */
+	public function getEndedPDCsByType() {
+		return $this->getPDCsByTypeFilteringProtection( true );
+	}
+
+	/**
+	 * Get the PDCs indexed by type, but only which of them are protected (or not)
+	 *
+	 * @param $is_protected bool
+	 * @return array
+	 */
+	private function getPDCsByTypeFilteringProtection( $is_protected ) {
+		$pdcs_by_type = $this->getPDCsByType();
+		foreach( $pdcs_by_type as $type => $pdcs ) {
+			foreach( $pdcs as $i => $pdc ) {
+				if( $pdc->isProtected() !== $is_protected ) {
+					unset( $pdcs_by_type[ $type ][ $i ] );
+				}
+			}
+		}
+		return $pdcs_by_type;
 	}
 
 }

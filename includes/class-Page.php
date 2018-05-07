@@ -16,6 +16,7 @@
 
 namespace itwikidelbot;
 
+use \cli\Input;
 use \wm\WikipediaIt;
 use \mw\Tokens;
 
@@ -25,18 +26,11 @@ use \mw\Tokens;
 class Page {
 
 	/**
-	 * Do nothing
+	 * Enable this flag to ask for every changes
 	 *
 	 * @var bool
 	 */
-	public static $PORCELAIN = false;
-
-	/**
-	 * Debug mode
-	 *
-	 * @var bool
-	 */
-	public static $INSPECT = false;
+	public static $ASK_BEFORE_SAVING = false;
 
 	/**
 	 * @var string Page title with prefix
@@ -110,13 +104,14 @@ class Page {
 			'token'   => $api->login()->getToken( Tokens::CSRF ),
 			'bot'     => 1,
 		];
-		if( self::$INSPECT ) {
+		$save = true;
+		if( self::$ASK_BEFORE_SAVING ) {
 			print_r( $args );
-			$handle = fopen( 'php://stdin', 'r' );
-			$line = fgets( $handle );
-			fclose( $handle );
+			if( 'y' !== Input::yesNoQuestion( "Save?" ) ) {
+				$save = false;
+			}
 		}
-		if( ! self::$PORCELAIN ) {
+		if( $save ) {
 			return $api->post( $args );
 		}
 	}

@@ -42,14 +42,12 @@ class PageYearMonthDayPDCsLog extends PageYearMonthDayPDCs {
 		$sections = [];
 		foreach( $this->getPDCsByType() as $pdcs ) {
 			if( $pdcs ) {
-				$type = $pdcs[ 0 ]->getType();
+				$type = reset( $pdcs )->getType();
 
 				// call the entry template for each PDC
 				$entries = [];
 				foreach( $pdcs as $pdc ) {
-					$entries[] = Template::get( self::TEMPLATE_NAME . '.entry', [
-						$pdc->getTitle()
-					] );
+					$entries[] = "{{" . $pdc->getTitle() . "}}";
 				}
 
 				// call the section template for each PDC type

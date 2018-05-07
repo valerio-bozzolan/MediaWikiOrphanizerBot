@@ -35,34 +35,75 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 	 * @return array
 	 */
 	public function getTemplateArguments() {
-		$args = parent::getTemplateArguments();
 
 		$sections = [];
-		foreach( $this->getPDCsByType() as $pdcs ) {
-			if( $pdcs ) {
-				$type = $pdcs[ 0 ]->getType();
 
-				// call the entry template for each PDC
-				$entries = [];
-				foreach( $pdcs as $pdc ) {
-					$entries[] = Template::get( self::TEMPLATE_NAME . '.entry', [
-						$pdc->getTitle(),
-						$pdc->getTemperature(),
-					] );
-				}
-
-				// call the section template for each PDC type
-				$entries_txt = implode( "\n", $entries );
-				$sections[] = Template::get( self::TEMPLATE_NAME . '.section', [
-					$pdc->getType(),
-					$entries_txt
-				] );
+		// runnings
+		$i = 0;
+		$entries = [];
+		foreach( $this->getRunningPDCsByType() as $type => $pdcs ) {
+			foreach( $pdcs as $pdc ) {
+				$entries[] = $this->createPDCEntryContent( $i++, $pdc );
 			}
 		}
+		if( $entries ) {
+			$sections[] = Template::get( self::TEMPLATE_NAME . '.RUNNING.section', [
+				implode( "\n", $entries )
+			] );
+		}
 
-		$args[] = implode( "\n", $sections );
+		// endeds
+		$i = 0;
+		$entries = [];
+		foreach( $this->getEndedPDCsByType() as $type => $pdcs ) {
+			foreach( $pdcs as $pdc ) {
+				$entries[] = $this->createPDCEntryContent( $i++, $pdc );
+			}
+		}
+		if( $entries ) {
+			$sections[] = Template::get( self::TEMPLATE_NAME . '.ENDED.section', [
+				implode( "\n", $entries )
+			] );
+		}
+
+		$args = parent::getTemplateArguments();
+
+		// Does it have content?
+		if( $sections ) {
+			$args[] = implode( "\n", $sections );
+		} else  {
+			$args[] = Template::get( self::TEMPLATE_NAME . '.empty' );
+		}
 
 		return $args;
+	}
+
+	/**
+	 * Get the PDC entry content
+	 *
+	 * @param $pdc PDC
+	 * @param $i Ordinal number passed from the count page
+	 * @return string
+	 */
+	public function createPDCEntryContent( $i, PDC $pdc ) {
+
+		$template_name = self::TEMPLATE_NAME;
+		$template_name .= $pdc->isProtected()
+			? '.ENDED.entry'
+			: '.RUNNING.entry';
+
+		return Template::get( $template_name, [
+			$pdc->getTitleSubject(),
+			$pdc->getTemperature(),
+			$pdc->isMultiple() ? Template::get( 'PAGE_COUNT.entry.multiple_note' ) : '',
+			$pdc->getColor(),
+			$i,
+			$pdc->getType(),
+			$pdc->getHumanDuration(),
+			$this->getTitle(),
+			$pdc->getGotoActionLabel(),
+		] );
+
 	}
 
 }
