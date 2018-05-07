@@ -24,7 +24,7 @@ Placeholders:
 <tr bgcolor="%4$s">
 	<td style="width:3em; text-align:center;">%5$d</td>
 	<td style="width:3em; text-align:center;">%6$s</td>
-	<td style="width:6em; text-align:center;">%7%s</td>
+	<td style="width:6em; text-align:center;">%7$s</td>
 	<td>'''[[:%1$s]]''' ([[:{{#ifeq:{{PAGENAME}}|Pagine da cancellare|%1$s|%8$s#%1$s}}|vai alla %9$s]]) %3$s</td>
 </tr>
 
