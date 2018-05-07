@@ -36,6 +36,9 @@ class Template {
 	 */
 	static function get( $name, $args = [] ) {
 
+		// remove spaces
+		$name = str_replace( ' ', '_', $name );
+
 		// ../templates/$name.template
 		$path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $name . '.tpl';
 		if( ! file_exists( $path ) ) {
@@ -57,6 +60,12 @@ class Template {
 		$content = rtrim( $content );
 
 		// pass arguments
-		return vsprintf( $content, $args );
+		$s = vsprintf( $content, $args );
+
+		if( false === $s ) {
+			throw new \Exception( "wrong number of arguments for template $name" );
+		}
+
+		return $s;
 	}
 }
