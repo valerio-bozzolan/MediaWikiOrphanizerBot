@@ -11,6 +11,6 @@ Placeholders:
 	%5$s:   mega table of PDCs
 
 <!-- START TEMPLATE -->
-{{#ifexpr:{{#timel:U}}-{{#timel:U|2018-4-28}}<8*24*3600|{{Utente:MauroBot/BotCancellazioni/Avvisi}}}}
+{{Conteggio cancellazioni}}
 %5$s
 __NOTOC__
