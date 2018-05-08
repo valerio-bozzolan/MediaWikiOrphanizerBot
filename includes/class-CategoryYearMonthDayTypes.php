@@ -23,6 +23,8 @@
 
 namespace itwikidelbot;
 
+use \cli\Log;
+
 /**
  * Handler of all the PDCs in this day of the year
  */
@@ -44,19 +46,17 @@ class CategoryYearMonthDayTypes extends CategoryYearMonthDay {
 	];
 
 	/**
-	 * Return the more precise PDC type between two
+	 * Return the newer PDC, but setting the older start date.
 	 *
-	 * @param $type1 Class name
-	 * @param $type2 Class name
-	 * @return Class name
+	 * @param $pdc1 PDC
+	 * @param $pdc2 PDC
+	 * @return $pdc PDC
 	 */
-	public static function bestType( $type1, $type2 ) {
-		$i1 = array_search( self::$TYPES, $type1 );
-		$i2 = array_search( self::$TYPES, $type2 );
-		if( $i1 === false || $i2 === false ) {
-			throw new \InvalidArgumentException( 'cannot compare unknown types' );
+	public function mergePDCs( $pdc1, $pdc2 ) {
+		if( $pdc2->getDurationDays() > $pdc1->getDurationDays() ) {
+			return $pdc2->setStartDate( $pdc1->getStartDate() );
 		}
-		return $i1 < $i2 ? $type1 : $type2;
+		return $pdc1;
 	}
 
 	/**
@@ -76,11 +76,11 @@ class CategoryYearMonthDayTypes extends CategoryYearMonthDay {
 			// merge the same PDCs
 			foreach( $pdcs as $pdc ) {
 				$id = $pdc->getId();
+				if( $id == '7156617' )  {
+					var_dump( $category, $pdc );
+				}
 				if( isset( $pdcs_by_id[ $id ] ) ) {
-					$pdcs_by_id[ $id ]->setType( self::bestType(
-						$pdcs_by_id[ $id ]->getTypeClass(),
-						$pdc              ->getTypeClass()
-					) );
+					$pdcs_by_id[ $id ] = self::mergePDCs( $pdcs_by_id[ $id ], $pdc );
 				} else {
 					$pdcs_by_id[ $id ] = $pdc;
 				}
@@ -89,8 +89,18 @@ class CategoryYearMonthDayTypes extends CategoryYearMonthDay {
 
 		// sort PDCs by start date
 		usort( $pdcs_by_id, function ( $a, $b ) {
-			return $a->getStartDate() < $b->getStartDate();
+			return $a->getStartDate() > $b->getStartDate();
 		} );
+
+		foreach( $pdcs_by_id as $i => $pdc ) {
+			if( $pdc->getDurationDays() > 7 ) {
+				Log::info( sprintf(
+					'the PDC %s is expired after %d days',
+					$pdc->getTitle(),
+					$pdc->getDurationDays()
+				) );
+			}
+		}
 
 		// index PDcs by their type
 		$pdcs_by_type = [];

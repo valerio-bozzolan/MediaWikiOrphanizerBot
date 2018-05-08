@@ -39,7 +39,13 @@ class CategoryYearMonthDay extends PageYearMonthDay {
 	const TEMPLATE_NAME = 'CATEGORY_DAY';
 
 	/**
-	 * Template arguments
+	 * Template arguments:
+	 *
+	 * 1: category title
+	 * 2: year
+	 * 3: month  1-12
+	 * 4: month name
+	 * 5: day 1-31
 	 *
 	 * @override CategoryYearMonth::getTemplateArguments()
 	 */
@@ -51,4 +57,13 @@ class CategoryYearMonthDay extends PageYearMonthDay {
 		);
 	}
 
+	/**
+	 * Does a certain specific category name match the pattern of this category?
+	 *
+	 * @param $category_name string
+	 * @return bool
+	 */
+	public static function matchCategoryName( $category_name ) {
+		return 1 === preg_match( '/^Categoria:Cancellazioni del [0-9]+ [a-z]+ [0-9]+$/', $category_name );
+	}
 }

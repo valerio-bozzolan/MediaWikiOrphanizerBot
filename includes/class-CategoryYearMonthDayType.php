@@ -92,7 +92,8 @@ abstract class CategoryYearMonthDayType extends CategoryYearMonthDay {
 			// Note: Generator parameter names must be prefixed with a 'g'
 			'generator'   => 'categorymembers',
 			'gcmtitle'    => $this->getTitle(),
-			'gcmtype'     => 'page', // Note: Ignored when cmsort=timestamp is set.
+//			'gcmtype'     => 'page', // Note: Ignored when cmsort=timestamp is set.
+			'gcmnamespace' => 4, // Wikipedia
 			'gcmlimit'    => 100,
 			'gcmsort'     => 'timestamp',
 			'gcmdir'      => 'asc',
@@ -133,7 +134,6 @@ abstract class CategoryYearMonthDayType extends CategoryYearMonthDay {
 					// multiple call will add more infos on the same page
 					// https://www.mediawiki.org/wiki/API:Query#Generators_and_continuation
 					// TODO: use batchcomplete for better memory usage
-					// Note: pages are not directly saved with their pageid to preserve their order
 					$pageid = $page->pageid;
 					if( isset( $all[ $pageid ] ) ) {
 						foreach( $page as $property => $value ) {
@@ -150,12 +150,6 @@ abstract class CategoryYearMonthDayType extends CategoryYearMonthDay {
 		foreach( $all as $page ) {
 			try {
 				$pdcs[] = $this->createPDCFromRaw( $page );
-			} catch( PDCExpiredException $e ) {
-				Log::info( sprintf(
-					"%s: %s",
-					$page->title,
-					$e->getMessage()
-				) );
 			} catch( PDCException $e ) {
 				Log::warn( sprintf(
 					"exception in PDC '%s': %s",

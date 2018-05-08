@@ -35,5 +35,5 @@ class CategoryYearMonthDayTypeConsensual extends CategoryYearMonthDayType {
 	 *
 	 * @override CategoryYearMonthDayType::PDC_TYPE
 	 */
-	const PDC_TYPE = 'consensuale';
+	const PDC_TYPE = 'consensuali';
 }

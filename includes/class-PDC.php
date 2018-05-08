@@ -126,9 +126,9 @@ class PDC extends Page {
 		$this->id           = $id;
 		$this->titleSubject = $title_subject;
 		$this->length       = $length;
-		$this->startDate    = $start;
 		$this->lasteditDate = $lastedit;
 		$this->isProtected  = $is_protected;
+		$this->setStartDate( $start );
 
 		parent::__construct( $title );
 
@@ -136,9 +136,10 @@ class PDC extends Page {
 		if( ! $this->isTitlePrefixValid() ) {
 			throw new PDCException( 'not a PDC' );
 		}
-		if( $this->getDurationDays() > 7 ) {
-			throw new PDCExceptionExpired( 'not anymore a PDC of type ' . $this->getType() );
-		}
+
+		//if( $this->getDurationDays() > 7 ) {
+		//	throw new PDCExceptionExpired( 'not anymore a PDC of type ' . $this->getType() );
+		//}
 
 		$this->checkTitleSubjectConsistence();
 	}
@@ -179,6 +180,17 @@ class PDC extends Page {
 	 */
 	public function getStartDate() {
 		return $this->startDate;
+	}
+
+	/**
+	 * set the start date of this PDC (of this type)
+	 *
+	 * @param $start_date DateTime
+	 * @return self
+	 */
+	public function setStartDate( DateTime $start_date ) {
+		$this->startDate = $start_date;
+		return $this;
 	}
 
 	/**
@@ -313,24 +325,28 @@ class PDC extends Page {
 		}
 
 		// read the title of the subject from the {{DEFAULTSORT}} category sortkey prefix
-		// get the start date of this PDC from the timestamp
-		$title_subject = null;;
-		$date_added_in_category = null;
+		$title_subject = null;
 		foreach( $page->categories as $category ) {
-			if( ! isset( $category->title ) ) {
-				throw new PDCException( 'missing category title' );
-			}
-			if( $category->title === $type->getTitle() ) {
-				$title_subject = $category->sortkeyprefix;
-				$date_added_in_category = $category->timestamp;
-			}
+			$title_subject = $category->sortkeyprefix;
 			break;
 		}
 		if( ! isset( $title_subject ) ) {
-			throw new PDCException( 'missing category sortkey prefix that contains title subject' );
+			throw new PDCException( 'missing category sortkeyprefix that contains title subject' );
+		}
+
+		// get the start date of this PDC from the timestamp
+		$date_added_in_category = null;
+		foreach( $page->categories as $category ) {
+			if( CategoryYearMonthDay::matchCategoryName( $category->title ) ) {
+				if( ! isset( $category->timestamp ) ) {
+					throw new PDCException( 'missing category timestamp' );
+				}
+				$date_added_in_category = $category->timestamp;
+				break;
+			}
 		}
 		if( ! isset( $date_added_in_category ) ) {
-			throw new PDCException( 'missing timestamp that contains the PDC start date' );
+			throw new PDCException( 'missing timestamp of insertion into the daily category' );
 		}
 
 		// read protection status
@@ -401,7 +417,7 @@ class PDC extends Page {
 	 * @return int
 	 */
 	public function getDurationDays() {
-		return (int) $this->getStartDate()->diff( $this->getLasteditDate() )->format('%a');
+		return (int) $this->getLasteditDate()->diff( $this->getStartDate() )->format('%a');
 	}
 
 	/**
