@@ -29,7 +29,16 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 	const TEMPLATE_NAME = 'PAGE_COUNT';
 
 	/**
-	 * Get the template arguments
+	 * Get the template arguments:
+	 * 1: page title
+	 * 2: temperature
+	 * 3: '1' if it's multiple
+	 * 4: color associated to the PDC e.g. '#fff'
+	 * 5: number of the row
+	 * 6: PDC type e.g. 'consensuale'
+	 * 7: duration e.g. 'un giorno'
+	 * 8: title of the log page
+	 * 9: goto action label e.g. 'pagina di discussione'
 	 *
 	 * @override PageTemplated::getTemplateArguments()
 	 * @return array
@@ -43,7 +52,7 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 		$entries = [];
 		foreach( $this->getRunningPDCsByType() as $type => $pdcs ) {
 			foreach( $pdcs as $pdc ) {
-				$entries[] = $this->createPDCEntryContent( $i++, $pdc );
+				$entries[] = $this->createPDCEntryContent( ++$i, $pdc );
 			}
 		}
 		if( $entries ) {
@@ -57,7 +66,7 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 		$entries = [];
 		foreach( $this->getEndedPDCsByType() as $type => $pdcs ) {
 			foreach( $pdcs as $pdc ) {
-				$entries[] = $this->createPDCEntryContent( $i++, $pdc );
+				$entries[] = $this->createPDCEntryContent( ++$i, $pdc );
 			}
 		}
 		if( $entries ) {
@@ -95,13 +104,13 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 		return Template::get( $template_name, [
 			$pdc->getTitleSubject(),
 			$pdc->getTemperature(),
-			$pdc->isMultiple() ? Template::get( 'PAGE_COUNT.entry.multiple_note' ) : '',
+			$pdc->isMultiple(),
 			$pdc->getColor(),
 			$i,
 			$pdc->getType(),
 			$pdc->getHumanDuration(),
 			$this->getTitle(),
-			$pdc->getGotoActionLabel(),
+			$pdc->getGotoActionLabel()
 		] );
 
 	}
