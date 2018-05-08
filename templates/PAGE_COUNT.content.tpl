@@ -13,4 +13,3 @@ Placeholders:
 <!-- START TEMPLATE -->
 {{Conteggio cancellazioni}}
 %5$s
-__NOTOC__
