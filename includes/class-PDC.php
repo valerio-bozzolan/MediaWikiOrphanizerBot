@@ -209,24 +209,6 @@ class PDC extends Page {
 	}
 
 	/**
-	 * Get the PDC color
-	 *
-	 * @return string
-	 */
-	public function getColor() {
-		return Template::get( 'PDC.' . $this->getType() . '.color' );
-	}
-
-	/**
-	 * Get the PDC go to action label
-	 *
-	 * @return string
-	 */
-	public function getGotoActionLabel() {
-		return Template::get( 'PDC.' . $this->getType() . '.goto' );
-	}
-
-	/**
 	 * Check if this page is protected
 	 *
 	 * @return bool

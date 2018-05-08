@@ -105,12 +105,11 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 			$pdc->getTitleSubject(),
 			$pdc->getTemperature(),
 			$pdc->isMultiple(),
-			$pdc->getColor(),
+			'', // TODO: Ex color. Now unuseful.
 			$i,
 			$pdc->getType(),
 			$pdc->getHumanDuration(),
-			$this->getTitle(),
-			$pdc->getGotoActionLabel()
+			$this->getTitle()
 		] );
 
 	}
