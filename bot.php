@@ -22,18 +22,13 @@ require __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'auto
 // load credentials
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 
-// create the yearly category
-$year = date( 'Y' );
-( new CategoryYear( $year ) )
-	->saveIfNotExists();
+// the first argument is the days to go backward
+$DAYS = isset( $argv[ 1 ] ) ? (int) $argv[ 1 ] : 1;
 
-// create the monthly category
-$month = date( 'n' ); // 1-12
-( new CategoryYearMonth( $year, $month ) )
-	->saveIfNotExists();
+// the second argument is a 'YYYY-MM-DD' date
+$DATE = isset( $argv[ 2 ] ) ? $argv[ 2 ] : 'now';
 
-// create the daily category
-$day = date( 'j' );
-( new CategoryYearMonthDayTypes( $year, $month, $day ) )
-	->saveIfNotExists()
-	->run();
+$bot = Bot::createFromString( $DATE );
+for( $i = 0; $i < $DAYS; $i++ ) {
+	$bot->run()->previousDay();
+}
