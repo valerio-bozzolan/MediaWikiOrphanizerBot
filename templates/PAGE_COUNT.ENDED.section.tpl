@@ -8,6 +8,6 @@ Placeholders:
 	%%:   a literal '%'
 
 <!-- START TEMPLATE -->
-{{Conteggio cancellazioni/Concluse/Start}}
+{{Conteggio cancellazioni/Concluse/Start|~~~~~}}
 %1$s
 {{Conteggio cancellazioni/Concluse/Stop}}
