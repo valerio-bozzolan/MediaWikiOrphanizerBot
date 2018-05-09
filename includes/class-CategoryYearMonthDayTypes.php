@@ -76,9 +76,6 @@ class CategoryYearMonthDayTypes extends CategoryYearMonthDay {
 			// merge the same PDCs
 			foreach( $pdcs as $pdc ) {
 				$id = $pdc->getId();
-				if( $id == '7156617' )  {
-					var_dump( $category, $pdc );
-				}
 				if( isset( $pdcs_by_id[ $id ] ) ) {
 					$pdcs_by_id[ $id ] = self::mergePDCs( $pdcs_by_id[ $id ], $pdc );
 				} else {

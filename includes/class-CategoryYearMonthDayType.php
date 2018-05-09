@@ -137,7 +137,15 @@ abstract class CategoryYearMonthDayType extends CategoryYearMonthDay {
 					$pageid = $page->pageid;
 					if( isset( $all[ $pageid ] ) ) {
 						foreach( $page as $property => $value ) {
-							$all[ $pageid ]->{$property} = $value;
+							if( isset( $all[ $pageid ]->{$property} ) && is_array( $all[ $pageid ]->{$property} ) ) {
+								// merge categories values
+								$all[ $pageid ]->{$property} = array_merge(
+									$all[ $pageid ]->{$property},
+									$value
+								);
+							} else {
+								$all[ $pageid ]->{$property} = $value;
+							}
 						}
 					} else {
 						$all[ $pageid ] = $page;
