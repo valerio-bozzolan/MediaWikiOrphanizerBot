@@ -39,24 +39,46 @@ class PageYearMonthDayPDCsLog extends PageYearMonthDayPDCs {
 	public function getTemplateArguments() {
 		$args = parent::getTemplateArguments();
 
+		$protecteds = [];
+
+		// first running PDCs
 		$sections = [];
 		foreach( $this->getPDCsByType() as $pdcs ) {
 			if( $pdcs ) {
-				$type = reset( $pdcs )->getType();
-
 				// call the entry template for each PDC
 				$entries = [];
 				foreach( $pdcs as $pdc ) {
-					$entries[] = "{{" . $pdc->getTitle() . "}}";
+					if( $pdc->isProtected() ) {
+						// skip
+						$protecteds[] = $pdc;
+					} else {
+						$entries[] = "{{" . $pdc->getTitle() . "}}";
+					}
 				}
 
 				// call the section template for each PDC type
-				$entries_txt = implode( "\n", $entries );
-				$sections[] = Template::get( self::TEMPLATE_NAME . '.section', [
-					$pdc->getType(),
-					$entries_txt
-				] );
+				if( $entries ) {
+					$entries_txt = implode( "\n", $entries );
+					$sections[] = Template::get( self::TEMPLATE_NAME . '.section', [
+						$pdc->getType(),
+						$entries_txt
+					] );
+				}
 			}
+		}
+
+		// then ended PDCs
+		$entries = [];
+		foreach( $protecteds as $pdc ) {
+			// call the entry template for each PDC
+			$entries[] = "{{" . $pdc->getTitle() . "}}";
+		}
+		if( $entries ) {
+			$entries_txt = implode( "\n", $entries );
+			$sections[] = Template::get( self::TEMPLATE_NAME . '.section', [
+				'concluse/annullate',
+					$entries_txt
+			] );
 		}
 
 		$args[] = implode( "\n", $sections );
