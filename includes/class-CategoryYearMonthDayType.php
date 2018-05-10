@@ -49,7 +49,7 @@ abstract class CategoryYearMonthDayType extends CategoryYearMonthDay {
 	 *
 	 * @return string e.g. 'consensuale'
 	 */
-	public function getPDCType() {
+	public static function getPDCType() {
 		return static::PDC_TYPE;
 	}
 
@@ -60,7 +60,7 @@ abstract class CategoryYearMonthDayType extends CategoryYearMonthDay {
 	 */
 	public function getTemplateArguments() {
 		$parent_arguments = parent::getTemplateArguments();
-		$parent_arguments[] = $this->getPDCType();
+		$parent_arguments[] = static::getPDCType();
 		return $parent_arguments;
 	}
 
