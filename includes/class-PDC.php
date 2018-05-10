@@ -208,7 +208,7 @@ class PDC extends Page {
 	 * @return class
 	 */
 	public function getTypeClass() {
-		return $this->categoryType;
+		return get_class( $this->categoryType );
 	}
 
 	/**
@@ -217,7 +217,8 @@ class PDC extends Page {
 	 * @return string e.g. 'consensuale'
 	 */
 	public function getType() {
-		return $this->getTypeClass()::getPDCType();
+		$class = $this->getTypeClass();
+		return $class::getPDCType();
 	}
 
 	/**
