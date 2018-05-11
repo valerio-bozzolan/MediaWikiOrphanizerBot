@@ -24,6 +24,7 @@
 namespace itwikidelbot;
 
 use \cli\Log;
+use \InvalidArgumentException;
 
 /**
  * Handler of all the PDCs in this day of the year
@@ -42,8 +43,48 @@ class CategoryYearMonthDayTypes extends CategoryYearMonthDay {
 		CategoryYearMonthDayTypeProlonged ::class,
 		CategoryYearMonthDayTypeConsensual::class,
 		CategoryYearMonthDayTypeOrdinary  ::class,
-		CategoryYearMonthDayTypeSimple    ::class,
+		CategoryYearMonthDay              ::class, // simple
 	];
+
+	/**
+	 * Get the corresponding class of a certain PDC type
+	 *
+	 * @param $type string PDC type
+	 * @return class
+	 */
+	public static function type2class( $type ) {
+		foreach( self::getAll() as $Type ) {
+			if( $Type::PDC_TYPE === $type ) {
+				return $Type;
+			}
+		}
+		throw new InvalidArgumentException( "unknown PDC type $pdc_type" );
+	}
+
+	/**
+	 * Get the corresponding class of a certain PDC type
+	 *
+	 * @param $title string Page title
+	 * @return CategoryYearMonthDay
+	 */
+	public static function title2object( $title ) {
+		foreach( self::getAll() as $Type ) {
+			$category = $Type::createParsingTitle( $title );
+			if( $category ) {
+				return $category;
+			}
+		}
+		throw new InvalidArgumentException( "unexpected PDC category '$title'" );
+	}
+
+	/**
+	 * Get all the types
+	 *
+	 * @return array
+	 */
+	public static function getAll() {
+		return self::$TYPES;
+	}
 
 	/**
 	 * Return the newer PDC, but setting the older start date.
