@@ -50,6 +50,15 @@ abstract class PageYearMonth extends PageYear {
 	}
 
 	/**
+	 * Get the month name
+	 *
+	 * @return string e.g. 'aprile'
+	 */
+	public function getMonthName() {
+		return Months::number2name( $this->getMonth() - 1 );
+	}
+
+	/**
 	 * Template arguments
 	 *
 	 * @override PageYear::getTemplateArguments()
