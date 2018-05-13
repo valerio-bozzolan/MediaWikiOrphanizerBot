@@ -15,6 +15,8 @@
 
 namespace itwikidelbot;
 
+use DateTime;
+
 /**
  * PDCs handler
  */
@@ -48,6 +50,25 @@ class PDCs {
 			$pdcs_by_type[ $type ][] = $pdc;
 		}
 		return $pdcs_by_type;
+	}
+
+	/**
+	 * Filter out all the PDCs that do not belong to a certain date
+	 *
+	 * @param $pdcs array
+	 * @param $date DateTime
+	 */
+	public static function filterNotInDate( $pdcs, DateTime $date ) {
+		$pdcs_filtered = [];
+
+		$date_raw = $date->format( 'Y-m-d' );
+		foreach( $pdcs as $pdc ) {
+			if( $pdc->getStartDate()->format( 'Y-m-d' ) === $date_raw ) {
+				$pdcs_filtered[] = $pdc;
+			}
+		}
+
+		return $pdcs_filtered;
 	}
 
 }

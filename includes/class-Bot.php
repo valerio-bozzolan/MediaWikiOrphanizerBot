@@ -142,6 +142,7 @@ class Bot {
 	 * @return self
 	 */
 	public function run() {
+		// date initialization
 		$date  = $this->getDate();
 		$year  = $date->format( 'Y' );
 		$month = $date->format( 'n' ); // 1-12
@@ -189,24 +190,20 @@ class Bot {
 			}
 		}
 
+		// discard PDCs that do not belong to this date
+		$pdcs = PDCs::filterNotInDate( $pdcs, $date );
+
+		// sort by creation date
 		PDCs::sortByCreationDate( $pdcs );
 
-		// TODO: remove these debugging lines
-		foreach( $pdcs as $pdc ) {
-			if( $pdc->getDurationDays() > 7 ) {
-				Log::info( sprintf(
-					'the PDC %s expired after %d days',
-					$pdc->getTitle(),
-					$pdc->getDurationDays()
-				) );
-			}
-		}
-
+		// index then by their PDC_TYPE
 		$pdcs_by_type = PDCs::indexByType( $pdcs );
 
+		// save the counting page
 		PageYearMonthDayPDCsCount::createFromDateTimePDCs( $this->getDate(), $pdcs_by_type )
 			->save();
 
+		// save the log page
 		PageYearMonthDayPDCsLog::createFromDateTimePDCs( $this->getDate(), $pdcs_by_type )
 			->save();
 
