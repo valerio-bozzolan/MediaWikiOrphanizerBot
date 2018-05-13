@@ -2,7 +2,7 @@
 // Fill this file and save-as "config.php"
 
 // Decomment the next line to enable verbose messages
-//cli\Log::$DEBUG = true;
+// cli\Log::$DEBUG = true;
 
 // Decomment the next line to inspect content before saving
 // itwikidelbot\Page::$ASK_BEFORE_SAVING = true;
