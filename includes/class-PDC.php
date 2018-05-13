@@ -488,10 +488,14 @@ class PDC extends Page {
 	/**
 	 * Get the number of days of duration of this PDC
 	 *
+	 * Note that the days are not calculated precisely.
+	 *
 	 * @return int
 	 */
 	public function getDurationDays() {
-		return (int) $this->getLasteditDate()->diff( $this->getStartDate() )->format( '%a' );
+		$a = clone $this->getLasteditDate()->setTime(0, 0, 0);
+		$b = clone $this->getStartDate()   ->setTime(0, 0, 0);
+		return (int) $a->diff( $b )->format( '%a' );
 	}
 
 	/**
