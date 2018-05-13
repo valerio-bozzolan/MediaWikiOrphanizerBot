@@ -16,9 +16,10 @@
 
 namespace itwikidelbot;
 
-use \cli\Input;
-use \wm\WikipediaIt;
-use \mw\Tokens;
+use cli\Input;
+use cli\Log;
+use wm\WikipediaIt;
+use mw\Tokens;
 
 /**
  * Handle a page
@@ -104,16 +105,17 @@ class Page {
 			'token'   => $api->login()->getToken( Tokens::CSRF ),
 			'bot'     => 1,
 		];
-		$save = true;
+
 		if( self::$ASK_BEFORE_SAVING ) {
 			print_r( $args );
 			if( 'y' !== Input::yesNoQuestion( "Save?" ) ) {
 				$save = false;
 			}
 		}
-		if( $save ) {
-			return $api->post( $args );
-		}
+
+		Log::info( "writing [[$title]]" );
+
+		return $api->post( $args );
 	}
 
 	/**

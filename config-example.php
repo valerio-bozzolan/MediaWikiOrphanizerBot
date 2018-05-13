@@ -1,7 +1,7 @@
 <?php
 // Fill this file and save-as "config.php"
 
-// Decomment the next line to enable verbose messages
+// Decomment the next line to see more verbose messages
 // cli\Log::$DEBUG = true;
 
 // Decomment the next line to inspect content before saving

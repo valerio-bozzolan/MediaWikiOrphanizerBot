@@ -15,6 +15,7 @@
 
 namespace itwikidelbot;
 
+use cli\Log;
 use DateTime;
 use DateInterval;
 
@@ -164,6 +165,8 @@ class Bot {
 				->saveIfNotExists();
 		}
 
+		Log::info( "work on $year/$month/$day" );
+
 		// PDCs indexed by page ID
 		$pdcs = [];
 
@@ -192,6 +195,11 @@ class Bot {
 
 		// discard PDCs that do not belong to this date
 		$pdcs = PDCs::filterNotInDate( $pdcs, $date );
+
+		Log::info( sprintf( sprintf(
+			"found %d PDCs",
+			count( $pdcs )
+		) ) );
 
 		// sort by creation date
 		PDCs::sortByCreationDate( $pdcs );
