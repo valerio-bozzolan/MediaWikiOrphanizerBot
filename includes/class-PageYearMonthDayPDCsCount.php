@@ -107,7 +107,7 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 			$pdc->isMultiple(),
 			'', // TODO: Ex color. Now unuseful.
 			$i,
-			$pdc->getType(),
+			$pdc->getHumanType(),
 			$pdc->getHumanDuration(),
 			$this->getTitle()
 		] );

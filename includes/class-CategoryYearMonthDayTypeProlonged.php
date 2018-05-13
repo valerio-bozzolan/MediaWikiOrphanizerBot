@@ -36,4 +36,11 @@ class CategoryYearMonthDayTypeProlonged extends CategoryYearMonthDayType {
 	 * @override CategoryYearMonthDayType::PDC_TYPE
 	 */
 	const PDC_TYPE = 'consensuali prorogate';
+
+	/**
+	 * PDC human type
+	 *
+	 * @override CategoryYearMonthDay::PDC_TYPE_HUMAN
+	 */
+	const PDC_TYPE_HUMAN = 'consensuale prorogata';
 }

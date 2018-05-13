@@ -163,10 +163,52 @@ class Bot {
 				->saveIfNotExists();
 		}
 
-		// create the daily category
-		( new CategoryYearMonthDayTypes( $year, $month, $day ) )
-			->saveIfNotExists()
-			->run();
+		// PDCs indexed by page ID
+		$pdcs = [];
+
+		// handle every PDC type
+		foreach( CategoryYearMonthDayTypes::all() as $CategoryType ) {
+
+			// fetch PDCs from this type
+			$category_type = new $CategoryType( $year, $month, $day );
+			$category_type_pdcs = $category_type->fetchPDCs();
+
+			// save the specific daily category type only if it's not empty
+			if( $category_type_pdcs ) {
+				$category_type->saveIfNotExists();
+			}
+
+			// merge the same PDCs into one
+			foreach( $category_type_pdcs as $category_type_pdc ) {
+				$id = $category_type_pdc->getID();
+				if( isset( $pdcs[ $id ] ) ) {
+					$pdcs[ $id ]->merge( $category_type_pdc );
+				} else {
+					$pdcs[ $id ] = $category_type_pdc;
+				}
+			}
+		}
+
+		PDCs::sortByCreationDate( $pdcs );
+
+		// TODO: remove these debugging lines
+		foreach( $pdcs as $pdc ) {
+			if( $pdc->getDurationDays() > 7 ) {
+				Log::info( sprintf(
+					'the PDC %s expired after %d days',
+					$pdc->getTitle(),
+					$pdc->getDurationDays()
+				) );
+			}
+		}
+
+		$pdcs_by_type = PDCs::indexByType( $pdcs );
+
+		PageYearMonthDayPDCsCount::createFromDateTimePDCs( $this->getDate(), $pdcs_by_type )
+			->save();
+
+		PageYearMonthDayPDCsLog::createFromDateTimePDCs( $this->getDate(), $pdcs_by_type )
+			->save();
 
 		return $this;
 	}

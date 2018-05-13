@@ -45,7 +45,7 @@ class PDC extends Page {
 	/**
 	 * PDC category type
 	 *
-	 * @var CategoryYearMonthDayType
+	 * @var CategoryYearMonthDay
 	 */
 	private $categoryType;
 
@@ -73,11 +73,11 @@ class PDC extends Page {
 	private $length;
 
 	/**
-	 * When the PDC was added to the PDC type category
+	 * Creation date
 	 *
 	 * @var date
 	 */
-	private $startDate;
+	private $creationDate;
 
 	/**
 	 * Last update
@@ -96,6 +96,7 @@ class PDC extends Page {
 	/**
 	 * Properties that the raw object must have
 	 *
+	 * @see self::createFromRaw()
 	 * @var array
 	 */
 	private static $RAW_PROPERTIES = [
@@ -104,31 +105,45 @@ class PDC extends Page {
 		'length',
 		'touched',
 		'protection',
-		'categories'
+		'categories',
+	];
+
+	/**
+	 * Properties that a raw category must have
+	 *
+	 * @see self::createFromRaw()
+	 * @var array
+	 */
+	private static $RAW_CATEGORY_PROPERTIES = [
+		'title',
+		'sortkeyprefix',
+		'timestamp', // TODO: remove as dependency if it's unuseful
 	];
 
 	/**
 	 * Constructor
 	 *
-	 * @param $category_type CategoryYearMonthDayType PDC category type
+	 * @param $category_type CategoryYearMonthDay PDC category type
 	 * @param $id int PDC page id
 	 * @param $title string PDC title prefixed
 	 * @param $title_subject string Title of the subject page (the Wikipedia article title)
 	 * @param $length int PDC length
 	 * @param $start DateTime When the PDC was added to the PDC type category
+	 * @param $creation DateTime PDC creation date
 	 * @param $lastedit DateTime PDC lastedit date
 	 * @param $is_protected bool Is the PDC protected?
 	 * @see Page::__construct()
 	 * @throws PDCException
 	 */
-	public function __construct( $category_type, $id, $title, $title_subject, $length, DateTime $start, DateTime $lastedit, $is_protected ) {
-		$this->categoryType = $category_type;
+	public function __construct( CategoryYearMonthDay $category_type, $id, $title, $title_subject, $length, DateTime $creation, DateTime $lastedit, $is_protected ) {
 		$this->id           = $id;
 		$this->titleSubject = $title_subject;
 		$this->length       = $length;
+		$this->creationDate = $creation;
 		$this->lasteditDate = $lastedit;
 		$this->isProtected  = $is_protected;
-		$this->setStartDate( $start );
+
+		$this->setCategoryType( $category_type );
 
 		parent::__construct( $title );
 
@@ -137,11 +152,97 @@ class PDC extends Page {
 			throw new PDCException( 'not a PDC' );
 		}
 
-		//if( $this->getDurationDays() > 7 ) {
-		//	throw new PDCExceptionExpired( 'not anymore a PDC of type ' . $this->getType() );
-		//}
+		if( $this->getDurationDays() > 7 ) {
+			throw new PDCExceptionExpired( 'not anymore a PDC of type ' . $this->getType() );
+		}
 
 		$this->checkTitleSubjectConsistence();
+	}
+
+	/**
+	 * Static constructor
+	 *
+	 * @see YearMonthDayTypes::fetchPDCs()
+	 * @param $page mixed
+	 * @return self
+	 * @throws PDCException
+	 */
+	public static function createFromRaw( $page ) {
+
+		// verify the API response consistence
+		foreach( self::$RAW_PROPERTIES as $property ) {
+			if( ! isset( $page->$property ) ) {
+				throw new PDCException( "missing property $property" );
+			}
+		}
+		foreach( $page->categories as $category_raw ) {
+			foreach( self::$RAW_CATEGORY_PROPERTIES as $property ) {
+				if( ! isset( $category_raw->$property ) ) {
+					throw new PDCException( "missing property $property in categories" );
+				}
+			}
+		}
+		if( 0 === count( $page->categories ) ) {
+			throw new PDCException( "no category" );
+		}
+
+		// get the page title of the subject from the {{DEFAULTSORT:xxx}} value
+		$title_subject = null;
+		foreach( $page->categories as $category_raw ) {
+			$title_subject = $category_raw->sortkeyprefix;
+			break;
+		}
+
+		// array of instances of the class CategoryYearMonthDay (and subclasses)
+		$categories = [];
+		foreach( $page->categories as $category_raw ) {
+			$category = CategoryYearMonthDayTypes::createParsingTitle( $category_raw->title );
+			if( $category ) {
+				$categories[] = $category;
+			}
+		}
+
+		// creation date
+		$creation = null;
+		foreach( $categories as $category ) {
+			if( get_class( $category ) === CategoryYearMonthDay::class ) {
+				$creation = DateTime::createFromFormat( DateTime::ISO8601, $category_raw->timestamp );
+				break;
+			}
+		}
+		if( ! $creation ) {
+			throw new Exception( "not into the main category" );
+		}
+
+		if( ! $categories ) {
+			throw new PDCException( sprintf(
+				"the PDC was in %d categories and/but no one was recognized",
+				count( $page->categories )
+			) );
+		}
+
+		// find the best (the newest) category to be applied
+		$best_category = CategoryYearMonthDayTypes::findBestCategory( $categories );
+
+		// read protection status
+		$is_protected = false;
+		foreach( $page->protection as $protection ) {
+			if( 'edit' === $protection->type && 'sysop' === $protection->level ) {
+				$is_protected = true;
+				break;
+			}
+		}
+
+		return new self(
+			$best_category,
+			(int) $page->pageid,
+			$page->title,
+			$title_subject,
+			(int) $page->length,
+			$creation,
+			DateTime::createFromFormat( DateTime::ISO8601, $page->touched ),
+			$is_protected
+		);
 	}
 
 	/**
@@ -174,23 +275,41 @@ class PDC extends Page {
 	}
 
 	/**
+	 * Get the category type
+	 *
+	 * @return CategoryYearMonthDay
+	 */
+	public function getCategoryType() {
+		return $this->categoryType;
+	}
+
+	/**
+	 * Set the category type
+	 *
+	 * @param $category_type CategoryYearMonthDay
+	 * @return self
+	 */
+	public function setCategoryType( CategoryYearMonthDay $category_type ) {
+		$this->categoryType = $category_type;
+		return $this;
+	}
+
+	/**
 	 * Get the start date of this PDC (of this type)
 	 *
 	 * @return DateTime
 	 */
 	public function getStartDate() {
-		return $this->startDate;
+		return $this->getCategoryType()->getDateTime();
 	}
 
 	/**
-	 * set the start date of this PDC (of this type)
+	 * Get the creation date
 	 *
-	 * @param $start_date DateTime
-	 * @return self
+	 * @return DateTime
 	 */
-	public function setStartDate( DateTime $start_date ) {
-		$this->startDate = $start_date;
-		return $this;
+	public function getCreationDate() {
+		return $this->creationDate;
 	}
 
 	/**
@@ -208,17 +327,38 @@ class PDC extends Page {
 	 * @return class
 	 */
 	public function getTypeClass() {
-		return get_class( $this->categoryType );
+		return get_class( $this->getCategoryType() );
+	}
+
+	/**
+	 * Get the PDC type class genericity
+	 *
+	 * @see CategoryYearMonthDay::genericity()
+	 * @return int
+	 */
+	public function getCategoryGenericity() {
+		$class_name = self::getTypeClass();
+		return $class_name::genericity();
 	}
 
 	/**
 	 * Get the PDC type name
 	 *
-	 * @return string e.g. 'consensuale'
+	 * @return string e.g. 'con votazioni'
 	 */
 	public function getType() {
 		$class = $this->getTypeClass();
-		return $class::getPDCType();
+		return $class::PDC_TYPE;
+	}
+
+	/**
+	 * Get the PDC human type
+	 *
+	 * @return string e.g. 'votazione'
+	 */
+	public function getHumanType() {
+		$class = $this->getTypeClass();
+		return $class::PDC_TYPE_HUMAN;
 	}
 
 	/**
@@ -309,69 +449,6 @@ class PDC extends Page {
 	}
 
 	/**
-	 * Static constructor
-	 *
-	 * @param $type CategoryYearMonthDayType Specified PDC type
-	 * @param $page mixed
-	 * @return self
-	 * @throws PDCException
-	 */
-	public static function createFromRaw( $type, $page ) {
-
-		// verify consistence
-		foreach( self::$RAW_PROPERTIES as $property ) {
-			if( ! isset( $page->$property ) ) {
-				throw new PDCException( "PDC has not property $property" );
-			}
-		}
-
-		// read the title of the subject from the {{DEFAULTSORT}} category sortkey prefix
-		$title_subject = null;
-		foreach( $page->categories as $category ) {
-			$title_subject = $category->sortkeyprefix;
-			break;
-		}
-		if( ! isset( $title_subject ) ) {
-			throw new PDCException( 'missing category sortkeyprefix that contains title subject' );
-		}
-
-		// get the start date of this PDC from the timestamp
-		$date_added_in_category = null;
-		foreach( $page->categories as $category ) {
-			if( CategoryYearMonthDay::matchCategoryName( $category->title ) ) {
-				if( ! isset( $category->timestamp ) ) {
-					throw new PDCException( 'missing category timestamp' );
-				}
-				$date_added_in_category = $category->timestamp;
-				break;
-			}
-		}
-		if( ! isset( $date_added_in_category ) ) {
-			throw new PDCException( 'missing timestamp of insertion into the daily category' );
-		}
-
-		// read protection status
-		$is_protected = false;
-		foreach( $page->protection as $protection ) {
-			if( 'edit' === $protection->type && 'sysop' === $protection->level ) {
-				$is_protected = true;
-				break;
-			}
-		}
-
-		return new self(
-			$type,
-			(int) $page->pageid,
-			$page->title,
-			$title_subject,
-			(int) $page->length,
-			DateTime::createFromFormat( DateTime::ISO8601, $date_added_in_category ),
-			DateTime::createFromFormat( DateTime::ISO8601, $page->touched ),
-			$is_protected
-		);
-	}
-
-	/**
 	 * Get the PDC temperature
 	 *
 	 * The temperature is a value betweeen 0-100
@@ -382,20 +459,20 @@ class PDC extends Page {
 		$slope  = null;
 		$offset = null;
 		switch( $this->getType() ) {
-			case CategoryYearMonthDayTypeSimple::getPDCType():
+			case CategoryYearMonthDay::PDC_TYPE;
 				$slope  =   0.0365;
 				$offset = -24.0;
 				break;
-			case CategoryYearMonthDayTypeConsensual::getPDCType():
+			case CategoryYearMonthDayTypeConsensual::PDC_TYPE:
 				$slope  =   0.0075;
 				$offset = -12.81;
 				break;
-			case CategoryYearMonthDayTypeProlonged::getPDCType():
+			case CategoryYearMonthDayTypeProlonged::PDC_TYPE:
 				$slope  =  0.0035;
 				$offset = -9.76;
 				break;
-			case CategoryYearMonthDayTypeOrdinary::getPDCType():
-			case CategoryYearMonthDayTypeVoting  ::getPDCType():
+			case CategoryYearMonthDayTypeOrdinary::PDC_TYPE:
+			case CategoryYearMonthDayTypeVoting  ::PDC_TYPE:
 				$slope  =   0.0025;
 				$offset = -16.43;
 				break;
@@ -418,7 +495,7 @@ class PDC extends Page {
 	 * @return int
 	 */
 	public function getDurationDays() {
-		return (int) $this->getLasteditDate()->diff( $this->getStartDate() )->format('%a');
+		return (int) $this->getLasteditDate()->diff( $this->getStartDate() )->format( '%a' );
 	}
 
 	/**
@@ -435,5 +512,20 @@ class PDC extends Page {
 			return Template::get( 'DURATION.day' );
 		}
 		return Template::get( 'DURATION.days', [ $days ] );
+	}
+
+	/**
+	 * Merge a PDC with in this one
+	 *
+	 * @param $pdc PDC
+	 */
+	public function merge( PDC $pdc ) {
+		if( $this->getId() !== $pdc->getId() ) {
+			throw new InvalidArgumentException( 'PDCs can be merged only if they are of the same type' );
+		}
+		$this->setCategoryType( CategoryYearMonthDayTypes::findBestCategory( [
+			$this->getCategoryType(),
+			$pdc ->getCategoryType()
+		] ) );
 	}
 }

@@ -42,7 +42,7 @@ abstract class PageTemplated extends Page {
 	 *
 	 * @return string
 	 */
-	public function getTemplateName() {
+	public static function getTemplateName() {
 		return static::TEMPLATE_NAME;
 	}
 
@@ -51,8 +51,8 @@ abstract class PageTemplated extends Page {
 	 *
 	 * @return string
 	 */
-	public function getTemplateTitleName() {
-		return $this->getTemplateName() . '.title';
+	public static function getTemplateTitleName() {
+		return static::getTemplateName() . '.title';
 	}
 
 	/**
@@ -60,15 +60,15 @@ abstract class PageTemplated extends Page {
 	 *
 	 * @return string
 	 */
-	public function getTemplateSummaryName() {
-		return $this->getTemplateName() . '.summary';
+	public static function getTemplateSummaryName() {
+		return static::getTemplateName() . '.summary';
 	}
 
 	/**
 	 * Get the name of the template for the content
 	 */
-	public function getTemplateContentName() {
-		return $this->getTemplateName() . '.content';
+	public static function getTemplateContentName() {
+		return static::getTemplateName() . '.content';
 	}
 
 	/**
@@ -76,7 +76,7 @@ abstract class PageTemplated extends Page {
 	 *
 	 * @return array
 	 */
-	abstract public function getTemplateArguments();
+	public abstract function getTemplateArguments();
 
 	/**
 	 * Get the edit summary for this page from its template
@@ -84,7 +84,7 @@ abstract class PageTemplated extends Page {
 	 * @return string
 	 */
 	public function getTemplatedSummary() {
-		return Template::get( $this->getTemplateSummaryName(), $this->getTemplateArguments() );
+		return Template::get( static::getTemplateSummaryName(), $this->getTemplateArguments() );
 	}
 
 	/**
@@ -93,7 +93,7 @@ abstract class PageTemplated extends Page {
 	 * @return string
 	 */
 	public function getTemplatedTitle() {
-		return Template::get( $this->getTemplateTitleName(), $this->getTemplateArguments() );
+		return Template::get( static::getTemplateTitleName(), $this->getTemplateArguments() );
 	}
 
 	/**
@@ -102,7 +102,7 @@ abstract class PageTemplated extends Page {
 	 * @return string
 	 */
 	public function getTemplatedContent() {
-		return Template::get( $this->getTemplateContentName(), $this->getTemplateArguments() );
+		return Template::get( static::getTemplateContentName(), $this->getTemplateArguments() );
 	}
 
 	/**

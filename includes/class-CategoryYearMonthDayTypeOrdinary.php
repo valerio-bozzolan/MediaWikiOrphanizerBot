@@ -33,7 +33,14 @@ class CategoryYearMonthDayTypeOrdinary extends CategoryYearMonthDayType {
 	/**
 	 * PDC type
 	 *
-	 * @override CategoryYearMonthDayType::PDC_TYPE
+	 * @override CategoryYearMonthDay::PDC_TYPE
 	 */
 	const PDC_TYPE = 'ordinarie';
+
+	/**
+	 * PDC human type
+	 *
+	 * @override CategoryYearMonthDay::PDC_TYPE_HUMAN
+	 */
+	const PDC_TYPE_HUMAN = 'ordinaria';
 }

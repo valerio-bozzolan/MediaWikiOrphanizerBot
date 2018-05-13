@@ -26,7 +26,7 @@ namespace itwikidelbot;
 /**
  * Handle a daily voting PDC category
  *
- * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_del_12_aprile_2018
+ * e.g. https://it.wikipedia.org/wiki/Categoria:Cancellazioni_con_votazione_del_13_maggio_2018
  */
 class CategoryYearMonthDayTypeVoting extends CategoryYearMonthDayType {
 
@@ -36,4 +36,11 @@ class CategoryYearMonthDayTypeVoting extends CategoryYearMonthDayType {
 	 * @override CategoryYearMonthDayType::PDC_TYPE
 	 */
 	const PDC_TYPE = 'con votazione';
+
+	/**
+	 * PDC human type
+	 *
+	 * @override CategoryYearMonthDay::PDC_TYPE_HUMAN
+	 */
+	const PDC_TYPE_HUMAN = 'votazione';
 }

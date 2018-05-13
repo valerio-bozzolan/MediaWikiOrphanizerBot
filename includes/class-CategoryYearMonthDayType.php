@@ -23,8 +23,6 @@
 
 namespace itwikidelbot;
 
-use \cli\Log;
-
 /**
  * Abstraction of a daily category with a specified PDC type
  */
@@ -38,136 +36,72 @@ abstract class CategoryYearMonthDayType extends CategoryYearMonthDay {
 	const TEMPLATE_NAME = 'CATEGORY_DAY_PDCTYPE';
 
 	/**
-	 * PDC type e.g. 'consensuale'
+	 * Title format
 	 *
-	 * To be overrided
+	 * Used to describe both the plain text title and its matching pattern.
+	 *
+	 * Don't use placeholders different from '%s'.
+	 *
+	 * Arguments:
+	 *    1: PDC type
+	 * 	4: day
+	 * 	3: human month
+	 * 	2: year
+	 *
+	 * @override CategoryYearMonthDay::TITLE_FORMAT
 	 */
-	const PDC_TYPE = 'EXAMPLE';
+	const TITLE_FORMAT = 'Categoria:Cancellazioni %s del %s %s %s';
 
 	/**
-	 * Get the PDC type
+	 * Title format arguments
 	 *
-	 * @return string e.g. 'consensuale'
+	 * Arguments that can create this page title, when filling the title format.
+	 *
+	 * @return array Arguments for the TITLE_FORMAT
+	 * @override CategoryYearMonthDay::getTitleFormatArguments()
 	 */
-	public static function getPDCType() {
-		return static::PDC_TYPE;
+	protected function getTitleFormatArguments() {
+		return [
+			static::PDC_TYPE,      // 1: PDC type
+			$this->getDay(),       // 2: day
+			$this->getMonthName(), // 3: month name
+			$this->getYear(),      // 4: year
+		];
+	}
+
+	/**
+	 * Title format regex groups
+	 *
+	 * Regex groups that can create a regex for this page title, when filling the title format.
+	 *
+	 * @return array Array of regex groups for the TITLE_FORMAT
+	 * @override CategoryYearMonthDay::titleFormatGroups()
+	 */
+	protected static function titleFormatGroups() {
+		return [
+			preg_quote( static::PDC_TYPE ), // 1: PDC type (it's correct that is not grouped)
+			'([0-9]{1,2})',                 // 2: day
+			'([a-z]+)',                     // 3: month name
+			'([0-9]{4})',                   // 4: year
+		];
 	}
 
 	/**
 	 * Get template arguments
 	 *
+	 * 1: category title
+	 * 2: year
+	 * 3: month  1-12
+	 * 4: month name
+	 * 5: day 1-31
+	 * 6: PDC type
+	 *
 	 * @override CategoryTemplated::getTemplateArguments()
 	 */
 	public function getTemplateArguments() {
 		$parent_arguments = parent::getTemplateArguments();
-		$parent_arguments[] = static::getPDCType();
+		$parent_arguments[] = static::PDC_TYPE;
 		return $parent_arguments;
-	}
-
-	/**
-	 * Create a PDF of this type (from raw)
-	 *
-	 * @param $pdc_raw mixed Raw PDC data
-	 * @see PDC::createFromRaw()
-	 */
-	public function createPDCFromRaw( $pdc_raw ) {
-		return PDC::createFromRaw( $this, $pdc_raw );
-	}
-
-	/**
-	 * Fetch PDCs of this type
-	 *
-	 * @return array
-	 */
-	public function fetchPDCs() {
-		$api = self::api()->createQuery( [
-			'action' => 'query',
-
-			// generator=categorymembers: get pages in category
-			// gmtitle=:                  specify the category title
-			// gmtype=page:               get sub-pages
-			// gmsort=timestamp:          order by insertion date in that category
-			// gmdir=asc:                 ascending order
-			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Bcategorymembers
-			// Note: Generator parameter names must be prefixed with a 'g'
-			'generator'   => 'categorymembers',
-			'gcmtitle'    => $this->getTitle(),
-//			'gcmtype'     => 'page', // Note: Ignored when cmsort=timestamp is set.
-			'gcmnamespace' => 4, // Wikipedia
-			'gcmlimit'    => 100,
-			'gcmsort'     => 'timestamp',
-			'gcmdir'      => 'asc',
-//
-			// for each page load infos, categories and latest revision
-			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Binfo
-			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Bcategories
-			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Brevisions
-			// Note: probably the revisions parameter is unuseful for last update date (already provided by "touched").
-			// Note: revisions can be still useful to know the creation date
-			'prop' => [ 'info' , 'categories'/*, 'revisions'*/ ],
-
-			// inprop=protecion: list of the protection level of each page
-			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Bcategories
-			'inprop' => 'protection',
-
-			// clprop=sortkey:   adds the sortkey and sortkey prefix for the category
-			// clprop=timestamp: adds the timestamp of when the page was included
-			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Binfo
-			'clprop' => [ 'sortkey', 'timestamp' ],
-
-			// rvprop=timestamp: timestamp of the revision
-			// rvlimit=1: only 1 revision
-			// rvdir=older: order by oldest
-			// https://it.wikipedia.org/w/api.php?action=help&modules=query%2Brevisions
-//			'rvprop'  => 'timestamp',
-//			'rvdir'   => 'older',
-//			'rvlimit' => 1,
-		] );
-
-		$all = [];
-		while( $api->hasNext() ) {
-			$next = $api->fetchNext();
-
-			if( isset( $next->query->pages ) ) {
-				foreach( $next->query->pages as $page ) {
-
-					// multiple call will add more infos on the same page
-					// https://www.mediawiki.org/wiki/API:Query#Generators_and_continuation
-					// TODO: use batchcomplete for better memory usage
-					$pageid = $page->pageid;
-					if( isset( $all[ $pageid ] ) ) {
-						foreach( $page as $property => $value ) {
-							if( isset( $all[ $pageid ]->{$property} ) && is_array( $all[ $pageid ]->{$property} ) ) {
-								// merge categories values
-								$all[ $pageid ]->{$property} = array_merge(
-									$all[ $pageid ]->{$property},
-									$value
-								);
-							} else {
-								$all[ $pageid ]->{$property} = $value;
-							}
-						}
-					} else {
-						$all[ $pageid ] = $page;
-					}
-				}
-			}
-		}
-
-		$pdcs = [];
-		foreach( $all as $page ) {
-			try {
-				$pdcs[] = $this->createPDCFromRaw( $page );
-			} catch( PDCException $e ) {
-				Log::warn( sprintf(
-					"exception in PDC '%s': %s",
-					$page->title,
-					$e->getMessage()
-				) );
-			}
-		}
-
-		return $pdcs;
 	}
 
 }

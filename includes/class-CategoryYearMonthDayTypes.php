@@ -23,13 +23,12 @@
 
 namespace itwikidelbot;
 
-use \cli\Log;
-use \InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
- * Handler of all the PDCs in this day of the year
+ * Handler of all the PDC type categories
  */
-class CategoryYearMonthDayTypes extends CategoryYearMonthDay {
+class CategoryYearMonthDayTypes {
 
 	/**
 	 * PDC types
@@ -39,122 +38,117 @@ class CategoryYearMonthDayTypes extends CategoryYearMonthDay {
 	 * @var array
 	 */
 	public static $TYPES = [
-		CategoryYearMonthDayTypeVoting    ::class,
-		CategoryYearMonthDayTypeProlonged ::class,
-		CategoryYearMonthDayTypeConsensual::class,
-		CategoryYearMonthDayTypeOrdinary  ::class,
+		CategoryYearMonthDayTypeVoting    ::class, // voting
+		CategoryYearMonthDayTypeOrdinary  ::class, // ordinary
+		CategoryYearMonthDayTypeProlonged ::class, // prolonged
+		CategoryYearMonthDayTypeConsensual::class, // consensual
 		CategoryYearMonthDay              ::class, // simple
 	];
 
 	/**
-	 * Get the corresponding class of a certain PDC type
+	 * Other types of categories
 	 *
-	 * @param $type string PDC type
-	 * @return class
+	 * @var array
 	 */
-	public static function type2class( $type ) {
-		foreach( self::getAll() as $Type ) {
-			if( $Type::PDC_TYPE === $type ) {
-				return $Type;
-			}
-		}
-		throw new InvalidArgumentException( "unknown PDC type $pdc_type" );
-	}
-
-	/**
-	 * Get the corresponding class of a certain PDC type
-	 *
-	 * @param $title string Page title
-	 * @return CategoryYearMonthDay
-	 */
-	public static function title2object( $title ) {
-		foreach( self::getAll() as $Type ) {
-			$category = $Type::createParsingTitle( $title );
-			if( $category ) {
-				return $category;
-			}
-		}
-		throw new InvalidArgumentException( "unexpected PDC category '$title'" );
-	}
+	private static $OTHER_KNOWN_CATEGORIES = [
+		'Categoria:Procedure di cancellazione in corso',
+		'Categoria:Procedure di cancellazione protette',
+	];
 
 	/**
 	 * Get all the types
 	 *
 	 * @return array
 	 */
-	public static function getAll() {
+	public static function all() {
 		return self::$TYPES;
 	}
 
 	/**
-	 * Return the newer PDC, but setting the older start date.
+	 * Create the corresponding category object from its title
 	 *
-	 * @param $pdc1 PDC
-	 * @param $pdc2 PDC
-	 * @return $pdc PDC
+	 * @param $title string Page title
+	 * @return CategoryYearMonthDay|false
 	 */
-	public function mergePDCs( $pdc1, $pdc2 ) {
-		if( $pdc2->getDurationDays() > $pdc1->getDurationDays() ) {
-			return $pdc2->setStartDate( $pdc1->getStartDate() );
+	public static function createParsingTitle( $title ) {
+		foreach( self::all() as $Type ) {
+			$category = $Type::createParsingTitle( $title );
+			if( $category ) {
+				return $category;
+			}
 		}
-		return $pdc1;
+		if( ! in_array( $title, self::$OTHER_KNOWN_CATEGORIES, true ) ) {
+			throw new PDCException( "unexpected PDC category '$title'" );
+		}
+		return false;
 	}
 
 	/**
-	 * Operate on every PDC type
+	 * Get a "genericity" score of a certain PDC category class name.
+	 *
+	 * Useful to comparate PDC types.
+	 *
+	 * E.g. a "simple" PDC has an higher score over a "consensual" PDC.
+	 *
+	 * @param $category string Class name
+	 * @return int 0-4
 	 */
-	public function run() {
+	public static function genericityFromClass( $category_class_name ) {
+		$i = array_search( $category_class_name, self::all(), true );
+		if( false === $i ) {
+			throw new InvalidArgumentException( "unknown class name $category_class_name" );
+		}
+		return $i;
+	}
 
-		$pdcs_by_id = [];
-		foreach( self::$TYPES as $Category ) {
-			$category = new $Category( $this->getYear(), $this->getMonth(), $this->getDay() );
+	/**
+	 * Get a "genericity" score of a certain PDC category instance.
+	 *
+	 * @see self::genericity()
+	 * @param $category CategoryYearMonthDay
+	 * @return int 0-4
+	 */
+	public static function genericityFromObject( CategoryYearMonthDay $category ) {
+		return self::genericityFromClass( get_class( $category ) );
+	}
 
-			$pdcs = $category->fetchPDCs();
-			if( count( $pdcs ) ) {
-				$category->saveIfNotExists();
-			}
-
-			// merge the same PDCs
-			foreach( $pdcs as $pdc ) {
-				$id = $pdc->getId();
-				if( isset( $pdcs_by_id[ $id ] ) ) {
-					$pdcs_by_id[ $id ] = self::mergePDCs( $pdcs_by_id[ $id ], $pdc );
-				} else {
-					$pdcs_by_id[ $id ] = $pdc;
+	/**
+	 * Find the best category (the most recent) from a list
+	 *
+	 * @param $categories CategoryYearMonthDay[]
+	 * @return CategoryYearMonthDay One of the $categories
+	 */
+	public static function findBestCategory( $categories ) {
+		$best = null;
+		foreach( $categories as $category ) {
+			if( ! $best ) {
+				$best = $category;
+			} elseif( $category->getDateTime()->format('Y-m-d') === $best->getDateTime()->format('Y-m-d') ) {
+				// the day is the same: take the most precise
+				if( self::genericityFromObject( $category ) < self::genericityFromObject( $best ) ) {
+					$best = $category;
 				}
+			} elseif( $category->getDateTime() > $best->getDateTime() ) {
+				// take the newest
+				$best = $category;
 			}
 		}
-
-		// sort PDCs by start date
-		usort( $pdcs_by_id, function ( $a, $b ) {
-			return $a->getStartDate() > $b->getStartDate();
-		} );
-
-		foreach( $pdcs_by_id as $i => $pdc ) {
-			if( $pdc->getDurationDays() > 7 ) {
-				Log::info( sprintf(
-					'the PDC %s is expired after %d days',
-					$pdc->getTitle(),
-					$pdc->getDurationDays()
-				) );
-			}
+		if( ! $best ) {
+			throw new PDCException( 'cannot find the best categories' );
 		}
+		return $best;
+	}
 
-		// index PDcs by their type
-		$pdcs_by_type = [];
-		foreach( $pdcs_by_id as $pdc ) {
-			$type = $pdc->getType();
-			if( ! isset( $pdcs_by_type[ $type ] ) ) {
-				$pdcs_by_type[ $type ] = [];
-			}
-			$pdcs_by_type[ $type ][] = $pdc;
-		}
-
-		PageYearMonthDayPDCsCount::createFromDateTimePDCs( $this->getDateTime(), $pdcs_by_type )
-			->save();
-
-		PageYearMonthDayPDCsLog::createFromDateTimePDCs( $this->getDateTime(), $pdcs_by_type )
-			->save();
+	/**
+	 *
+	 *
+	 * @param $year int
+	 * @param $month int
+	 * @param $day int
+	 * @return PDC[]
+	 */
+	public static function fetchYearMonthDayPDCs( $year, $month, $day ) {
+		$pdcs_by_id = [];
 	}
 
 }
