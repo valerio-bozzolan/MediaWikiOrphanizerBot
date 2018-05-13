@@ -36,7 +36,7 @@ abstract class PageYearMonth extends PageYear {
 	 * @see PageYear::__construct()
 	 */
 	public function __construct( $year, $month ) {
-		$this->month = $month;
+		$this->month = (int) $month;
 		parent::__construct( $year );
 	}
 

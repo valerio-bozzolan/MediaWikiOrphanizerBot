@@ -35,7 +35,7 @@ abstract class PageYear extends PageTemplated {
 	 * @see PageTemplated::__construct()
 	 */
 	public function __construct( $year ) {
-		$this->year = $year;
+		$this->year = (int) $year;
 		parent::__construct();
 	}
 

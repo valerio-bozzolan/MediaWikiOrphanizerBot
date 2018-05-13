@@ -39,7 +39,7 @@ abstract class PageYearMonthDay extends PageYearMonth {
 	 * @see PageYearMonth::__construct()
 	 */
 	public function __construct( $year, $month, $day ) {
-		$this->day = $day;
+		$this->day = (int) $day;
 		parent::__construct( $year, $month );
 	}
 
