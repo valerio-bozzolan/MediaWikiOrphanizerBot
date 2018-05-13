@@ -11,10 +11,10 @@ Placeholders:
 	%7%s: duration e.g. 'un giorno'
 	      see the template DURATION_*.tpl
 	%8%s: title of the log page
-	%9$s: goto action label e.g. 'pagina di discussione'
+	%9$s: human date
 
 <!-- START SPECIFIC EXAMPLE -->
-{{Conteggio cancellazioni/In corso/Voce|i = 1 |voce = ASD |tipo = votazione |multipla = 1 |temperatura = 42 }}
+{{Conteggio cancellazioni/In corso/Voce|i = 1 |voce = ASD |tipo = votazione |data = 2018 maggio 3 |multipla = 1 |temperatura = 42 }}
 
 <!-- START TEMPLATE -->
-{{Conteggio cancellazioni/In corso/Voce|i = %5$d |voce = %1$s |tipo = %6$s |multipla = %3$s |temperatura = %2$d }}
+{{Conteggio cancellazioni/In corso/Voce|i = %5$d |voce = %1$s |tipo = %6$s |data = %9$s |multipla = %3$s |temperatura = %2$d }}

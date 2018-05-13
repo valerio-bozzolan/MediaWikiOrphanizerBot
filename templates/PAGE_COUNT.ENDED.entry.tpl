@@ -10,10 +10,10 @@ Placeholders:
 	%6$s: PDC type e.g. 'consensuale'
 	%7$s: duration
 	%8$s: title of the log page
-	%9$s: goto action label e.g. 'pagina di discussione'
+	%9$s: date
 
 <!-- START SPECIFIC EXAMPLE -->
-{{Conteggio cancellazioni/Concluse/Voce|i = 0 |voce = ASD |tipo = consensuale |durata = 3 giorni |multipla = 1 }}
+{{Conteggio cancellazioni/Concluse/Voce|i = 0 |voce = ASD |tipo = consensuale |data = %9$s |durata = 3 giorni |multipla = 1 }}
 
 <!-- START TEMPLATE -->
-{{Conteggio cancellazioni/Concluse/Voce|i = %5$d |voce = %1$s |tipo = %6$s |durata = %7$s |multipla = %3$s }}
+{{Conteggio cancellazioni/Concluse/Voce|i = %5$d |voce = %1$s |tipo = %6$s |data = %9$s |durata = %7$s |multipla = %3$s }}

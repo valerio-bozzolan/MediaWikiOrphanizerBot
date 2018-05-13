@@ -38,7 +38,7 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 	 * 6: PDC type e.g. 'consensuale'
 	 * 7: duration e.g. 'un giorno'
 	 * 8: title of the log page
-	 * 9: goto action label e.g. 'pagina di discussione'
+	 * 9: human date 'year monthname day'
 	 *
 	 * @override PageTemplated::getTemplateArguments()
 	 * @return array
@@ -109,7 +109,12 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 			$i,
 			$pdc->getHumanType(),
 			$pdc->getHumanDuration(),
-			$this->getTitle()
+			$this->getTitle(),
+			sprintf( '%d %s %d',
+				$this->getYear(),
+				$this->getMonthName(),
+				$this->getDay()
+			)
 		] );
 
 	}
