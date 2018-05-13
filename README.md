@@ -25,9 +25,23 @@ The script was originally developed by Mauro762 (aka MauroBot) in 2013 using Jav
 
 Fill `config-example.php` and save-as `config.php`.
 
-## Basic usage
+## Usage
+
+Run on today:
 
     ./bot.php
+
+Run on the latest 10 days:
+
+    ./bot.php 10
+
+Run on a specific date (year-month-day):
+
+    ./bot.php 1 '2018-03-13'
+
+Run on a specific date and for 10 days before it:
+
+	./bot.php 10 '2018-03-13'
 
 ## Hacking
 
