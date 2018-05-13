@@ -40,11 +40,11 @@ class PDCs {
 	 */
 	public static function indexByType( $pdcs ) {
 		$pdcs_by_type = [];
+		foreach( CategoryYearMonthDayTypes::all() as $Type ) {
+			$pdcs_by_type[ $Type::PDC_TYPE ] = [];
+		}
 		foreach( $pdcs as $pdc ) {
 			$type = $pdc->getType();
-			if( ! isset( $pdcs_by_type[ $type ] ) ) {
-				$pdcs_by_type[ $type ] = [];
-			}
 			$pdcs_by_type[ $type ][] = $pdc;
 		}
 		return $pdcs_by_type;
