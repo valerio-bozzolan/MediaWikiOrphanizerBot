@@ -152,11 +152,6 @@ class PDC extends Page {
 			throw new PDCException( 'not a PDC' );
 		}
 
-		//TODO: do something when unprotected but older than 7 days
-		//if( $this->getDurationDays() > 7 ) {
-		//	throw new PDCExceptionExpired( 'not anymore a PDC of type ' . $this->getType() );
-		//}
-
 		$this->checkTitleSubjectConsistence();
 	}
 
