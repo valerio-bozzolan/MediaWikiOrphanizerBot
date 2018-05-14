@@ -19,6 +19,8 @@ namespace itwikidelbot;
 // autoload classes
 require __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'autoload.php';
 
+use cli\Log;
+
 // load credentials
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 
@@ -28,7 +30,11 @@ $DAYS = isset( $argv[ 1 ] ) ? (int) $argv[ 1 ] : 1;
 // the second argument is a 'YYYY-MM-DD' date
 $DATE = isset( $argv[ 2 ] ) ? $argv[ 2 ] : 'now';
 
+Log::info( 'start' );
+
 $bot = Bot::createFromString( $DATE );
 for( $i = 0; $i < $DAYS; $i++ ) {
 	$bot->run()->previousDay();
 }
+
+Log::info( 'end' );
