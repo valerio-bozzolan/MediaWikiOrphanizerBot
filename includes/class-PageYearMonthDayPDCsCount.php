@@ -101,6 +101,8 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 			? '.ENDED.entry'
 			: '.RUNNING.entry';
 
+		$turnover = $pdc->getTurnover();
+
 		return Template::get( $template_name, [
 			$pdc->getTitleSubject(),
 			$pdc->getTemperature(),
@@ -114,7 +116,8 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 				$this->getYear(),
 				$this->getMonthName(),
 				$this->getDay()
-			)
+			),
+			$turnover ? $turnover : ''
 		] );
 
 	}

@@ -268,6 +268,23 @@ class PDC extends Page {
 	}
 
 	/**
+	 * Get the turnover number
+	 *
+	 * It's the '/2' number in the PDC title.
+	 *
+	 * @return int|false
+	 */
+	public function getTurnover() {
+		$safe_title = preg_quote( $this->getTitleSubject(), '@' );
+		$pattern = "@$safe_title/([0-9]+)\$@";
+		$found = preg_match( $pattern, $this->getTitle(), $matches );
+		if( 1 === $found ) {
+			return (int) $matches[ 1 ];
+		}
+		return false;
+	}
+
+	/**
 	 * Get the page length
 	 *
 	 * @return int

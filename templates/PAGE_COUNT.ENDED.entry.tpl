@@ -11,9 +11,10 @@ Placeholders:
 	%7$s: duration
 	%8$s: title of the log page
 	%9$s: date
+	%10$s: turnover number e.g. 2 when '/2'
 
 <!-- START SPECIFIC EXAMPLE -->
-{{Conteggio cancellazioni/Concluse/Voce|i = 0 |voce = ASD |tipo = consensuale |data = %9$s |durata = 3 giorni |multipla = 1 }}
+{{Conteggio cancellazioni/Concluse/Voce|i = 0 |voce = ASD |turno = 2 |tipo = consensuale |data = %9$s |durata = 3 giorni |multipla = 1 }}
 
 <!-- START TEMPLATE -->
-{{Conteggio cancellazioni/Concluse/Voce|i = %5$d |voce = %1$s |tipo = %6$s |data = %9$s |durata = %7$s |multipla = %3$s }}
+{{Conteggio cancellazioni/Concluse/Voce|i = %5$d |voce = %1$s |turno = %10$s |tipo = %6$s |data = %9$s |durata = %7$s |multipla = %3$s }}
