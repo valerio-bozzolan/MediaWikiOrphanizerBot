@@ -16,6 +16,7 @@
 
 namespace itwikidelbot;
 
+use DateTime;
 use cli\Input;
 use cli\Log;
 use wm\WikipediaIt;
@@ -116,6 +117,30 @@ class Page {
 		Log::info( "writing [[$title]]" );
 
 		return $api->post( $args );
+	}
+
+	/**
+	 * Fetch the creation date of this page
+	 *
+	 * @return DateTime
+	 */
+	public function fetchCreationDate() {
+		$response = self::api()->fetch( [
+			'action' => 'query',
+			'titles' => $this->getTitle(),
+			'prop'   => 'revisions',
+			'rvprop' => [
+					'timestamp'
+			],
+			'rvlimit' => 1,
+			'rvdir'   => 'older',
+		] );
+		foreach( $response->query->pages as $page ) {
+			foreach( $page->revisions as $revision ) {
+				return DateTime::createFromFormat( DateTime::ISO8601, $revision->timestamp );
+			}
+		}
+		throw new \Exception( 'unable to fetch the creation date' );
 	}
 
 	/**

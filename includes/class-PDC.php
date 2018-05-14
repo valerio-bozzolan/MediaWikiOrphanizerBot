@@ -202,7 +202,13 @@ class PDC extends Page {
 		$creation = null;
 		foreach( $categories as $category ) {
 			if( get_class( $category ) === CategoryYearMonthDay::class ) {
-				$creation = DateTime::createFromFormat( DateTime::ISO8601, $category_raw->timestamp );
+				$creation_secure_unprecise = $category->getDateTime();
+				$creation_unsecure_precise = DateTime::createFromFormat( DateTime::ISO8601, $category_raw->timestamp );
+				$creation = $creation_unsecure_precise;
+				if( $creation_secure_unprecise->format( 'Y-m-d' ) !== $creation_unsecure_precise->format( 'Y-m-d' ) ) {
+					// The page was empty and then re-filled. The timestamp is poisoned.
+					$creation = $category->fetchCreationDate();
+				}
 				break;
 			}
 		}
@@ -493,9 +499,13 @@ class PDC extends Page {
 	 * @return int
 	 */
 	public function getDurationDays() {
-		$a = clone $this->getLasteditDate()->setTime(0, 0, 0);
-		$b = clone $this->getStartDate()   ->setTime(0, 0, 0);
-		return (int) $a->diff( $b )->format( '%a' );
+		$a = clone $this->getLasteditDate()->setTime( 0, 0, 0 );
+		$b = clone $this->getCreationDate()->setTime( 0, 0, 0 );
+		$days = (int) $a->diff( $b )->format( '%a' );
+		if( $this->isProtected() && $days > 0 ) {
+			--$days;
+		}
+		return $days;
 	}
 
 	/**
