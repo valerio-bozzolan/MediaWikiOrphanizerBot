@@ -53,6 +53,7 @@ class CategoryYearMonthDayTypes {
 	private static $OTHER_KNOWN_CATEGORIES = [
 		'Categoria:Procedure di cancellazione in corso',
 		'Categoria:Procedure di cancellazione protette',
+		'Categoria:Procedure di cancellazione multiple in corso',
 	];
 
 	/**
