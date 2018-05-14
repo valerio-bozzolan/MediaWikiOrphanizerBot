@@ -1,29 +1,21 @@
 # Italian Wikipedia Deletion Bot
 
-This project aims to handle the public deletion log of Italian Wikipedia pages.
+This software is an Italian Wikipedia bot. It keeps updated the public deletion logs of Italian Wikipedia pages.
 
 ## History of the project
 
 The script was originally developed by Mauro762 (aka MauroBot) in 2013 using JavaScript and previously developed in Python {{Citation needed}}.
 
-## TODO
-
-* [X] Yearly category creation
-* [X] Monthy category creation
-* [X] Daily category creation
-* [X] Daily log page update
-* [X] Daily counting page update
-* [X] Most of the work :)
-* [X] Be sure that It doesn't destroy anything :^)
-
 ## Installation
 
-	apt-get install php-cli
-    git clone --recursive https://github.com/valerio-bozzolan/ItalianWikipediaDeletionBot
+	sudo apt install git php-cli
+	git clone --recursive https://github.com/valerio-bozzolan/ItalianWikipediaDeletionBot
 
-## Basic configuration
+## Configuration
 
-Fill `config-example.php` and save-as `config.php`.
+1. Open the file [`config-example.php`](config-example.php) with a text editor
+2. Fill your bot credentials
+3. Save-as `config.php`
 
 ## Usage
 
@@ -42,6 +34,12 @@ Run on a specific date (year-month-day):
 Run on a specific date and for 10 days before it:
 
 	./bot.php 10 2018-03-13
+
+## Update
+
+To fetch the updates:
+
+    git pull --recurse-submodules
 
 ## Hacking
 
@@ -62,7 +60,7 @@ To be honest: everything above the `<!-- START TEMPLATE -->` line it's pure docu
 
 A non-traumatic template example can be found [here](templates/CATEGORY_YEAR.content.tpl). It describes the generation of the yearly category.
 
-## Credits
+## Framework
 
 You may not want to know this: HTTP connections, MediaWiki APIs (including login and tokens etc.), and other stuff, are handled by the [boz-mw](https://github.com/valerio-bozzolan/boz-mw) framework.
 
