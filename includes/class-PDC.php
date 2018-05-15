@@ -509,20 +509,32 @@ class PDC extends Page {
 	}
 
 	/**
-	 * Get the number of days of duration of this PDC
+	 * Get the duration of this PDC expressed in days
 	 *
-	 * Note that the days are not calculated precisely.
+	 * When the PDC is running the user basically wants a simple
+	 * difference from the creation date to the last edit date,
+	 * but when the PDC is protected it means that a sysop touched
+	 * this page at ~midnight so the last edit will be at ~midnight.
+	 * This is why - when a PDC is protected - the start date time should
+	 * be moved forward to ~midnight in order to balance the sysop touch.
 	 *
-	 * @return int
+	 * In other words this method gives a "precise duration" when the PDC
+	 * is running and "legal duration" when the PDC is ended.
+	 *
+	 * @see https://it.wikipedia.org/wiki/Wikipedia:Regole_per_la_cancellazione
+	 * @return int Duration days
 	 */
 	public function getDurationDays() {
-		$a = clone $this->getLasteditDate()->setTime( 0, 0, 0 );
-		$b = clone $this->getCreationDate()->setTime( 0, 0, 0 );
-		$days = (int) $a->diff( $b )->format( '%a' );
-		if( $this->isProtected() && $days > 0 ) {
-			--$days;
+		$creation = clone $this->getCreationDate();
+		$lastedit =       $this->getLasteditDate();
+		if( $this->isProtected() ) {
+			// Moving forward the creation date to balance the sysop touch
+			$creation->setTime( 23, 59, 59 );
 		}
-		return $days;
+		$creation_s = $creation->format( 'U' );
+		$lastedit_s = $lastedit->format( 'U' );
+		$seconds = $lastedit_s - $creation_s;
+		return (int) round( $seconds / 3600 / 24 );
 	}
 
 	/**
