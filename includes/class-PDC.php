@@ -128,14 +128,13 @@ class PDC extends Page {
 	 * @param $title string PDC title prefixed
 	 * @param $title_subject string Title of the subject page (the Wikipedia article title)
 	 * @param $length int PDC length
-	 * @param $start DateTime|null When the PDC was added to the PDC type category
-	 * @param $creation DateTime PDC creation date
-	 * @param $lastedit DateTime PDC lastedit date
+	 * @param $creation DateTime|null PDC creation date
+	 * @param $lastedit DateTime|null PDC lastedit date
 	 * @param $is_protected bool Is the PDC protected?
 	 * @see Page::__construct()
 	 * @throws PDCException
 	 */
-	public function __construct( CategoryYearMonthDay $category_type, $id, $title, $title_subject, $length, $creation, DateTime $lastedit, $is_protected ) {
+	public function __construct( CategoryYearMonthDay $category_type, $id, $title, $title_subject, $length, $creation, $lastedit, $is_protected ) {
 		$this->id           = $id;
 		$this->titleSubject = $title_subject;
 		$this->length       = $length;
@@ -188,10 +187,12 @@ class PDC extends Page {
 		}
 
 		// array of instances of the class CategoryYearMonthDay (and subclasses)
+		// they also have the timestamp property
 		$categories = [];
 		foreach( $page->categories as $category_raw ) {
 			$category = CategoryYearMonthDayTypes::createParsingTitle( $category_raw->title );
 			if( $category ) {
+				$category->timestamp = DateTime::createFromFormat( DateTime::ISO8601, $category_raw->timestamp );
 				$categories[] = $category;
 			}
 		}
@@ -201,11 +202,9 @@ class PDC extends Page {
 		foreach( $categories as $category ) {
 			if( get_class( $category ) === CategoryYearMonthDay::class ) {
 				$creation_secure_unprecise = $category->getDateTime();
-				$creation_unsecure_precise = DateTime::createFromFormat( DateTime::ISO8601, $category_raw->timestamp );
-				$creation = $creation_unsecure_precise;
-				if( $creation_secure_unprecise->format( 'Y-m-d' ) !== $creation_unsecure_precise->format( 'Y-m-d' ) ) {
-					// the page seems to be emptied and then re-filled resulting in a poisoned category timestamp.
-					$creation = null;
+				$creation_unsecure_precise = $category->timestamp;
+				if( $creation_secure_unprecise->format( 'Y-m-d' ) === $creation_unsecure_precise->format( 'Y-m-d' ) ) {
+					$creation = $creation_unsecure_precise;
 				}
 				break;
 			}
@@ -237,7 +236,7 @@ class PDC extends Page {
 			$title_subject,
 			(int) $page->length,
 			$creation,
-			DateTime::createFromFormat( DateTime::ISO8601, $page->touched ),
+			null, // the page->touched can't be trusted
 			$is_protected
 		);
 	}
@@ -332,9 +331,15 @@ class PDC extends Page {
 	/**
 	 * Get the latest update date
 	 *
+	 * Note: this information can't be retrieved by the 'touched' API field
+	 * because it can be poisoned by purges.
+	 *
 	 * @return DateTime
 	 */
 	public function getLasteditDate() {
+		if( ! $this->lasteditDate ) {
+			$this->lasteditDate = $this->fetchLasteditDate();
+		}
 		return $this->lasteditDate;
 	}
 
@@ -523,8 +528,9 @@ class PDC extends Page {
 	 * @return int Duration days
 	 */
 	public function getDurationDays() {
-		$creation = clone $this->getCreationDate();
-		$lastedit =       $this->getLasteditDate();
+		$creation = $this->getCreationDate();
+		$creation = clone $creation;
+		$lastedit = $this->getLasteditDate();
 		if( $this->isProtected() ) {
 			// Moving forward the creation date to balance the sysop touch
 			$creation->setTime( 23, 59, 59 );

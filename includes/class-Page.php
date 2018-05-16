@@ -120,11 +120,12 @@ class Page {
 	}
 
 	/**
-	 * Fetch the creation date of this page
+	 * Fetch the first revision date by direction
 	 *
+	 * @param $dir string direction
 	 * @return DateTime
 	 */
-	public function fetchCreationDate() {
+	public function fetchFirstRevisionDateByDirection( $direction ) {
 		$response = self::api()->fetch( [
 			'action' => 'query',
 			'titles' => $this->getTitle(),
@@ -133,7 +134,7 @@ class Page {
 					'timestamp'
 			],
 			'rvlimit' => 1,
-			'rvdir'   => 'newer',
+			'rvdir' => $direction,
 		] );
 		foreach( $response->query->pages as $page ) {
 			foreach( $page->revisions as $revision ) {
@@ -141,6 +142,24 @@ class Page {
 			}
 		}
 		throw new \Exception( 'unable to fetch the creation date' );
+	}
+
+	/**
+	 * Fetch the creation date of this page
+	 *
+	 * @return DateTime
+	 */
+	public function fetchCreationDate() {
+		return $this->fetchFirstRevisionDateByDirection( 'newer' );
+	}
+
+	/**
+	 * Fetch the creation date of this page
+	 *
+	 * @return DateTime
+	 */
+	public function fetchLasteditDate() {
+		return $this->fetchFirstRevisionDateByDirection( 'older' );
 	}
 
 	/**
