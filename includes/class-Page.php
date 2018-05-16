@@ -133,7 +133,7 @@ class Page {
 					'timestamp'
 			],
 			'rvlimit' => 1,
-			'rvdir'   => 'older',
+			'rvdir'   => 'newer',
 		] );
 		foreach( $response->query->pages as $page ) {
 			foreach( $page->revisions as $revision ) {
