@@ -40,7 +40,7 @@ class PDC extends Page {
 	/**
 	 * Prefix of every multiple PDC
 	 */
-	const PREFIX_MULTIPLE = self::PREFIX . 'multiple/';
+	const PREFIX_MULTIPLE = 'Wikipedia:Pagine da cancellare/multiple/';
 
 	/**
 	 * PDC category type
