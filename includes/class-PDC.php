@@ -128,21 +128,20 @@ class PDC extends Page {
 	 * @param $title string PDC title prefixed
 	 * @param $title_subject string Title of the subject page (the Wikipedia article title)
 	 * @param $length int PDC length
-	 * @param $start DateTime When the PDC was added to the PDC type category
+	 * @param $start DateTime|null When the PDC was added to the PDC type category
 	 * @param $creation DateTime PDC creation date
 	 * @param $lastedit DateTime PDC lastedit date
 	 * @param $is_protected bool Is the PDC protected?
 	 * @see Page::__construct()
 	 * @throws PDCException
 	 */
-	public function __construct( CategoryYearMonthDay $category_type, $id, $title, $title_subject, $length, DateTime $creation, DateTime $lastedit, $is_protected ) {
+	public function __construct( CategoryYearMonthDay $category_type, $id, $title, $title_subject, $length, $creation, DateTime $lastedit, $is_protected ) {
 		$this->id           = $id;
 		$this->titleSubject = $title_subject;
 		$this->length       = $length;
 		$this->creationDate = $creation;
 		$this->lasteditDate = $lastedit;
 		$this->isProtected  = $is_protected;
-
 		$this->setCategoryType( $category_type );
 
 		parent::__construct( $title );
@@ -151,7 +150,6 @@ class PDC extends Page {
 		if( ! $this->isTitlePrefixValid() ) {
 			throw new PDCException( 'not a PDC' );
 		}
-
 		$this->checkTitleSubjectConsistence();
 	}
 
@@ -206,14 +204,11 @@ class PDC extends Page {
 				$creation_unsecure_precise = DateTime::createFromFormat( DateTime::ISO8601, $category_raw->timestamp );
 				$creation = $creation_unsecure_precise;
 				if( $creation_secure_unprecise->format( 'Y-m-d' ) !== $creation_unsecure_precise->format( 'Y-m-d' ) ) {
-					// The page was empty and then re-filled. The timestamp is poisoned.
-					$creation = $category->fetchCreationDate();
+					// the page seems to be emptied and then re-filled resulting in a poisoned category timestamp.
+					$creation = null;
 				}
 				break;
 			}
-		}
-		if( ! $creation ) {
-			throw new Exception( "not into the main category" );
 		}
 
 		if( ! $categories ) {
@@ -328,6 +323,9 @@ class PDC extends Page {
 	 * @return DateTime
 	 */
 	public function getCreationDate() {
+		if( ! $this->creationDate ) {
+			$this->creationDate = $this->fetchCreationDate();
+		}
 		return $this->creationDate;
 	}
 
