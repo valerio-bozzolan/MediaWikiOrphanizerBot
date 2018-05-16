@@ -532,7 +532,11 @@ class PDC extends Page {
 		$creation_s = $creation->format( 'U' );
 		$lastedit_s = $lastedit->format( 'U' );
 		$seconds = $lastedit_s - $creation_s;
-		return (int) round( $seconds / 3600 / 24 );
+		$days = (int) round( $seconds / 3600 / 24 );
+		if( $days < 0 ) {
+			$days = 0;
+		}
+		return $days;
 	}
 
 	/**
