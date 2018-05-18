@@ -17,6 +17,7 @@
 namespace itwikidelbot;
 
 use DateTime;
+use DateTimeZone;
 use cli\Input;
 use cli\Log;
 use wm\WikipediaIt;
@@ -26,6 +27,13 @@ use mw\Tokens;
  * Handle a page
  */
 class Page {
+
+	/**
+	 * Time zone of Italian Wikipedia community.
+	 *
+	 * @var string
+	 */
+	public static $COMMUNITY_TIMEZONE = 'Europe/Rome';
 
 	/**
 	 * Enable this flag to ask for every changes
@@ -138,7 +146,7 @@ class Page {
 		] );
 		foreach( $response->query->pages as $page ) {
 			foreach( $page->revisions as $revision ) {
-				return DateTime::createFromFormat( DateTime::ISO8601, $revision->timestamp );
+				return self::createDateTimeFromString( $revision->timestamp );
 			}
 		}
 		throw new \Exception( 'unable to fetch the creation date' );
@@ -202,5 +210,19 @@ class Page {
 	 */
 	protected static function api() {
 		return WikipediaIt::getInstance();
+	}
+
+	/**
+	 * Create a DateTime object from a MediaWiki formatted date
+	 *
+	 * MediaWiki dates are formatted following the ISO8601 standard
+	 * and you may want to specify your community timezone.
+	 *
+	 * @param $datetime string
+	 * @return DateTime
+	 */
+	public static function createDateTimeFromString( $datetime ) {
+		return DateTime::createFromFormat( DateTime::ISO8601, $datetime )
+				->setTimezone( new DateTimeZone( self::$COMMUNITY_TIMEZONE ) );
 	}
 }

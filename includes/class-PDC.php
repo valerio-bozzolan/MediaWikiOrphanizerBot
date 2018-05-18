@@ -192,7 +192,7 @@ class PDC extends Page {
 		foreach( $page->categories as $category_raw ) {
 			$category = CategoryYearMonthDayTypes::createParsingTitle( $category_raw->title );
 			if( $category ) {
-				$category->timestamp = DateTime::createFromFormat( DateTime::ISO8601, $category_raw->timestamp );
+				$category->timestamp = self::createDateTimeFromString( $category_raw->timestamp );
 				$categories[] = $category;
 			}
 		}
@@ -531,10 +531,17 @@ class PDC extends Page {
 		$creation = $this->getCreationDate();
 		$creation = clone $creation;
 		$lastedit = $this->getLasteditDate();
+
 		if( $this->isProtected() ) {
 			// Moving forward the creation date to balance the sysop touch
 			$creation->setTime( 23, 59, 59 );
 		}
+
+		if( $this->getTitleSubject() === 'Unione Sportiva Latina Calcio 2017-2018' ) {
+			var_dump( $creation );
+			var_dump( $lastedit );
+		}
+
 		$creation_s = $creation->format( 'U' );
 		$lastedit_s = $lastedit->format( 'U' );
 		$seconds = $lastedit_s - $creation_s;
