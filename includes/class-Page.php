@@ -33,7 +33,7 @@ class Page {
 	 *
 	 * @var string
 	 */
-	public static $COMMUNITY_TIMEZONE = 'Europe/Rome';
+	const COMMUNITY_TIMEZONE = 'Europe/Rome';
 
 	/**
 	 * Enable this flag to ask for every changes
@@ -223,6 +223,6 @@ class Page {
 	 */
 	public static function createDateTimeFromString( $datetime ) {
 		return DateTime::createFromFormat( DateTime::ISO8601, $datetime )
-				->setTimezone( new DateTimeZone( self::$COMMUNITY_TIMEZONE ) );
+				->setTimezone( new DateTimeZone( self::COMMUNITY_TIMEZONE ) );
 	}
 }

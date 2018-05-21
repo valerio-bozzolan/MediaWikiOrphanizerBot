@@ -24,6 +24,9 @@ use cli\Log;
 // load credentials
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 
+// the bot must be in sync with the italian community
+date_default_timezone_set( 'Europe/Rome' );
+
 // the first argument is the days to go backward
 $DAYS = isset( $argv[ 1 ] ) ? (int) $argv[ 1 ] : 1;
 
