@@ -27,11 +27,50 @@ require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 // the bot must be in sync with the italian community
 date_default_timezone_set( 'Europe/Rome' );
 
-// the first argument is the days to go backward
-$DAYS = isset( $argv[ 1 ] ) ? (int) $argv[ 1 ] : 1;
+// allowed only from command line interface
+if( ! isset( $argv[ 0 ] ) ) {
+	exit( 1 );
+}
 
-// the second argument is a 'YYYY-MM-DD' date
-$DATE = isset( $argv[ 2 ] ) ? $argv[ 2 ] : 'now';
+// command line arguments
+$opts = getopt( 'h', [
+	'ask',     // ask for every edit   | default: no
+	'days:',   // days to be processed | default: only one
+	'from:',   // date to start from   | default: from today
+	'help',    // help message
+	'verbose', // debug mode           | default: no
+] );
+
+// help message
+if( isset( $opts[ 'help' ] ) || isset( $opts[ 'h' ] ) ) {
+	printf( "usage: %s [OPTIONS]\n\n", $argv[ 0 ] );
+	echo "    --days=DAYS       	how many days to be processed (default: 1)\n";
+	echo "    --from=YYYY-MM-DD 	starting date (default: today)\n";
+	echo "    --ask             	ask before saving\n";
+	echo "    --verbose         	verbose mode\n";
+	echo " -h --help            	show this help and exit\n";
+	exit( 0 );
+}
+
+// days to be processed from now to the past
+$DAYS = isset( $opts[ 'days' ] )
+	? (int) $opts[ 'days' ]
+	: 1;
+
+// starting date formatted as 'YYYY-MM-DD'
+$DATE = isset( $opts[ 'from' ] )
+	? $opts[ 'from' ]
+	: 'now';
+
+// ask for every edit
+if( isset( $opts[ 'ask' ] ) ) {
+	Page::$ASK_BEFORE_SAVING = true;
+}
+
+// verbose mode
+if( isset( $opts[ 'verbose' ] ) ) {
+	Log::$DEBUG = true;
+}
 
 Log::info( 'start' );
 

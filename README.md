@@ -25,15 +25,23 @@ Run on today:
 
 Run on the latest 10 days:
 
-    ./bot.php 10
+    ./bot.php --days=10
 
 Run on a specific date (year-month-day):
 
-    ./bot.php 1 2018-03-13
+    ./bot.php --from=2018-03-13
 
 Run on a specific date and for 10 days before it:
 
-	./bot.php 10 2018-03-13
+	./bot.php --days=10 --from=2018-03-13
+
+Ask before saving and enable verbose mode:
+
+	./bot.php --ask --verbose
+
+Help:
+
+	./bot.php --help
 
 ## Update
 
@@ -66,15 +74,6 @@ You may not want to know this: HTTP connections, MediaWiki APIs (including login
 
 ## License
 
-Original files released under [Creative Commons BY-SA 3.0 International](https://creativecommons.org/licenses/by-sa/3.0/) and [WMF terms](https://wikimediafoundation.org/wiki/Special:MyLanguage/Terms_of_Use/it) by [Mauro742](https://it.wikipedia.org/wiki/Utente:Mauro742)/[MauroBot](https://it.wikipedia.org/wiki/Utente:MauroBot):
-* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/main.js
-* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/bot.js
-* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/category.js
-* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/dateFunctions.js
-* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/core.js
-* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/globals.js
-* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/gui.js
-
 Copyright (C) 2018 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan)
 
 This program is free software: you can redistribute it and/or modify
@@ -89,3 +88,12 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Original files released under [Creative Commons BY-SA 3.0 International](https://creativecommons.org/licenses/by-sa/3.0/) and [WMF terms](https://wikimediafoundation.org/wiki/Special:MyLanguage/Terms_of_Use/it) by [Mauro742](https://it.wikipedia.org/wiki/Utente:Mauro742)/[MauroBot](https://it.wikipedia.org/wiki/Utente:MauroBot):
+* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/main.js
+* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/bot.js
+* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/category.js
+* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/dateFunctions.js
+* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/core.js
+* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/globals.js
+* https://it.wikipedia.org/wiki/Utente:MauroBot/BotCancellazioni/gui.js
