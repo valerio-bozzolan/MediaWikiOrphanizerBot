@@ -49,7 +49,7 @@ abstract class PageYearMonthDay extends PageYearMonth {
 	 * @param $date_time DateTime
 	 */
 	public static function createFromDateTime( DateTime $datetime ) {
-		return new self( $datetime->format('Y'), $datetime->format('m'), $datetime->format('d') );
+		return new static( $datetime->format('Y'), $datetime->format('m'), $datetime->format('d') );
 	}
 
 	/**
