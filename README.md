@@ -35,7 +35,7 @@ Run on a specific date and for 10 days before it:
 
 	./bot.php --days=10 --from=2018-03-13
 
-Quit if someone was running the bot on this date just `5` minutes ago (that is the default value):
+Quit if someone was running the bot just `5` minutes ago (that is the default behaviour):
 
 	./bot.php --minutes-ago=5
 

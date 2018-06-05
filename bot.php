@@ -44,11 +44,10 @@ $opts = getopt( 'h', [
 
 // help message
 if( isset( $opts[ 'help' ] ) || isset( $opts[ 'h' ] ) ) {
-	printf( "usage: %s [OPTIONS]\n\n", $argv[ 0 ] );
+	printf( "usage: %s [OPTIONS]\n", $argv[ 0 ] );
 	echo "    --days=DAYS        how many days to be processed (default: 1)\n";
 	echo "    --from=YYYY-MM-DD  starting date (default: today)\n";
 	echo "    --minutes-ago=N    quits if the last edit was below N minutes ago (default: 5)\n";
-	echo "                       you can set N to 0 to disable this startup verification\n";
 	echo "    --ask              ask before saving\n";
 	echo "    --verbose          verbose mode\n";
 	echo " -h --help             show this help and exit\n";
@@ -83,7 +82,7 @@ if( isset( $opts[ 'verbose' ] ) ) {
 Log::info( 'start' );
 
 $bot = Bot::createFromString( $DATE );
-if( ! $MINUTES || $bot->isLasteditOlderThanMinutes( $MINUTES ) ) {
+if( $MINUTES < 1 || $bot->isLasteditOlderThanMinutes( $MINUTES ) ) {
 	for( $i = 0; $i < $DAYS; $i++ ) {
 		$bot->run()->previousDay();
 	}
