@@ -23,7 +23,7 @@ Run on today:
 
     ./bot.php
 
-Run on the latest 10 days:
+Run on the latest 10 days from today:
 
     ./bot.php --days=10
 
@@ -34,6 +34,10 @@ Run on a specific date (year-month-day):
 Run on a specific date and for 10 days before it:
 
 	./bot.php --days=10 --from=2018-03-13
+
+Quit if someone was running the bot on this date just `5` minutes ago (that is the default value):
+
+	./bot.php --minutes-ago=5
 
 Ask before saving and enable verbose mode:
 

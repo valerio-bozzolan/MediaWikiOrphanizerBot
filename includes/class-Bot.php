@@ -18,6 +18,7 @@ namespace itwikidelbot;
 use cli\Log;
 use DateTime;
 use DateInterval;
+use Exception;
 
 /**
  * The Bot class helps in running the bot
@@ -134,6 +135,47 @@ class Bot {
 			$days
 		) ) );
 		return $this;
+	}
+
+	/**
+	 * Fetch the last bot edit on the next page
+	 *
+	 * @return DateTime|null
+	 */
+	public function fetchLastedit() {
+		$lastedit = null;
+		try {
+			$lastedit = PageYearMonthDayPDCsCount::createFromDateTime( $this->getDate() )
+				->fetchLasteditDate();
+
+		} catch( Exception $e ) {
+			// Unexisting. OK.
+		}
+		return $lastedit;
+	}
+
+	/**
+	 * Is the last edit date older than some seconds? (on the next page)
+	 *
+	 * @param $seconds int
+	 * @return bool
+	 */
+	public function isLasteditOlderThanSeconds( $seconds ) {
+		$lastedit = $this->fetchLastedit();
+		if( ! $lastedit ) {
+			return true; // Unexisting. OK.
+		}
+		return time() - $lastedit->format( 'U' ) > $seconds;
+	}
+
+	/**
+	 * Is the last edit date older than some minutes? (on the next page)
+	 *
+	 * @param $minutes int
+	 * @return bool
+	 */
+	public function isLasteditOlderThanMinutes( $minutes ) {
+		return $this->isLasteditOlderThanSeconds( 60 * $minutes );
 	}
 
 	/**

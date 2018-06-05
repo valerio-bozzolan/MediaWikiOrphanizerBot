@@ -37,7 +37,7 @@ abstract class PageYearMonthDayPDCs extends PageYearMonthDay {
 	 * @param $pdcs_by_type array PDCs by type
 	 * @see PageYearMonthDay::__construct()
 	 */
-	public function __construct( $year, $month, $day, $pdcs_by_type ) {
+	public function __construct( $year, $month, $day, $pdcs_by_type = [] ) {
 		$this->pdcsByType = $pdcs_by_type;
 		parent::__construct( $year, $month, $day );
 	}
@@ -49,7 +49,7 @@ abstract class PageYearMonthDayPDCs extends PageYearMonthDay {
 	 * @param $pdcs_by_type PDCs by type
 	 * @return self
 	 */
-	public static function createFromDateTimePDCs( $datetime, $pdcs_by_type ) {
+	public static function createFromDateTimePDCs( $datetime, $pdcs_by_type = [] ) {
 		return new static( $datetime->format('Y'), $datetime->format('m'), $datetime->format('d'), $pdcs_by_type );
 	}
 

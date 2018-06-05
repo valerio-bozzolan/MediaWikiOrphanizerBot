@@ -145,8 +145,10 @@ class Page {
 			'rvdir' => $direction,
 		] );
 		foreach( $response->query->pages as $page ) {
-			foreach( $page->revisions as $revision ) {
-				return self::createDateTimeFromString( $revision->timestamp );
+			if( isset( $page->revisions ) ) {
+				foreach( $page->revisions as $revision ) {
+					return self::createDateTimeFromString( $revision->timestamp );
+				}
 			}
 		}
 		throw new \Exception( 'unable to fetch the creation date' );

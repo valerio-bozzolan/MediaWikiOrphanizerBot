@@ -34,21 +34,24 @@ if( ! isset( $argv[ 0 ] ) ) {
 
 // command line arguments
 $opts = getopt( 'h', [
-	'ask',     // ask for every edit   | default: no
-	'days:',   // days to be processed | default: only one
-	'from:',   // date to start from   | default: from today
-	'help',    // help message
-	'verbose', // debug mode           | default: no
+	'ask',
+	'days:',
+	'from:',
+	'help',
+	'minutes-ago:',
+	'verbose',
 ] );
 
 // help message
 if( isset( $opts[ 'help' ] ) || isset( $opts[ 'h' ] ) ) {
 	printf( "usage: %s [OPTIONS]\n\n", $argv[ 0 ] );
-	echo "    --days=DAYS       	how many days to be processed (default: 1)\n";
-	echo "    --from=YYYY-MM-DD 	starting date (default: today)\n";
-	echo "    --ask             	ask before saving\n";
-	echo "    --verbose         	verbose mode\n";
-	echo " -h --help            	show this help and exit\n";
+	echo "    --days=DAYS        how many days to be processed (default: 1)\n";
+	echo "    --from=YYYY-MM-DD  starting date (default: today)\n";
+	echo "    --minutes-ago=N    quits if the last edit was below N minutes ago (default: 5)\n";
+	echo "                       you can set N to 0 to disable this startup verification\n";
+	echo "    --ask              ask before saving\n";
+	echo "    --verbose          verbose mode\n";
+	echo " -h --help             show this help and exit\n";
 	exit( 0 );
 }
 
@@ -61,6 +64,11 @@ $DAYS = isset( $opts[ 'days' ] )
 $DATE = isset( $opts[ 'from' ] )
 	? $opts[ 'from' ]
 	: 'now';
+
+// minimum last edit age
+$MINUTES = isset( $opts[ 'minutes-ago' ] )
+	? (int) $opts[ 'minutes-ago' ]
+	: 5;
 
 // ask for every edit
 if( isset( $opts[ 'ask' ] ) ) {
@@ -75,8 +83,16 @@ if( isset( $opts[ 'verbose' ] ) ) {
 Log::info( 'start' );
 
 $bot = Bot::createFromString( $DATE );
-for( $i = 0; $i < $DAYS; $i++ ) {
-	$bot->run()->previousDay();
+if( ! $MINUTES || $bot->isLasteditOlderThanMinutes( $MINUTES ) ) {
+	for( $i = 0; $i < $DAYS; $i++ ) {
+		$bot->run()->previousDay();
+	}
+} else {
+	// do not insist
+	Log::info( sprintf(
+		'skip: someone running less than %d minutes ago',
+		$MINUTES
+	) );
 }
 
 Log::info( 'end' );
