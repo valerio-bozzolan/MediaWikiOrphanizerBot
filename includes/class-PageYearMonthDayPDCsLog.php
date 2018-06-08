@@ -39,7 +39,7 @@ class PageYearMonthDayPDCsLog extends PageYearMonthDayPDCs {
 	public function getTemplateArguments() {
 		$args = parent::getTemplateArguments();
 
-		$protecteds = [];
+		$closeds = [];
 
 		// first running PDCs
 		$sections = [];
@@ -48,11 +48,10 @@ class PageYearMonthDayPDCsLog extends PageYearMonthDayPDCs {
 				// call the entry template for each PDC
 				$entries = [];
 				foreach( $pdcs as $pdc ) {
-					if( $pdc->isProtected() ) {
-						// skip
-						$protecteds[] = $pdc;
-					} else {
+					if( $pdc->isRunning() ) {
 						$entries[] = "{{" . $pdc->getTitle() . "}}";
+					} else {
+						$closeds[] = $pdc;
 					}
 				}
 
@@ -69,7 +68,7 @@ class PageYearMonthDayPDCsLog extends PageYearMonthDayPDCs {
 
 		// then ended PDCs
 		$entries = [];
-		foreach( $protecteds as $pdc ) {
+		foreach( $closeds as $pdc ) {
 			// call the entry template for each PDC
 			$entries[] = "{{" . $pdc->getTitle() . "}}";
 		}
@@ -77,7 +76,7 @@ class PageYearMonthDayPDCsLog extends PageYearMonthDayPDCs {
 			$entries_txt = implode( "\n", $entries );
 			$sections[] = Template::get( self::TEMPLATE_NAME . '.section', [
 				'concluse/annullate',
-					$entries_txt
+				$entries_txt
 			] );
 		}
 

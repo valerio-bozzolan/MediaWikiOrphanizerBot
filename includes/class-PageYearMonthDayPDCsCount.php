@@ -97,9 +97,9 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 	public function createPDCEntryContent( $i, PDC $pdc ) {
 
 		$template_name = self::TEMPLATE_NAME;
-		$template_name .= $pdc->isProtected()
-			? '.ENDED.entry'
-			: '.RUNNING.entry';
+		$template_name .= $pdc->isRunning()
+			? '.RUNNING.entry'
+			: '.ENDED.entry';
 
 		$turnover = $pdc->getTurnover();
 

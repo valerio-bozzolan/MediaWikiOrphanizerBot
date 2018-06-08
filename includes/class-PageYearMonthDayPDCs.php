@@ -68,7 +68,7 @@ abstract class PageYearMonthDayPDCs extends PageYearMonthDay {
 	 * @return array
 	 */
 	public function getRunningPDCsByType() {
-		return $this->getPDCsByTypeFilteringProtection( false );
+		return $this->getPDCsByTypeFilteringRunning( true );
 	}
 
 	/**
@@ -77,20 +77,20 @@ abstract class PageYearMonthDayPDCs extends PageYearMonthDay {
 	 * @return array
 	 */
 	public function getEndedPDCsByType() {
-		return $this->getPDCsByTypeFilteringProtection( true );
+		return $this->getPDCsByTypeFilteringRunning( false );
 	}
 
 	/**
-	 * Get the PDCs indexed by type, but only which of them are protected (or not)
+	 * Get the PDCs indexed by type, but only which of them are running (or not)
 	 *
-	 * @param $is_protected bool
+	 * @param $is_running bool
 	 * @return array
 	 */
-	private function getPDCsByTypeFilteringProtection( $is_protected ) {
+	private function getPDCsByTypeFilteringRunning( $is_running ) {
 		$pdcs_by_type = $this->getPDCsByType();
 		foreach( $pdcs_by_type as $type => $pdcs ) {
 			foreach( $pdcs as $i => $pdc ) {
-				if( $pdc->isProtected() !== $is_protected ) {
+				if( $pdc->isRunning() !== $is_running ) {
 					unset( $pdcs_by_type[ $type ][ $i ] );
 				}
 			}

@@ -43,6 +43,13 @@ class PDC extends Page {
 	const PREFIX_MULTIPLE = 'Wikipedia:Pagine da cancellare/multiple/';
 
 	/**
+	 * Name for the category for running PDCs
+	 *
+	 * N.B. 'multiple' PDCs have also this category.
+	 */
+	const RUNNING_CAT = 'Categoria:Procedure di cancellazione in corso';
+
+	/**
 	 * PDC category type
 	 *
 	 * @var CategoryYearMonthDay
@@ -87,11 +94,18 @@ class PDC extends Page {
 	private $lasteditDate;
 
 	/**
-	 * Is Protected?
+	 * Is protected?
 	 *
 	 * @var bool
 	 */
 	private $isProtected;
+
+	/**
+	 * Is running?
+	 *
+	 * @var bool
+	 */
+	private $isRunning;
 
 	/**
 	 * Properties that the raw object must have
@@ -131,16 +145,18 @@ class PDC extends Page {
 	 * @param $creation DateTime|null PDC creation date
 	 * @param $lastedit DateTime|null PDC lastedit date
 	 * @param $is_protected bool Is the PDC protected?
+	 * @param $is_running bool Is the PDC running?
 	 * @see Page::__construct()
 	 * @throws PDCException
 	 */
-	public function __construct( CategoryYearMonthDay $category_type, $id, $title, $title_subject, $length, $creation, $lastedit, $is_protected ) {
+	public function __construct( CategoryYearMonthDay $category_type, $id, $title, $title_subject, $length, $creation, $lastedit, $is_protected, $is_running ) {
 		$this->id           = $id;
 		$this->titleSubject = $title_subject;
 		$this->length       = $length;
 		$this->creationDate = $creation;
 		$this->lasteditDate = $lastedit;
 		$this->isProtected  = $is_protected;
+		$this->isRunning    = $is_running;
 		$this->setCategoryType( $category_type );
 
 		parent::__construct( $title );
@@ -186,10 +202,17 @@ class PDC extends Page {
 			break;
 		}
 
+		// is this PDC running?
+		$is_running = false;
+
 		// array of instances of the class CategoryYearMonthDay (and subclasses)
 		// they also have the timestamp property
 		$categories = [];
 		foreach( $page->categories as $category_raw ) {
+			if( self::RUNNING_CAT === $category_raw->title ) {
+				$is_running = true;
+				break;
+			}
 			$category = CategoryYearMonthDayTypes::createParsingTitle( $category_raw->title );
 			if( $category ) {
 				$category->timestamp = self::createDateTimeFromString( $category_raw->timestamp );
@@ -237,7 +260,8 @@ class PDC extends Page {
 			(int) $page->length,
 			$creation,
 			null, // the page->touched can't be trusted
-			$is_protected
+			$is_protected,
+			$is_running
 		);
 	}
 
@@ -390,6 +414,15 @@ class PDC extends Page {
 	 */
 	public function isProtected() {
 		return $this->isProtected;
+	}
+
+	/**
+	 * Check if this page is running
+	 *
+	 * @return bool
+	 */
+	public function isRunning() {
+		return $this->isRunning;
 	}
 
 	/**
