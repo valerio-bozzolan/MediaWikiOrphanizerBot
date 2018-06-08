@@ -570,11 +570,6 @@ class PDC extends Page {
 			$creation->setTime( 23, 59, 59 );
 		}
 
-		if( $this->getTitleSubject() === 'Unione Sportiva Latina Calcio 2017-2018' ) {
-			var_dump( $creation );
-			var_dump( $lastedit );
-		}
-
 		$creation_s = $creation->format( 'U' );
 		$lastedit_s = $lastedit->format( 'U' );
 		$seconds = $lastedit_s - $creation_s;
