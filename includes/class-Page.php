@@ -118,7 +118,7 @@ class Page {
 		if( self::$ASK_BEFORE_SAVING ) {
 			print_r( $args );
 			if( 'y' !== Input::yesNoQuestion( "Save?" ) ) {
-				$save = false;
+				return false;
 			}
 		}
 
