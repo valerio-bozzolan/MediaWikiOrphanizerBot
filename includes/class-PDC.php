@@ -422,7 +422,7 @@ class PDC extends Page {
 	 * @return bool
 	 */
 	public function isRunning() {
-		return $this->isRunning;
+		return $this->isRunning && ! $this->isProtected();
 	}
 
 	/**
