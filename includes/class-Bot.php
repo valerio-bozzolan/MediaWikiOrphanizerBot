@@ -244,6 +244,9 @@ class Bot {
 			count( $pdcs )
 		) ) );
 
+		// populate the 'subject themes' PDC field
+		PDCs::populateSubjectThemes( $pdcs );
+
 		// sort by creation date
 		PDCs::sortByCreationDate( $pdcs );
 

@@ -73,6 +73,15 @@ class PDC extends Page {
 	private $titleSubject;
 
 	/**
+	 * Subject themes
+	 *
+	 * E.g. [ 'software libero', 'LGBT', 'società' ]
+	 *
+	 * @var array
+	 */
+	private $subjectThemes = [];
+
+	/**
 	 * Page length in bytes
 	 *
 	 * @var int
@@ -283,6 +292,28 @@ class PDC extends Page {
 	 */
 	public function getTitleSubject() {
 		return $this->titleSubject;
+	}
+
+	/**
+	 * Get the subject themes
+	 *
+	 * E.g. [ 'software libero', 'LGBT', 'società' ]
+	 *
+	 * @return array
+	 */
+	public function getSubjectThemes() {
+		return $this->subjectThemes;
+	}
+
+	/**
+	 * Ad a subject themes
+	 *
+	 * @param $theme string Subject theme e.g. 'software libero'
+	 * @return self
+	 */
+	public function addSubjectTheme( $theme ) {
+		$this->subjectThemes[] = $theme;
+		return $this;
 	}
 
 	/**

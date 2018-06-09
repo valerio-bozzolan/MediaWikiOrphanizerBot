@@ -16,9 +16,10 @@
 namespace itwikidelbot;
 
 use DateTime;
+use wm\WikipediaIt;
 
 /**
- * PDCs handler
+ * Handle some PDCs
  */
 class PDCs {
 
@@ -57,6 +58,7 @@ class PDCs {
 	 *
 	 * @param $pdcs array
 	 * @param $date DateTime
+	 * @return array
 	 */
 	public static function filterByDate( $pdcs, DateTime $date ) {
 		$y_m_d = $date->format( 'Y-m-d' );
@@ -65,4 +67,118 @@ class PDCs {
 		} );
 	}
 
+	/**
+	 * Discard all the PDCs that are not multiple
+	 *
+	 * @param $pdcs array
+	 * @return $pdcs
+	 */
+	public static function filterNotMultiple( $pdcs ) {
+		return array_filter( $pdcs, function ( $pdc ) {
+			return ! $pdc->isMultiple();
+		} );
+	}
+
+	/**
+	 * Populate the PDC 'subject themes' field of some PDCs
+	 *
+	 * This method is intended to do less API requests as possible.
+	 *
+	 * @param $pdcs array
+	 * @return array
+	 * @see PDC::getSubjectThemes()
+	 */
+	public static function populateSubjectThemes( $pdcs ) {
+
+		/*
+	 	 * Pattern for the args in {{Cancellazione|arg=|arg2=}}
+		 *
+		 * This regex is a bit "repetitive" because PCRE does not support to
+		 * match a group multiple time. It only support to match the entire regex
+	 	 * multiple time.
+		 */
+		$SPACES = '[ \t\n]*';
+		$ARG = '([a-zA-Z0-9.\- \/àèìòùÀÈÌÒÙ]+)';
+		$PATTERN = '/' .
+			'{{' . $SPACES . '[Cc]ancellazione' . $SPACES .
+				'(?:' . // match without creating a group
+					'\|' . $SPACES .
+						'arg2?' . $SPACES .
+							'=' . $SPACES .
+								$ARG . $SPACES .
+				')?' . $SPACES .
+				'(?:' . // match without creating a group
+					'\|' . $SPACES .
+						'arg2?' . $SPACES .
+							'=' . $SPACES .
+								$ARG . $SPACES .
+				')?' . $SPACES .
+			'}}/';
+
+		// only non multiple PDCs
+		$pdcs = self::filterNotMultiple( $pdcs );
+
+		// subject titles
+		$titles = array_map( function ( $pdc ) {
+			return $pdc->getTitleSubject();
+		}, $pdcs );
+
+		// API to retrieve the wikitext in the first section of all the pages
+		$site = WikipediaIt::getInstance();
+		$query = $site->createQuery( [
+			'action'    => 'query',
+			'titles'    => $titles,
+			'prop'      => 'revisions',
+			'rvprop'    => 'content',
+			'rvsection' => '0',
+		] );
+
+		foreach( $query->getGenerator() as $response ) {
+
+			// all normalized PDC titles
+			$normalizeds = [];
+			if( isset( $response->query->normalized ) ) {
+				foreach( $response->query->normalized as $fromto ) {
+					$normalizeds[ $fromto->from ] = $fromto->to;
+				}
+			}
+
+			foreach( $response->query->pages as $id => $page ) {
+
+				// avoid unexisting pages
+				if( ! isset( $page->revisions ) ) {
+					continue;
+				}
+
+				// page content (only the section 0)
+				$page_content = $page->revisions[ 0 ]->{ '*' };
+
+				// find the matching PDC
+				foreach( $pdcs as $i => $pdc ) {
+
+					// normalized PDC title
+					$title = $pdc->getTitleSubject();
+					if( isset( $normalizeds[ $title ] ) ) {
+						$title = $normalizeds[ $title ];
+					}
+
+					// does the normalized PDC title match the page title?
+					if( $title === $page->title ) {
+
+						// find the {{cancellazione|arg=|arg2=}}
+						preg_match( $PATTERN, $page_content, $matches );
+						for( $j = 1; $j < count( $matches ); $j++ ) {
+							$pdc->addSubjectTheme( trim( $matches[ $j ] ) );
+						}
+
+						// do not fill again the themes of this PDC
+						unset( $pdcs[ $i ] );
+
+						// next page
+						break;
+					}
+				}
+			}
+		}
+	}
 }

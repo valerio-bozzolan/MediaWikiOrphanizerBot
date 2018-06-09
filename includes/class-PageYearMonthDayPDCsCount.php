@@ -117,7 +117,8 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 				$this->getMonthName(),
 				$this->getDay()
 			),
-			$turnover ? $turnover : ''
+			$turnover ? $turnover : '',
+			implode( ', ', $pdc->getSubjectThemes() )
 		] );
 
 	}
