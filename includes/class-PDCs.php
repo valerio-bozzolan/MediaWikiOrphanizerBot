@@ -53,22 +53,16 @@ class PDCs {
 	}
 
 	/**
-	 * Filter out all the PDCs that do not belong to a certain date
+	 * Discard all the PDCs that do not belong to a certain date
 	 *
 	 * @param $pdcs array
 	 * @param $date DateTime
 	 */
-	public static function filterNotInDate( $pdcs, DateTime $date ) {
-		$pdcs_filtered = [];
-
-		$date_raw = $date->format( 'Y-m-d' );
-		foreach( $pdcs as $pdc ) {
-			if( $pdc->getStartDate()->format( 'Y-m-d' ) === $date_raw ) {
-				$pdcs_filtered[] = $pdc;
-			}
-		}
-
-		return $pdcs_filtered;
+	public static function filterByDate( $pdcs, DateTime $date ) {
+		$y_m_d = $date->format( 'Y-m-d' );
+		return array_filter( $pdcs, function ( $pdc ) use ( $y_m_d ) {
+			return $pdc->getStartDate()->format( 'Y-m-d' ) === $y_m_d;
+		} );
 	}
 
 }

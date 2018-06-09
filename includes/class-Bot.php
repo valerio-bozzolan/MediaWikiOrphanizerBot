@@ -236,8 +236,8 @@ class Bot {
 			}
 		}
 
-		// discard PDCs that do not belong to this date
-		$pdcs = PDCs::filterNotInDate( $pdcs, $date );
+		// select only the PDCs that belong to this date
+		$pdcs = PDCs::filterByDate( $pdcs, $date );
 
 		Log::info( sprintf( sprintf(
 			"found %d PDCs",
