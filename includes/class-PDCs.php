@@ -90,29 +90,54 @@ class PDCs {
 	 */
 	public static function populateSubjectThemes( $pdcs ) {
 
+		// Pattern to match spaces, newline, tabulations
+		$_ = '[ \t\n]*';
+
 		/*
-	 	 * Pattern for the args in {{Cancellazione|arg=|arg2=}}
+		 * Pattern to match a PDC turnover (actually this information is unuseful)
 		 *
-		 * This regex is a bit "repetitive" because PCRE does not support to
-		 * match a group multiple time. It only support to match the entire regex
-	 	 * multiple time.
+		 * {{cancellazione|9}}
+		 * or explicitly:
+		 * {{cancellazione|1 = 9}}
 		 */
-		$SPACES = '[ \t\n]*';
-		$ARG = '([a-zA-Z0-9.\- \/àèìòùÀÈÌÒÙ]+)';
+		$PARAM_NUM =
+			'(?:' .
+				'\|' . $_ .
+					'(?:' . '1' . $_ . '=' . $_ . ')?' . // 1 =
+					'[0-9]+' . $_ .                      // turnover number
+			')?';
+
+		/*
+		 * Pattern to match a PDC subject theme
+		 *
+		 * {{cancellazione|arg  = something}}
+		 * or
+		 * {{cancellazione|arg2 = something}}
+		 */
+		$PARAM_THEME =
+			'(?:' .
+				'\|' . $_ .
+					'arg2?' . $_ .
+						'=' . $_ .
+							'([0-9a-zA-ZàèìòùÀÈÌÒÙ\-\/\'_. ]+?)' . $_ .
+			')?';
+
+		/*
+	 	 * Complete pattern to match all the PDC arguments
+		 *
+		 * {{Cancellazione|9|arg=something|arg2=something}}
+		 *
+		 * This pattern is a bit repetitive because PCRE does not support to
+		 * match a group multiple times.
+		 * Yes, every group can be repeated, but it will be matched only once.
+		 *
+		 * @TODO: use a wikitext parser
+		 */
 		$PATTERN = '/' .
-			'{{' . $SPACES . '[Cc]ancellazione' . $SPACES .
-				'(?:' . // match without creating a group
-					'\|' . $SPACES .
-						'arg2?' . $SPACES .
-							'=' . $SPACES .
-								$ARG . $SPACES .
-				')?' . $SPACES .
-				'(?:' . // match without creating a group
-					'\|' . $SPACES .
-						'arg2?' . $SPACES .
-							'=' . $SPACES .
-								$ARG . $SPACES .
-				')?' . $SPACES .
+			'{{' . $_ . '[Cc]ancellazione' . $_ .
+				$PARAM_NUM   .
+				$PARAM_THEME .
+				$PARAM_THEME .
 			'}}/';
 
 		// only non multiple PDCs
