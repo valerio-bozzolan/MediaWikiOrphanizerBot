@@ -152,18 +152,16 @@ class PDC extends Page {
 	 * @param $title_subject string Title of the subject page (the Wikipedia article title)
 	 * @param $length int PDC length
 	 * @param $creation DateTime|null PDC creation date
-	 * @param $lastedit DateTime|null PDC lastedit date
 	 * @param $is_protected bool Is the PDC protected?
 	 * @param $is_running bool Is the PDC running?
 	 * @see Page::__construct()
 	 * @throws PDCException
 	 */
-	public function __construct( CategoryYearMonthDay $category_type, $id, $title, $title_subject, $length, $creation, $lastedit, $is_protected, $is_running ) {
+	public function __construct( CategoryYearMonthDay $category_type, $id, $title, $title_subject, $length, $creation, $is_protected, $is_running ) {
 		$this->id           = $id;
 		$this->titleSubject = $title_subject;
 		$this->length       = $length;
 		$this->creationDate = $creation;
-		$this->lasteditDate = $lastedit;
 		$this->isProtected  = $is_protected;
 		$this->isRunning    = $is_running;
 		$this->setCategoryType( $category_type );
@@ -268,7 +266,6 @@ class PDC extends Page {
 			$title_subject,
 			(int) $page->length,
 			$creation,
-			null, // the page->touched can't be trusted
 			$is_protected,
 			$is_running
 		);
