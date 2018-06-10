@@ -161,9 +161,9 @@ class PDC extends Page {
 		$this->id           = $id;
 		$this->titleSubject = $title_subject;
 		$this->length       = $length;
-		$this->creationDate = $creation;
 		$this->isProtected  = $is_protected;
 		$this->isRunning    = $is_running;
+		$this->setCreationDate( $creation );
 		$this->setCategoryType( $category_type );
 
 		parent::__construct( $title );
@@ -369,15 +369,44 @@ class PDC extends Page {
 	}
 
 	/**
+	 * It has the creation date cached?
+	 *
+	 * @return bool
+	 */
+	public function hasCreationDate() {
+		return isset( $this->creationDate );
+	}
+
+	/**
 	 * Get the creation date
 	 *
 	 * @return DateTime
 	 */
 	public function getCreationDate() {
-		if( ! $this->creationDate ) {
+		if( ! $this->hasCreationDate() ) {
 			$this->creationDate = $this->fetchCreationDate();
 		}
 		return $this->creationDate;
+	}
+
+	/**
+	 * Set the creation date
+	 *
+	 * @param $creation DateTime
+	 * @return self
+	 */
+	public function setCreationDate( DateTime $creation ) {
+		$this->creationDate = $creation;
+		return $this;
+	}
+
+	/**
+	 * It has the latest update date cached?
+	 *
+	 * @return bool
+	 */
+	public function hasLasteditDate() {
+		return isset( $this->lasteditDate );
 	}
 
 	/**
@@ -389,10 +418,21 @@ class PDC extends Page {
 	 * @return DateTime
 	 */
 	public function getLasteditDate() {
-		if( ! $this->lasteditDate ) {
+		if( ! $this->hasLasteditDate() ) {
 			$this->lasteditDate = $this->fetchLasteditDate();
 		}
 		return $this->lasteditDate;
+	}
+
+	/**
+	 * Set the lastedit date
+	 *
+	 * @param $lastedit DateTime
+	 * @return self
+	 */
+	public function setLasteditDate( DateTime $lastedit ) {
+		$this->lastedit = $lastedit;
+		return $this;
 	}
 
 	/**
