@@ -16,7 +16,6 @@
 namespace itwikidelbot;
 
 use DateTime;
-use wm\WikipediaIt;
 use mw\API\PageMatcher;
 
 /**
@@ -81,49 +80,83 @@ class PDCs {
 	}
 
 	/**
-	 * Populate the PDC 'subject themes' field of some PDCs
+	 * Get all the title subjects of the specified PDCs
+	 *
+	 * @param $pdcs array
+	 * @return array
+	 */
+	public static function titleSubjects( $pdcs ) {
+		return array_map( function ( $pdc ) {
+			return $pdc->getTitleSubject();
+		}, $pdcs );
+	}
+
+	/**
+	 * Populate the specified PDCs that miss informations
 	 *
 	 * This method is intended to do less API requests as possible.
 	 *
 	 * @param $pdcs array
 	 * @return array
-	 * @see PDC::getSubjectThemes()
 	 */
-	public static function populateSubjectThemes( $pdcs ) {
+	public static function populateMissingInformations( $pdcs ) {
+		self::populateMissingInformationsFromLastRevision(  $pdcs );
+	}
 
-		// only non multiple PDCs
-		$pdcs = self::filterNotMultiple( $pdcs );
+	/**
+	 * Populate the specified PDCs with missing informations that can
+	 * be obtained fetching the last revision.
+	 *
+	 * This method is intended to do less API requests as possible.
+	 *
+	 * @param $pdcs
+	 */
+	private static function populateMissingInformationsFromLastRevision( $pdcs ) {
 
-		// subject titles
-		$titles = array_map( function ( $pdc ) {
-			return $pdc->getTitleSubject();
-		}, $pdcs );
-
-		// API to retrieve the wikitext in the first section of all the pages
-		$site = WikipediaIt::getInstance();
-		$query = $site->createQuery( [
+		/*
+		 * fetch the last revision from all the PDCs
+		 *
+		 * @see https://it.wikipedia.org/w/api.php?action=help&modules=query%2Brevisions
+		 */
+		$query = Page::api()->createQuery( [
 			'action'    => 'query',
-			'titles'    => $titles,
+			'titles'    => self::titleSubjects( $pdcs ),
 			'prop'      => 'revisions',
-			'rvprop'    => 'content',
+			'rvprop'    => [
+				'content',
+				'timestamp',
+			],
 			'rvsection' => '0',
 		] );
 
+		// callback fired for every match between response pages and PDCs
+		$matching_callback = function ( $page, $pdc ) {
+			if( isset( $page->revisions, $page->revisions[ 0 ] ) ) {
+
+				// this is the only one
+				$revision = $page->revisions[ 0 ];
+
+				// populate the subject themes
+				$pdc->setSubjectThemesScrapingSubjectWikitext( $revision->{ '*' } );
+
+				// populate the lastedit date
+				$lastedit_date = self::createDateTimeFromString( $revision->timestamp );
+				$pdc->setLasteditDate( $lastedit_date );
+			}
+		};
+
+		// callback that returns the PDC page title
+		$pdc_page_title_callback = function ( $pdc ) {
+			return $pdc->getTitleSubject();
+		};
+
+		// query continuation
 		foreach( $query->getGenerator() as $response ) {
-			( new PageMatcher( $response->query, $pdcs ) )->matchByTitle(
-				// callback fired for every match between response pages and PDCs
-				function ( $page, $pdc ) {
-					if( isset( $page->revisions ) ) {
-						$page_content = $page->revisions[ 0 ]->{ '*' };
-						$pdc->setSubjectThemesScrapingSubjectWikitext( $page_content );
-					}
-				},
-				// callback that must returns the PDC page title
-				function ( $pdc ) {
-					return $pdc->getTitleSubject();
-				}
-			);
+			// match page results and PDCs by title
+			( new PageMatcher( $response->query, $pdcs ) )
+				->matchByTitle( $matching_callback, $pdc_page_title_callback );
 		}
 	}
 
 }
+

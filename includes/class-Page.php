@@ -210,7 +210,7 @@ class Page {
 	 *
 	 * @return mw\API
 	 */
-	protected static function api() {
+	public static function api() {
 		return WikipediaIt::getInstance();
 	}
 
