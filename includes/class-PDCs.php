@@ -140,7 +140,7 @@ class PDCs {
 				$pdc->setSubjectThemesScrapingSubjectWikitext( $revision->{ '*' } );
 
 				// populate the lastedit date
-				$lastedit_date = self::createDateTimeFromString( $revision->timestamp );
+				$lastedit_date = Page::createDateTimeFromString( $revision->timestamp );
 				$pdc->setLasteditDate( $lastedit_date );
 			}
 		};
