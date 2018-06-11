@@ -113,6 +113,10 @@ class PDCs {
 	 */
 	private static function populateMissingInformationsFromLastRevision( $pdcs ) {
 
+		if( ! $pdcs ) {
+			return;
+		}
+
 		/*
 		 * fetch the last revision from all the PDCs
 		 *
