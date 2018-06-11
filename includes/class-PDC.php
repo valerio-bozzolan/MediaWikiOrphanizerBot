@@ -50,6 +50,14 @@ class PDC extends Page {
 	const RUNNING_CAT = 'Categoria:Procedure di cancellazione in corso';
 
 	/**
+	 * Day threshold
+	 *
+	 * This is a number between 0 and 1. The more it is near to 0,
+	 * the more the PDC duration will be floored.
+	 */
+	const DAY_THRESHOLD = 0.7; // 16:47~
+
+	/**
 	 * PDC category type
 	 *
 	 * @var CategoryYearMonthDay
@@ -641,7 +649,14 @@ class PDC extends Page {
 		$creation_s = $creation->format( 'U' );
 		$lastedit_s = $lastedit->format( 'U' );
 		$seconds = $lastedit_s - $creation_s;
-		$days = (int) round( $seconds / 3600 / 24 );
+
+		$days_f = $seconds / 86400;
+		$days = (int) floor( $days_f );
+		$day_mantissa = $days_f - $days;
+		if( $day_mantissa > self::DAY_THRESHOLD ) {
+			$days++;
+		}
+
 		if( $days < 0 ) {
 			$days = 0;
 		}
