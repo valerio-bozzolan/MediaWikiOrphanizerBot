@@ -678,4 +678,70 @@ class PDC extends Page {
 			$pdc ->getCategoryType()
 		] ) );
 	}
+
+	/**
+	 * Set subject themes scraping subject wikitext
+	 *
+	 * @param $page_content string
+	 * @return self
+	 */
+	public function setSubjectThemesScrapingSubjectWikitext( $page_content ) {
+		// Pattern to match spaces, newline, tabulations
+		$_ = '[ \t\n]*';
+
+		/*
+		 * Pattern to match a PDC turnover (actually this information is unuseful)
+		 *
+		 * {{cancellazione|9}}
+		 * or explicitly:
+		 * {{cancellazione|1 = 9}}
+		 */
+		$PARAM_NUM =
+			'(?:' .
+				'\|' . $_ .
+					'(?:' . '1' . $_ . '=' . $_ . ')?' . // 1 =
+					'[0-9]+' . $_ .                      // turnover number
+			')?';
+
+		/*
+		 * Pattern to match a PDC subject theme
+		 *
+		 * {{cancellazione|arg  = something}}
+		 * or
+		 * {{cancellazione|arg2 = something}}
+		 */
+		$PARAM_THEME =
+			'(?:' .
+				'\|' . $_ .
+					'arg2?' . $_ .
+						'=' . $_ .
+							'([0-9a-zA-ZàèìòùÀÈÌÒÙ\-\/\'_. ]+?)' . $_ .
+			')?';
+
+		/*
+		 * Complete pattern to match all the PDC arguments
+		 *
+		 * {{Cancellazione|9|arg=something|arg2=something}}
+		 *
+		 * This pattern is a bit repetitive because PCRE does not support to
+		 * match a group multiple times.
+		 * Yes, every group can be repeated, but it will be matched only once.
+		 *
+		 * @TODO: use a wikitext parser
+		 */
+		$PATTERN = '/' .
+			'{{' . $_ . '[Cc]ancellazione' . $_ .
+				$PARAM_NUM   .
+				$PARAM_THEME .
+				$PARAM_THEME .
+			'}}/';
+
+		// run the regex and extrapulate the themes
+		preg_match( $PATTERN, $page_content, $matches );
+		for( $i = 1; $i < count( $matches ); $i++ ) {
+			$this->addSubjectTheme( trim( $matches[ $i ] ) );
+		}
+
+		return $this;
+	}
 }

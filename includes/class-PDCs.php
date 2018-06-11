@@ -91,56 +91,6 @@ class PDCs {
 	 */
 	public static function populateSubjectThemes( $pdcs ) {
 
-		// Pattern to match spaces, newline, tabulations
-		$_ = '[ \t\n]*';
-
-		/*
-		 * Pattern to match a PDC turnover (actually this information is unuseful)
-		 *
-		 * {{cancellazione|9}}
-		 * or explicitly:
-		 * {{cancellazione|1 = 9}}
-		 */
-		$PARAM_NUM =
-			'(?:' .
-				'\|' . $_ .
-					'(?:' . '1' . $_ . '=' . $_ . ')?' . // 1 =
-					'[0-9]+' . $_ .                      // turnover number
-			')?';
-
-		/*
-		 * Pattern to match a PDC subject theme
-		 *
-		 * {{cancellazione|arg  = something}}
-		 * or
-		 * {{cancellazione|arg2 = something}}
-		 */
-		$PARAM_THEME =
-			'(?:' .
-				'\|' . $_ .
-					'arg2?' . $_ .
-						'=' . $_ .
-							'([0-9a-zA-ZàèìòùÀÈÌÒÙ\-\/\'_. ]+?)' . $_ .
-			')?';
-
-		/*
-	 	 * Complete pattern to match all the PDC arguments
-		 *
-		 * {{Cancellazione|9|arg=something|arg2=something}}
-		 *
-		 * This pattern is a bit repetitive because PCRE does not support to
-		 * match a group multiple times.
-		 * Yes, every group can be repeated, but it will be matched only once.
-		 *
-		 * @TODO: use a wikitext parser
-		 */
-		$PATTERN = '/' .
-			'{{' . $_ . '[Cc]ancellazione' . $_ .
-				$PARAM_NUM   .
-				$PARAM_THEME .
-				$PARAM_THEME .
-			'}}/';
-
 		// only non multiple PDCs
 		$pdcs = self::filterNotMultiple( $pdcs );
 
@@ -162,14 +112,10 @@ class PDCs {
 		foreach( $query->getGenerator() as $response ) {
 			( new PageMatcher( $response->query, $pdcs ) )->matchByTitle(
 				// callback fired for every match between response pages and PDCs
-				function ( $page, $pdc ) use ( $PATTERN ) {
-					// find the {{cancellazione|arg=|arg2=}}
+				function ( $page, $pdc ) {
 					if( isset( $page->revisions ) ) {
 						$page_content = $page->revisions[ 0 ]->{ '*' };
-						preg_match( $PATTERN, $page_content, $matches );
-						for( $j = 1; $j < count( $matches ); $j++ ) {
-							$pdc->addSubjectTheme( trim( $matches[ $j ] ) );
-						}
+						$pdc->setSubjectThemesScrapingSubjectWikitext( $page_content );
 					}
 				},
 				// callback that must returns the PDC page title
@@ -179,4 +125,5 @@ class PDCs {
 			);
 		}
 	}
+
 }
