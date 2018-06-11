@@ -48,6 +48,13 @@ class Page {
 	private $title;
 
 	/**
+	 * Cache for the existing status of this page
+	 *
+	 * @var bool
+	 */
+	private $exists;
+
+	/**
 	 * Construct a Page
 	 *
 	 * @param $title Page title with its prefix
@@ -70,41 +77,10 @@ class Page {
 	 *
 	 * @param $content string Page content
 	 * @param $summary string Edit summary
-	 * @return bool|mixed False if not created
+	 * @return mixed
 	 */
 	public function saveByContentSummary( $content, $summary ) {
-		return static::saveByTitleContentSummary( $this->getTitle(), $content, $summary );
-	}
-
-	/**
-	 * Save this page if it does not exist
-	 *
-	 * @param $content string Page content
-	 * @param $summary string Edit summary
-	 * @return bool|mixed False if not created
-	 */
-	public function saveByContentSummaryIfNotExists( $content, $summary ) {
-		return self::saveByTitleContentSummaryIfNotExists( $this->getTitle(), $content, $summary );
-	}
-
-	/**
-	 * Check if this page exists
-	 *
-	 * @return bool
-	 */
-	public function exists() {
-		return static::existsByTitle( $this->getTitle() );
-	}
-
-	/**
-	 * Save a page
-	 *
-	 * @param $title string Page name with prefix
-	 * @param $content string Page content
-	 * @param $summary string Edit summary
-	 * @return mixed Response
-	 */
-	public static function saveByTitleContentSummary( $title, $content, $summary ) {
+		$title = $this->getTitle();
 		$api = self::api();
 		$args = [
 			'action'  => 'edit',
@@ -125,6 +101,49 @@ class Page {
 		Log::info( "writing [[$title]]" );
 
 		return $api->post( $args );
+	}
+
+	/**
+	 * Save this page if it does not exist
+	 *
+	 * @param $content string Page content
+	 * @param $summary string Edit summary
+	 * @return bool|mixed False if not created
+	 */
+	public function saveByContentSummaryIfNotExists( $content, $summary ) {
+		if( ! $this->exists() ) {
+			return $this->saveByContentSummary( $content, $summary );
+		}
+		return false;
+	}
+
+	/**
+	 * Set internally if this page exists
+	 *
+	 * @param $exists bool
+	 * @return bool|mixed False if not created
+	 */
+	public function setIfExists( $exists ) {
+		$this->exists = $exists;
+	}
+
+	/**
+	 * Check if this page exists (the result is cached)
+	 *
+	 * @return bool
+	 */
+	public function exists() {
+		if( null === $this->exists ) {
+			$result = self::api()->fetch( [
+				'action' => 'query',
+				'prop'   => 'info',
+				'titles' => $this->getTitle(),
+			] );
+			foreach( $result->query->pages as $pageid => $page ) {
+				$this->exists = ! isset( $page->missing );
+			}
+		}
+		return $this->exists;
 	}
 
 	/**
@@ -170,39 +189,6 @@ class Page {
 	 */
 	public function fetchLasteditDate() {
 		return $this->fetchFirstRevisionDateByDirection( 'older' );
-	}
-
-	/**
-	 * Save a page if it does not exist
-	 *
-	 * @param $title string Page name with prefix
-	 * @param $content string Page content
-	 * @param $summary string Edit summary
-	 * @return bool|mixed False if not created
-	 */
-	public static function saveByTitleContentSummaryIfNotExists( $title, $content, $summary ) {
-		if( ! static::existsByTitle( $title ) ) {
-			return static::saveByTitleContentSummary( $title, $content, $summary );
-		}
-		return false;
-	}
-
-	/**
-	 * Check if a page title exists
-	 *
-	 * @param $title string Page name with prefix
-	 * @return bool
-	 */
-	public static function existsByTitle( $title ) {
-		$result = self::api()->fetch( [
-			'action' => 'query',
-			'prop'   => 'info',
-			'titles' => $title,
-		] );
-		foreach( $result->query->pages as $pageid => $page ) {
-			return ! isset( $page->missing );
-		}
-		return false;
 	}
 
 	/**

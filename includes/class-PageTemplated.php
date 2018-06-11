@@ -117,12 +117,9 @@ abstract class PageTemplated extends Page {
 	/**
 	 * Save this page from the content of its template if it does not exist
 	 *
-	 * @return self
+	 * @return mixed
 	 */
 	public function saveIfNotExists() {
-		if( ! $this->exists() ) {
-			$this->save();
-		}
-		return $this;
+		return $this->saveByContentSummaryIfNotExists( $this->getTemplatedContent(), $this->getTemplatedSummary() );
 	}
 }
