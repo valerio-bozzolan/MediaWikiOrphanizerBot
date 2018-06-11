@@ -185,26 +185,50 @@ class Bot {
 	 * @return self
 	 */
 	public function run() {
+
+		$cache = & $this->cache;
+
 		// date initialization
 		$date  = $this->getDate();
 		$year  = $date->format( 'Y' );
 		$month = $date->format( 'n' ); // 1-12
 		$day   = $date->format( 'j' );
 
+		// yearly category
+		$y_category = new CategoryYear( $year );
+
+		// monthly category
+		$m_category = new CategoryYearMonth( $year, $month );
+
+		// create all the PDC types
+		$category_types = [];
+		foreach( CategoryYearMonthDayTypes::all() as $CategoryType ) {
+			$category_types[] = new $CategoryType( $year, $month, $day );
+		}
+
+		// all the categories
+		$all_categories = $category_types;
+		if( ! isset( $cache[ $month ] ) ) {
+			$all_categories[] = $m_category;
+		}
+		if( ! isset( $cache[ $year ] ) ) {
+			$all_categories[] = $y_category;
+		}
+
+		// check in bulk if the categories already exist
+		Pages::populateWheneverTheyExist( $all_categories );
+
 		// create the yearly category (once)
-		$cache = & $this->cache;
 		if( ! isset( $cache[ $year ] ) ) {
 			$cache[ $year ] = [];
-			( new CategoryYear( $year ) )
-				->saveIfNotExists();
+			$y_category->saveIfNotExists();
 		}
 
 		// create the monthly category (once)
 		$cache = & $cache[ $year ];
 		if( ! isset( $cache[ $month ] ) ) {
 			$cache[ $month ] = true;
-			( new CategoryYearMonth( $year, $month ) )
-				->saveIfNotExists();
+			$m_category->saveIfNotExists();
 		}
 
 		Log::info( "work on $year/$month/$day" );
@@ -213,10 +237,9 @@ class Bot {
 		$pdcs = [];
 
 		// handle every PDC type
-		foreach( CategoryYearMonthDayTypes::all() as $CategoryType ) {
+		foreach( $category_types as $category_type ) {
 
 			// fetch PDCs from this type
-			$category_type = new $CategoryType( $year, $month, $day );
 			$category_type_pdcs = $category_type->fetchPDCs();
 
 			// save the specific daily category type only if it's not empty
