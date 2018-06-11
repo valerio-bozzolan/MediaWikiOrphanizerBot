@@ -17,6 +17,7 @@ namespace itwikidelbot;
 
 use DateTime;
 use wm\WikipediaIt;
+use mw\API\PageMatcher;
 
 /**
  * Handle some PDCs
@@ -159,51 +160,23 @@ class PDCs {
 		] );
 
 		foreach( $query->getGenerator() as $response ) {
-
-			// all normalized PDC titles
-			$normalizeds = [];
-			if( isset( $response->query->normalized ) ) {
-				foreach( $response->query->normalized as $fromto ) {
-					$normalizeds[ $fromto->from ] = $fromto->to;
-				}
-			}
-
-			foreach( $response->query->pages as $id => $page ) {
-
-				// avoid unexisting pages
-				if( ! isset( $page->revisions ) ) {
-					continue;
-				}
-
-				// page content (only the section 0)
-				$page_content = $page->revisions[ 0 ]->{ '*' };
-
-				// find the matching PDC
-				foreach( $pdcs as $i => $pdc ) {
-
-					// normalized PDC title
-					$title = $pdc->getTitleSubject();
-					if( isset( $normalizeds[ $title ] ) ) {
-						$title = $normalizeds[ $title ];
-					}
-
-					// does the normalized PDC title match the page title?
-					if( $title === $page->title ) {
-
-						// find the {{cancellazione|arg=|arg2=}}
+			( new PageMatcher( $response->query, $pdcs ) )->matchByTitle(
+				// callback fired for every match between response pages and PDCs
+				function ( $page, $pdc ) use ( $PATTERN ) {
+					// find the {{cancellazione|arg=|arg2=}}
+					if( isset( $page->revisions ) ) {
+						$page_content = $page->revisions[ 0 ]->{ '*' };
 						preg_match( $PATTERN, $page_content, $matches );
 						for( $j = 1; $j < count( $matches ); $j++ ) {
 							$pdc->addSubjectTheme( trim( $matches[ $j ] ) );
 						}
-
-						// do not fill again the themes of this PDC
-						unset( $pdcs[ $i ] );
-
-						// next page
-						break;
 					}
+				},
+				// callback that must returns the PDC page title
+				function ( $pdc ) {
+					return $pdc->getTitleSubject();
 				}
-			}
+			);
 		}
 	}
 }
