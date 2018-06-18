@@ -403,7 +403,7 @@ class PDC extends Page {
 	 * @param $creation DateTime
 	 * @return self
 	 */
-	public function setCreationDate( DateTime $creation ) {
+	public function setCreationDate( $creation ) {
 		$this->creationDate = $creation;
 		return $this;
 	}
