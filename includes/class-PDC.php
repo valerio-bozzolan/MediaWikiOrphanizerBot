@@ -180,7 +180,6 @@ class PDC extends Page {
 		if( ! $this->isTitlePrefixValid() ) {
 			throw new PDCException( 'not a PDC' );
 		}
-		$this->checkTitleSubjectConsistence();
 	}
 
 	/**
@@ -535,7 +534,7 @@ class PDC extends Page {
 	 *
 	 * @return string
 	 */
-	private function getTitleUnprefixed() {
+	public function getTitleUnprefixed() {
 		return substr( $this->getTitle(), strlen( $this->getTitlePrefix() ) );
 	}
 
@@ -550,11 +549,11 @@ class PDC extends Page {
 	}
 
 	/**
-	 * Verify if the title of the subject is consistent with the PDC title
+	 * Check if the title of the subject is consistent with the PDC title
 	 *
 	 * @return bool
 	 */
-	private function checkTitleSubjectConsistence() {
+	public function isTitleSubjectConsistent() {
 		// subject from {{DEFAULTSORT}} category prefix
 		$subject = $this->getTitleSubject();
 
@@ -569,14 +568,7 @@ class PDC extends Page {
 				$subject_gen = $matches[ 1 ];
 			}
 		}
-
-		if( $subject !== $subject_gen ) {
-			throw new PDCException( sprintf(
-				'the sortkey is "%s" and it is inconsistent with the PDC suffix "%s"',
-				$subject_gen,
-				$subject
-			) );
-		}
+		return $subject === $subject_gen;
 	}
 
 	/**
