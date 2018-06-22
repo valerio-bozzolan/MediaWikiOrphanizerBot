@@ -54,6 +54,21 @@ abstract class PageYearMonthDayPDCs extends PageYearMonthDay {
 	}
 
 	/**
+	 * Get all the PDCs
+	 *
+	 * @return array
+	 */
+	public function getPDCs() {
+		$all = [];
+		foreach( $this->pdcsByType as $pdcs ) {
+			foreach( $pdcs as $pdc ) {
+				$all[] = $pdc;
+			}
+		}
+		return $all;
+	}
+
+	/**
 	 * Get the PDCs indexed by type
 	 *
 	 * @return array
