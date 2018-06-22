@@ -75,6 +75,23 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 			] );
 		}
 
+		// with some fixable errors
+		$erroneous = [];
+		foreach( $this->getPDCs() as $pdc ) {
+			if( ! $pdc->isTitleSubjectConsistent() ) {
+				$erroneous[] = self::createPDCErrorMessage( $pdc,
+					Template::get( self::TEMPLATE_NAME . '.ERRONEOUS.msg.sortkey', [
+						$pdc->getTitleSubject()
+					] )
+				);
+			}
+		}
+		if( $erroneous ) {
+			$sections[] = Template::get( self::TEMPLATE_NAME . '.ERRONEOUS.section', [
+				implode( "\n", $erroneous )
+			] );
+		}
+
 		$args = parent::getTemplateArguments();
 
 		// Does it have content?
@@ -121,6 +138,20 @@ class PageYearMonthDayPDCsCount extends PageYearMonthDayPDCs {
 			implode( ', ', $pdc->getSubjectThemes() )
 		] );
 
+	}
+
+	/**
+	 * Create a PDC error message
+	 *
+	 * @param $pdc object
+	 * @param $message string
+	 * @return string
+	 */
+	public static function createPDCErrorMessage( $pdc, $message ) {
+		return Template::get( self::TEMPLATE_NAME . '.ERRONEOUS.entry', [
+			$pdc->getTitle(),
+			$message,
+		] );
 	}
 
 }
