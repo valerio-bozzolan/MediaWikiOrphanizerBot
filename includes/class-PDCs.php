@@ -135,7 +135,7 @@ class PDCs {
 
 		// callback fired for every match between response pages and PDCs
 		$matching_callback = function ( $page, $pdc ) {
-			if( isset( $page->revisions, $page->revisions[ 0 ] ) ) {
+			if( isset( $page->revisions[ 0 ] ) ) {
 
 				// this is the only one
 				$revision = $page->revisions[ 0 ];
