@@ -54,6 +54,7 @@ class CategoryYearMonthDayTypes {
 		'Categoria:Procedure di cancellazione protette',
 		'Categoria:Procedure di cancellazione multiple in corso',
 		'Categoria:Pagine protette - scadute',
+		'Categoria:Pagine di servizio protette',
 	];
 
 	/**
