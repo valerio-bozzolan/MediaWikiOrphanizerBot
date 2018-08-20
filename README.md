@@ -2,9 +2,7 @@
 
 This software is an Italian Wikipedia bot. It keeps updated the public deletion logs of Italian Wikipedia pages.
 
-## History of the project
-
-The script was originally developed by Mauro762 (aka MauroBot) in 2013 using JavaScript and previously developed in Python {{Citation needed}}.
+More informations here: https://it.wikipedia.org/wiki/Utente:BotCancellazioni
 
 ## Installation
 
