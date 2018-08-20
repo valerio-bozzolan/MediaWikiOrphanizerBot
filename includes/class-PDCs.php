@@ -130,22 +130,24 @@ class PDCs {
 				'content',
 				'timestamp',
 			],
+			'rvslots'   => 'main',
 			'rvsection' => '0',
 		] );
 
 		// callback fired for every match between response pages and PDCs
 		$matching_callback = function ( $page, $pdc ) {
 			if( isset( $page->revisions[ 0 ] ) ) {
-
 				// this is the only one
 				$revision = $page->revisions[ 0 ];
-
-				// populate the subject themes
-				$pdc->setSubjectThemesScrapingSubjectWikitext( $revision->{ '*' } );
 
 				// populate the lastedit date
 				$lastedit_date = Page::createDateTimeFromString( $revision->timestamp );
 				$pdc->setLasteditDate( $lastedit_date );
+
+				// populate the subject themes
+				if( isset( $revision->slots->main ) ) {
+					$pdc->setSubjectThemesScrapingSubjectWikitext( $revision->slots->main->{ '*' } );
+				}
 			}
 		};
 
@@ -163,4 +165,3 @@ class PDCs {
 	}
 
 }
-
