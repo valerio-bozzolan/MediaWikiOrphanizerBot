@@ -729,6 +729,7 @@ class PDC extends Page {
 		 * Complete pattern to match all the PDC arguments
 		 *
 		 * {{Cancellazione|9|arg=something|arg2=something}}
+		 * {{Cancella     |9|arg=something|arg2=something}}
 		 *
 		 * This pattern is a bit repetitive because PCRE does not support to
 		 * match a group multiple times.
@@ -737,7 +738,7 @@ class PDC extends Page {
 		 * @TODO: use a wikitext parser
 		 */
 		$PATTERN = '/' .
-			'{{' . $_ . '[Cc]ancellazione' . $_ .
+			'{{' . $_ . '(?:[Cc]ancellazione|[Cc]ancella)' . $_ .
 				$PARAM_NUM   .
 				$PARAM_THEME .
 				$PARAM_THEME .
