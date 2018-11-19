@@ -716,11 +716,15 @@ class PDC extends Page {
 		 * {{cancellazione|arg  = something}}
 		 * or
 		 * {{cancellazione|arg2 = something}}
+		 * or
+		 * {{cancellazione|argomento = something}}
+		 * or
+		 * {{cancellazione|argomento2 = something}}
 		 */
 		$PARAM_THEME =
 			'(?:' .
 				'\|' . $_ .
-					'arg2?' . $_ .
+					'arg(?:omento)?[0-9]?' . $_ .
 						'=' . $_ .
 							'([0-9a-zA-ZàèìòùÀÈÌÒÙ\-\/\'_. ]+?)' . $_ .
 			')?';
