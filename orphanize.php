@@ -17,7 +17,7 @@
 namespace itwikidelbot;
 
 // report every error
-error_reporting( E_STRICT );
+//error_reporting( E_STRICT );
 
 // autoload classes and configuration
 require __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'autoload.php';
@@ -32,6 +32,7 @@ $TITLE_SOURCE = 'Utente:Valerio Bozzolan';
 // classes used
 use \cli\Log;
 use \web\MediaWikis;
+use \mw\Wikilink;
 
 // wiki identifier
 $wiki_uid = 'itwiki';
@@ -152,7 +153,7 @@ Log::info( sprintf(
 while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_TITLES ) ) {
 
 	// query last revision
-	$queries =
+	$responses =
 		$wiki->createQuery( [
 			'action'  => 'query',
 			'pageids' => $less_involved_pageids,
@@ -161,52 +162,60 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 			'rvprop'  => 'content',
 		] );
 
-	// for each revision query
-	foreach( $queries as $query ) {
+	// for each response
+	foreach( $responses as $response ) {
 
-		// page wikitext raw
-		$wikitext_raw = $page->revisions[ 0 ]->revision->slots->main->{ '*' };
+		// for each page
+		foreach( $response->query->pages as $page ) {
 
-		// wikitext object
-		$wikitext = $wiki->createWikitext( $wikitext_raw );
+			// does it have a revision?
+			if( isset( $page->revisions[ 0 ] ) ) {
 
-		// orphanize these titles
-		foreach( $involved_pagetitles as $title_complete ) {
+				// get wikitext from the main slot
+				$wikitext_raw = $page->revisions[ 0 ]->slots->main->{ '*' };
 
-			// spaces can be underscores
-			$title_complete = str_replace( ' ', '[ _]', $title_complete );
+				// create a Wikitext object
+				$wikitext = $wiki->createWikitext( $wikitext_raw );
 
-			// the title can contain a namespace
-			$ns = '';
-			$parts = explode( ':', $title_complete, 2 );
-			if( count( $parts ) === 2 ) {
-				$ns    = $parts[ 0 ];
-				$title = $parts[ 1 ];
+				// for each of the titles to be orphanized
+				foreach( $involved_pagetitles as $involved_pagetitle ) {
 
-				if( $ns ) {
-					$ns .= "$ns:";
+					// parse the orphanizing title
+					$title = $wiki->createTitleParsing( $involved_pagetitle );
+
+					// a wikilink without alias
+					$wikilink_simple = $wiki->createWikilink( $title, Wikilink::NO_ALIAS );
+
+					// a wikilink with whatever alias
+					$wikilink_alias  = $wiki->createWikilink( $title, Wikilink::WHATEVER_ALIAS );
+
+					// sobstitute simple links e.g. [[Hello]]
+					$wikilink_regex_simple = $wikilink_simple->getRegex( [
+						'title-group-name' => 'title'
+					] );
+
+					// sobstitute links with alias e.g. [[Hello|whatever]]
+					$wikilink_regex_alias = $wikilink_alias->getRegex( [
+						'alias-group-name' => 'alias'
+					] );
+
+					// convert '[[Hello]]' to 'Hello'
+					$wikitext->pregReplace(
+						"/$wikilink_regex_simple/",
+						\regex\Generic::groupName( 'title' )
+					);
+
+					// convert '[[Hello|world]]' to 'world'
+					$wikitext->pregReplace(
+						"/$wikilink_regex_alias/",
+						\regex\Generic::groupName( 'alias' )
+					);
+
+					Log::info( implode( "; ", $wikitext->getHumanUniqueSobstitutions() ) );
+
+					// @TODO: save!
 				}
 			}
-
-			// verify the namespace
-			if( $ns ) {
-				if( $ns_object = $wiki->findNamespace( $ns ) ) {
-					$ns = $ns_object->getRegex();
-				} else {
-					// Oh, that was not a namespace but title part
-					$title = "$ns:$title";
-					$ns = '';
-				}
-			}
-
-			// sanitize title and namespace
-			$ns    = preg_quote( $ns );
-			$title = preg_quote( $title );
-
-			$wikitext->pregReplace(
-				'/\[\[ *' . $title . ' *\]\]/'
-			);
 		}
 	}
-
 }
