@@ -11,13 +11,31 @@ Actually this is just a proof-of-concept from an idea of [Parma1983](https://it.
 
 ## Configuration
 
+You know you should provide your bot credentials in order to use a tool.
+
 1. Open the file [`config-example.php`](config-example.php) with a text editor
 2. Fill your bot credentials
 3. Save-as `config.php`
 
 ## Usage
 
-	./orphanizer.php
+	./orphanizer.php --help
+
+```
+Welcome in your MediaWiki Orphanizer bot!
+
+ Usage:   ./orphanize.php [OPTIONS]
+ Options: --wiki UID          Specify a wiki from it's UID.
+          --list PAGENAME     Specify a pagename that should
+                              contain the wikilinks to be
+                              orphanized by this bot.
+          --summary TEXT      Edit summary.
+          --help              Show this message and quit.
+ Example:
+          ./orphanize.php --wiki itwiki --list Wikipedia:PDC/Elenco
+
+ Have fun! by Valerio Bozzolan
+```
 
 ## License
 
