@@ -51,6 +51,7 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 	     "          --list PAGENAME     Specify a pagename that should\n"     .
 	     "                              contain the wikilinks to be\n"        .
 	     "                              orphanized by this bot.\n"            .
+	     "          --ns 0              Limit to a certain namespace ID.\n"   .
 	     "          --summary TEXT      Edit summary.\n"                      .
 	     "          --help              Show this message and quit.\n"        .
 	     " Example:\n"                                                        .
@@ -71,6 +72,12 @@ $SUMMARY =
 	     ? $opts[ 'summary' ]
 	     : "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
 
+// limit to a certain namespace (default none)
+$NS =
+	isset( $opts[ 'ns' ] )
+	     ? $opts[ 'ns' ]
+	     : null;
+
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
 
@@ -83,8 +90,8 @@ use \mw\Wikilink;
 // wiki identifier
 $wiki_uid =
 	isset( $opts[ 'wiki' ] )
-		? $opts[ 'wiki' ]
-		: 'itwiki';
+	     ? $opts[ 'wiki' ]
+	     : 'itwiki';
 
 // wiki instance
 $wiki = Mediawikis::findFromUid( $wiki_uid );
@@ -161,19 +168,23 @@ foreach( $revision->query->pages as $sourcepage ) {
 		// note that the API accepts a maximum trance of titles
 		while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0, MAX_TRANCHE_TITLES ) ) {
 
-			// for each of these titles, query linksto
-			$linksto =
-				$wiki->createQuery( [
+			// API argumento for the linksto query
+			$linksto_args = [
 					'action'      => 'query',
 					'titles'      => $less_titles_to_be_orphanized,
 					'prop'        => 'linkshere',
 					'lhprop'      => 'pageid',
-					'lhnamespace' => 0,
 					'lhlimit'     => 300,
-				] );
+			];
+
+			// limit to certain namespaces
+			if( isset( $NS ) ) {
+				$linksto_args[ 'lhnamespace' ] = $NS;
+			}
 
 			// cumulate the linkshere page ids
 			Log::info( "requesting linkshere..." );
+			$linksto = $wiki->createQuery( $linksto_args );
 			foreach( $linksto as $response ) {
 				foreach( $response->query->pages as $page ) {
 					if( isset( $page->linkshere ) ) {
