@@ -17,7 +17,7 @@ Actually this is just a proof-of-concept from an idea of [Parma1983](https://it.
 
 ## Usage
 
-Please update this section.
+	./orphanizer.php
 
 ## License
 

@@ -23,14 +23,45 @@ set_error_handler( function( $errno, $errstr, $errfile, $errline ) {
 	}
 } );
 
+// do not expose from web
+if( ! isset( $argv[ 0 ] ) ) {
+	exit( 1 );
+}
+
 // autoload classes and configuration
 require __DIR__ . '/includes/autoload.php';
 require __DIR__ . '/config.php';
 
+// allowed options
+$opts = getopt( 'h', [
+	'wiki:',
+	'list:',
+	'help'
+] );
+
+// show help
+if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
+	echo "Welcome in your MediaWiki Orphanizer bot!\n\n"                      .
+	     " Usage:   {$argv[0]} [OPTIONS]\n"                                   .
+	     " Options: --wiki UID          Specify a wiki from it's UID.\n"      .
+	     "          --list PAGENAME     Specify a pagename that should\n"     .
+	     "                              contain the wikilinks to be\n"        .
+	     "                              orphanized by this bot.\n"            .
+	     "          --help              Show this message and quit.\n"        .
+	     " Example:\n"                                                        .
+	     "          {$argv[0]} --wiki itwiki --list Wikipedia:PDC/Elenco\n\n" .
+	     " Have fun! by Valerio Bozzolan\n"                                   ;
+	exit( 1 );
+}
+
+// title source
+$TITLE_SOURCE =
+	isset( $opts[ 'list' ] )
+		? $opts[ 'list' ]
+		: 'Utente:.avgas/Wikilink da orfanizzare';
+
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
-
-$TITLE_SOURCE = 'Utente:.avgas/Wikilink da orfanizzare';
 
 // classes used
 use \cli\Log;
@@ -39,12 +70,16 @@ use \web\MediaWikis;
 use \mw\Wikilink;
 
 // wiki identifier
-$wiki_uid = 'itwiki';
+$wiki_uid =
+	isset( $opts[ 'wiki' ] )
+		? $opts[ 'wiki' ]
+		: 'itwiki';
 
 // wiki instance
 $wiki = Mediawikis::findFromUid( $wiki_uid );
 
 // query last revision
+Log::info( "reading $TITLE_SOURCE" );
 $revision =
 	$wiki->fetch( [
 		'action'  => 'query',
