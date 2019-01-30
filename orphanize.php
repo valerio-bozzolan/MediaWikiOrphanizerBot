@@ -16,8 +16,12 @@
 
 namespace itwikidelbot;
 
-// report every error
-//error_reporting( E_STRICT );
+// die on whatever error
+set_error_handler( function( $errno, $errstr, $errfile, $errline ) {
+	if( error_reporting() !==0 ) {
+		throw new \ErrorException( $errstr, 0, $errno, $errfile, $errline );
+	}
+} );
 
 // autoload classes and configuration
 require __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'autoload.php';
