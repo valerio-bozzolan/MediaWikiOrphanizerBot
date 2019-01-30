@@ -24,8 +24,8 @@ set_error_handler( function( $errno, $errstr, $errfile, $errline ) {
 } );
 
 // autoload classes and configuration
-require __DIR__ . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'autoload.php';
-require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+require __DIR__ . '/includes/autoload.php';
+require __DIR__ . '/config.php';
 
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
