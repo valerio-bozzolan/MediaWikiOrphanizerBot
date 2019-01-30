@@ -24,9 +24,7 @@ set_error_handler( function( $errno, $errstr, $errfile, $errline ) {
 } );
 
 // do not expose from web
-if( ! isset( $argv[ 0 ] ) ) {
-	exit( 1 );
-}
+isset( $argv[ 0 ] ) or exit( 1 );
 
 // autoload classes
 require __DIR__ . '/includes/autoload.php';
