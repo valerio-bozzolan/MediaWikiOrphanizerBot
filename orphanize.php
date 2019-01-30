@@ -39,6 +39,7 @@ require $config_path;
 $opts = getopt( 'h', [
 	'wiki:',
 	'list:',
+	'summary:',
 	'help'
 ] );
 
@@ -50,6 +51,7 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 	     "          --list PAGENAME     Specify a pagename that should\n"     .
 	     "                              contain the wikilinks to be\n"        .
 	     "                              orphanized by this bot.\n"            .
+	     "          --summary TEXT      Edit summary.\n"                      .
 	     "          --help              Show this message and quit.\n"        .
 	     " Example:\n"                                                        .
 	     "          {$argv[0]} --wiki itwiki --list Wikipedia:PDC/Elenco\n\n" .
@@ -60,8 +62,14 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 // title source
 $TITLE_SOURCE =
 	isset( $opts[ 'list' ] )
-		? $opts[ 'list' ]
-		: 'Utente:.avgas/Wikilink da orfanizzare';
+	     ? $opts[ 'list' ]
+	     : 'Utente:.avgas/Wikilink da orfanizzare';
+
+// edit summary
+$SUMMARY =
+	isset( $opts[ 'summary' ] )
+	     ? $opts[ 'summary' ]
+	     : "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
 
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
@@ -222,7 +230,7 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				// the first revision
 				$revision = $page->revisions[ 0 ];
 
-				// timestamp of the revision
+				// timestamp of the revision useful to avoid edit conflicts
 				$timestamp = $revision->timestamp;
 
 				// wikitext from the main slot of this revision
@@ -251,11 +259,11 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 						'alias-group-name' => 'alias',
 					] );
 
-					Log::info( "Regex simple wikilink:" );
-					Log::info( $wikilink_regex_simple );
+					Log::debug( "regex simple wikilink:" );
+					Log::debug( $wikilink_regex_simple );
 
-					Log::info( "Regex wikilink aliased:" );
-					Log::info( $wikilink_regex_alias );
+					Log::debug( "regex wikilink aliased:" );
+					Log::debug( $wikilink_regex_alias );
 
 					// convert '[[Hello]]' to 'Hello'
 					$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
@@ -271,15 +279,15 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 				// check for changes and save
 				if( $wikitext->isChanged() ) {
-					Log::info( "Changes:" );
+					Log::info( "changes:" );
 					foreach( $wikitext->getHumanUniqueSobstitutions() as $sobstitution ) {
 						Log::info( "\t $sobstitution" );
 					}
-					if( 'n' !== Input::yesNoQuestion( "Confirm changes" ) ) {
+					if( 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
 						$wiki->login()->edit( [
 							'pageid'    => $pageid,
 							'text'      => $wikitext->getWikitext(),
-							'summary'   => "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]",
+							'summary'   => $SUMMARY,
 							'timestamp' => $timestamp,
 							'minor'     => 1,
 							'bot'       => 1,
