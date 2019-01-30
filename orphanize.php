@@ -30,11 +30,11 @@ require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
 
-//$TITLE_SOURCE = 'Utente:.avgas/Wikilink da orfanizzare';
-$TITLE_SOURCE = 'Utente:Valerio Bozzolan';
+$TITLE_SOURCE = 'Utente:.avgas/Wikilink da orfanizzare';
 
 // classes used
 use \cli\Log;
+use \cli\Input;
 use \web\MediaWikis;
 use \mw\Wikilink;
 
@@ -123,7 +123,7 @@ foreach( $revision->query->pages as $sourcepage ) {
 					'prop'        => 'linkshere',
 					'lhprop'      => 'pageid',
 					'lhnamespace' => 0,
-					'lhlimit'     => 500,
+					'lhlimit'     => 300,
 				] );
 
 			// cumulate the linkshere page ids
@@ -163,7 +163,10 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 			'pageids' => $less_involved_pageids,
 			'prop'    => 'revisions',
 			'rvslots' => 'main',
-			'rvprop'  => 'content',
+			'rvprop'  => [
+				'content',
+				'timestamp',
+			],
 		] );
 
 	// for each response
@@ -172,11 +175,20 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 		// for each page
 		foreach( $response->query->pages as $page ) {
 
+			// page ID to be edited
+			$pageid = $page->pageid;
+
 			// does it have a revision?
 			if( isset( $page->revisions[ 0 ] ) ) {
 
-				// get wikitext from the main slot
-				$wikitext_raw = $page->revisions[ 0 ]->slots->main->{ '*' };
+				// the first revision
+				$revision = $page->revisions[ 0 ];
+
+				// timestamp of the revision
+				$timestamp = $revision->timestamp;
+
+				// wikitext from the main slot of this revision
+				$wikitext_raw = $revision->slots->main->{ '*' };
 
 				// create a Wikitext object
 				$wikitext = $wiki->createWikitext( $wikitext_raw );
@@ -187,39 +199,67 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 					// parse the orphanizing title
 					$title = $wiki->createTitleParsing( $involved_pagetitle );
 
-					// a wikilink without alias
+					// a wikilink with and without alias
 					$wikilink_simple = $wiki->createWikilink( $title, Wikilink::NO_ALIAS );
-
-					// a wikilink with whatever alias
 					$wikilink_alias  = $wiki->createWikilink( $title, Wikilink::WHATEVER_ALIAS );
 
 					// sobstitute simple links e.g. [[Hello]]
 					$wikilink_regex_simple = $wikilink_simple->getRegex( [
-						'title-group-name' => 'title'
+						'title-group-name' => 'title',
 					] );
 
 					// sobstitute links with alias e.g. [[Hello|whatever]]
 					$wikilink_regex_alias = $wikilink_alias->getRegex( [
-						'alias-group-name' => 'alias'
+						'alias-group-name' => 'alias',
 					] );
 
+					Log::info( "Regex simple wikilink:" );
+					Log::info( $wikilink_regex_simple );
+
+					Log::info( "Regex wikilink aliased:" );
+					Log::info( $wikilink_regex_alias );
+
 					// convert '[[Hello]]' to 'Hello'
-					$wikitext->pregReplace(
-						"/$wikilink_regex_simple/",
-						\regex\Generic::groupName( 'title' )
-					);
+					$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
+						return $matches[ 'title' ];
+					} );
 
 					// convert '[[Hello|world]]' to 'world'
-					$wikitext->pregReplace(
-						"/$wikilink_regex_alias/",
-						\regex\Generic::groupName( 'alias' )
-					);
-
-					Log::info( implode( "; ", $wikitext->getHumanUniqueSobstitutions() ) );
-
-					// @TODO: save!
+					$wikitext->pregReplaceCallback( "/$wikilink_regex_alias/", function ( $matches ) {
+						return $matches[ 'alias' ];
+					} );
 				}
+				// end loop titles to be orphanized
+
+				// check for changes and save
+				if( $wikitext->isChanged() ) {
+					Log::info( "Changes:" );
+					foreach( $wikitext->getHumanUniqueSobstitutions() as $sobstitution ) {
+						Log::info( "\t $sobstitution" );
+					}
+					if( 'n' !== Input::yesNoQuestion( "Confirm changes" ) ) {
+						$wiki->login()->edit( [
+							'pageid'    => $pageid,
+							'text'      => $wikitext->getWikitext(),
+							'summary'   => "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]",
+							'timestamp' => $timestamp,
+							'minor'     => 1,
+							'bot'       => 1,
+						] );
+					}
+					// end confirmation
+
+				}
+				// end save
+
 			}
+			// end revision check
+
 		}
+		// end loop pages
+
 	}
+	// end loop responses
+
 }
+// end loop involved page IDs
