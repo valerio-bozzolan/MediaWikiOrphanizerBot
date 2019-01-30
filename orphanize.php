@@ -18,7 +18,7 @@ namespace itwikidelbot;
 
 // die on whatever error
 set_error_handler( function( $errno, $errstr, $errfile, $errline ) {
-	if( error_reporting() !==0 ) {
+	if( error_reporting() !== 0 ) {
 		throw new \ErrorException( $errstr, 0, $errno, $errfile, $errline );
 	}
 } );
@@ -28,9 +28,14 @@ if( ! isset( $argv[ 0 ] ) ) {
 	exit( 1 );
 }
 
-// autoload classes and configuration
+// autoload classes
 require __DIR__ . '/includes/autoload.php';
-require __DIR__ . '/config.php';
+
+// require config file
+file_exists( $config_path = __DIR__ . '/config.php' )
+	or die( "Please provide the configuration file at $config_path\n" );
+
+require $config_path;
 
 // allowed options
 $opts = getopt( 'h', [
@@ -142,9 +147,9 @@ foreach( $revision->query->pages as $sourcepage ) {
 		$involved_pagetitles = $titles_to_be_orphanized;
 
 		// log titles
-		Log::info( "Pages to be orphanized:" );
+		Log::info( "read $n pages to be orphanized:" );
 		foreach( $titles_to_be_orphanized as $title ) {
-			Log::info( $title );
+			Log::info( " $title" );
 		}
 
 		// note that the API accepts a maximum trance of titles
