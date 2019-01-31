@@ -52,7 +52,7 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 	     "                              contain the wikilinks to be\n"        .
 	     "                              orphanized by this bot.\n"            .
 	     "          --cfg PAGENAME      Read the config from the specified\n" .    
-	     "	                            wikipage"                             .
+	     "                              wikipage"                             .
 	     "          --help              Show this message and quit.\n"        .
 	     " Example:\n"                                                        .
 	     "          {$argv[0]} --wiki itwiki --list Wikipedia:PDC/Elenco\n\n" .
