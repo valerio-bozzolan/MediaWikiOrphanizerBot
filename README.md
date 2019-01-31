@@ -21,8 +21,8 @@ You know you should provide your bot credentials in order to use a tool.
 You need two pages: one with a list of links pointing to the pages to orphanize (pass its title via the `list` parameter),
 and one with generic config (to be passed via `cfg`). The latter should be a JSON page and can have the following options:
 
- * `summary` (string) - The summary to use when editing
- * `ns` (array) - To only edit pages on the given namespaces
+ * `summary` (string) - The summary to use when editing.
+ * `ns` (array) - To only edit pages on the given namespaces. `null` means all namespaces.
 
 ## Usage
 
