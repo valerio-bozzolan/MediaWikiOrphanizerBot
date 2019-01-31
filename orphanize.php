@@ -51,8 +51,8 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 	     "          --list PAGENAME     Specify a pagename that should\n"     .
 	     "                              contain the wikilinks to be\n"        .
 	     "                              orphanized by this bot.\n"            .
-	     "          --ns 0              Limit to a certain namespace ID.\n"   .
-	     "          --summary TEXT      Edit summary.\n"                      .
+	     "          --cfg PAGENAME      Read the config from the specified\n" .    
+	     "	                            wikipage"                             .
 	     "          --help              Show this message and quit.\n"        .
 	     " Example:\n"                                                        .
 	     "          {$argv[0]} --wiki itwiki --list Wikipedia:PDC/Elenco\n\n" .
@@ -105,7 +105,7 @@ $cfg = json_decode( $cfgRev->revisions[0]->slots->main->{ '*' }, true );
 // edit summary
 $SUMMARY = $cfg['summary'] ?? "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
 
-// limit to a certain namespace (default none)
+// limit to a certain namespace (default is every namespace)
 $NS = $cfg['ns'] ?? null;
 
 // query last revision
@@ -158,8 +158,8 @@ while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0
 	];
 
 	// limit to certain namespaces
-	if( isset( $NS ) ) {
-		$linksto_args[ 'lhnamespace' ] = $NS;
+	if( $NS !== null ) {
+		$linksto_args[ 'lhnamespace' ] = implode( '|', $NS );
 	}
 
 	// cumulate the linkshere page ids
