@@ -17,6 +17,13 @@ You know you should provide your bot credentials in order to use a tool.
 2. Fill your bot credentials
 3. Save-as `config.php`
 
+## On-wiki configuration
+You need two pages: one with a list of links pointing to the pages to orphanize (pass its title via the `list` parameter),
+and one with generic config (to be passed via `cfg`). The latter should be a JSON page and can have the following options:
+
+ * `summary` (string) - The summary to use when editing
+ * `ns` (array) - To only edit pages on the given namespaces
+
 ## Usage
 
 	./orphanizer.php --help
@@ -29,8 +36,8 @@ Welcome in your MediaWiki Orphanizer bot!
           --list PAGENAME     Specify a pagename that should
                               contain the wikilinks to be
                               orphanized by this bot.
-          --ns 0              Limit to a certain namespace ID.
-          --summary TEXT      Edit summary.
+          --cfg PAGENAME      Read the config from the specified
+	                      wikipage
           --help              Show this message and quit.
  Example:
           ./orphanize.php --wiki itwiki --list Wikipedia:PDC/Elenco
