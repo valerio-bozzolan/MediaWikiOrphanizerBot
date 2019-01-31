@@ -37,7 +37,7 @@ Welcome in your MediaWiki Orphanizer bot!
                               contain the wikilinks to be
                               orphanized by this bot.
           --cfg PAGENAME      Read the config from the specified
-	                      wikipage
+                              wikipage
           --help              Show this message and quit.
  Example:
           ./orphanize.php --wiki itwiki --list Wikipedia:PDC/Elenco
