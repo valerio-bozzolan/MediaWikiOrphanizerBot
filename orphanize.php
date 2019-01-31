@@ -98,104 +98,69 @@ $wiki = Mediawikis::findFromUid( $wiki_uid );
 
 // query last revision
 Log::info( "reading $TITLE_SOURCE" );
-$revision =
+$links =
 	$wiki->fetch( [
 		'action'  => 'query',
-		'prop'    => 'revisions',
-		'titles'  => $TITLE_SOURCE,
-		'rvslots' => 'main',
-		'rvprop'  => 'content',
-		'rvlimit' => 1,
+		'prop'    => 'links',
+		'titles'  => $TITLE_SOURCE
 	] );
 
-// array of page titles to be orphanized
-$involved_pagetitles = [];
+$titles_to_be_orphanized = $links->query->pages[0]->links ?? null;
+if ( $titles_to_be_orphanized === null ) {
+	Log::error( 'Check links list.' );
+	exit( 1 );
+} elseif ( count( $titles_to_be_orphanized ) === 0 ) {
+	Log::error( 'wtf' );
+	exit( 1 );
+}
+
+$titles_to_be_orphanized = array_map(
+	function( $t ) {
+		return Ns::defaultCanonicalName( $t->ns ) . $t->title;
+	},
+	$titles_to_be_orphanized
+);
 
 // associative array of page IDs as key and a boolean as value containg pages to be orphanized
 $involved_pageids = [];
 
-// for each page (well, just one)
-foreach( $revision->query->pages as $sourcepage ) {
+// keep a copy
+$involved_pagetitles = $titles_to_be_orphanized;
 
-	// for each revision (well, just one)
-	foreach( $sourcepage->revisions as $revision ) {
+// log titles
+Log::info( 'read ' . count( $titles_to_be_orphanized ) . ' pages to be orphanized:' );
+foreach( $titles_to_be_orphanized as $title ) {
+	Log::info( " $title" );
+}
 
-		// pure wikitext
-		$wikitextRaw = $revision->slots->main->{ '*' };
+// note that the API accepts a maximum trance of titles
+while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0, MAX_TRANCHE_TITLES ) ) {
 
-		// wikitext object
-		$wikitext = $wiki->createWikitext( $revision->slots->main->{ '*' } );
+	// API argumento for the linksto query
+	$linksto_args = [
+			'action'      => 'query',
+			'titles'      => $less_titles_to_be_orphanized,
+			'prop'        => 'linkshere',
+			'lhprop'      => 'pageid',
+			'lhlimit'     => 300,
+	];
 
-		// identify wikilinks
-		$n = $wikitext->pregMatchAll( '~\[\[(.*?)\]\]~', $matches );
-		if( $n === false ) {
-			Log::error( 'wtf' );
-			exit( 1 );
-		}
+	// limit to certain namespaces
+	if( isset( $NS ) ) {
+		$linksto_args[ 'lhnamespace' ] = $NS;
+	}
 
-		// collect these titles
-		$titles_to_be_orphanized = [];
-		for( $i = 0; $i < $n; $i++ ) {
-
-			// can be both 'title' and 'title|alias'
-			$wlink = $matches[ 1 ][ $i ];
-
-			// just the page title
-			$title = explode( '|', $wlink )[0];
-
-			// normalize titles
-			$title = str_replace( '_', ' ', ucfirst( $title ) );
-
-			// append
-			$titles_to_be_orphanized[] = $title;
-		}
-
-		// drop duplicates
-		$titles_to_be_orphanized = array_unique( $titles_to_be_orphanized );
-
-		// order
-		sort( $titles_to_be_orphanized, SORT_STRING );
-
-		// keep a copy
-		$involved_pagetitles = $titles_to_be_orphanized;
-
-		// log titles
-		Log::info( "read $n pages to be orphanized:" );
-		foreach( $titles_to_be_orphanized as $title ) {
-			Log::info( " $title" );
-		}
-
-		// note that the API accepts a maximum trance of titles
-		while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0, MAX_TRANCHE_TITLES ) ) {
-
-			// API argumento for the linksto query
-			$linksto_args = [
-					'action'      => 'query',
-					'titles'      => $less_titles_to_be_orphanized,
-					'prop'        => 'linkshere',
-					'lhprop'      => 'pageid',
-					'lhlimit'     => 300,
-			];
-
-			// limit to certain namespaces
-			if( isset( $NS ) ) {
-				$linksto_args[ 'lhnamespace' ] = $NS;
-			}
-
-			// cumulate the linkshere page ids
-			Log::info( "requesting linkshere..." );
-			$linksto = $wiki->createQuery( $linksto_args );
-			foreach( $linksto as $response ) {
-				foreach( $response->query->pages as $page ) {
-					if( isset( $page->linkshere ) ) {
-						foreach( $page->linkshere as $linkingpage ) {
-							$pageid = (int) $linkingpage->pageid;
-							$involved_pageids[ $pageid ] = false;
-						}
-					}
+	// cumulate the linkshere page ids
+	Log::info( "requesting linkshere..." );
+	$linksto = $wiki->createQuery( $linksto_args );
+	foreach( $linksto as $response ) {
+		foreach( $response->query->pages as $page ) {
+			if( isset( $page->linkshere ) ) {
+				foreach( $page->linkshere as $linkingpage ) {
+					$pageid = (int) $linkingpage->pageid;
+					$involved_pageids[ $pageid ] = false;
 				}
 			}
-
 		}
 	}
 }
