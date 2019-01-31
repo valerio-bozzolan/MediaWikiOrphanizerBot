@@ -66,17 +66,11 @@ $TITLE_SOURCE =
 	     ? $opts[ 'list' ]
 	     : 'Utente:.avgas/Wikilink da orfanizzare';
 
-// edit summary
-$SUMMARY =
-	isset( $opts[ 'summary' ] )
-	     ? $opts[ 'summary' ]
-	     : "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
-
-// limit to a certain namespace (default none)
-$NS =
-	isset( $opts[ 'ns' ] )
-	     ? $opts[ 'ns' ]
-	     : null;
+// cfg page
+$CFG_PAGE =
+	isset( $opts[ 'cfg' ] )
+	     ? $opts[ 'cfg' ]
+	     : 'Utente:OrfanizzaBot/Configurazione';
 
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
@@ -96,6 +90,24 @@ $wiki_uid =
 // wiki instance
 $wiki = Mediawikis::findFromUid( $wiki_uid );
 
+Log::info( "reading $CFG_PAGE" );
+$cfgRevs =
+	$wiki->fetch( [
+		'action'  => 'query',
+		'titles'  => $CFG_PAGE,
+		'prop'    => 'revisions',
+		'rvslots' => 'main',
+		'rvprop'  => 'content',
+	] );
+$cfgRev = reset( $cfgRevs->query->pages );
+$cfg = json_decode( $cfgRev->revisions[0]->slots->main->{ '*' }, true );
+
+// edit summary
+$SUMMARY = $cfg['summary'] ?? "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
+
+// limit to a certain namespace (default none)
+$NS = $cfg['ns'] ?? null;
+
 // query last revision
 Log::info( "reading $TITLE_SOURCE" );
 $links =
@@ -105,7 +117,7 @@ $links =
 		'titles'  => $TITLE_SOURCE
 	] );
 
-$titles_to_be_orphanized = $links->query->pages[0]->links ?? null;
+$titles_to_be_orphanized = reset( $links->query->pages )->links ?? null;
 if ( $titles_to_be_orphanized === null ) {
 	Log::error( 'Check links list.' );
 	exit( 1 );
