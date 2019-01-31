@@ -99,8 +99,12 @@ $cfgRevs =
 		'rvslots' => 'main',
 		'rvprop'  => 'content',
 	] );
-$cfgRev = reset( $cfgRevs->query->pages );
-$cfg = json_decode( $cfgRev->revisions[0]->slots->main->{ '*' }, true );
+$cfgRev = reset( $cfgRevs->query->pages )->revisions[0];
+if ( $cfgRev->slots->main->contentmodel !== 'json' ) {
+	Log::error( 'The cfg page must have JSON content model.' );
+	exit( 1 );
+}
+$cfg = json_decode( $cfgRev->slots->main->{ '*' }, true );
 
 // edit summary
 $SUMMARY = $cfg['summary'] ?? "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
