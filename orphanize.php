@@ -40,7 +40,8 @@ $opts = getopt( 'h', [
 	'wiki:',
 	'list:',
 	'summary:',
-	'help'
+	'debug',
+	'help',
 ] );
 
 // show help
@@ -53,6 +54,7 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 	     "                              orphanized by this bot.\n"            .
 	     "          --cfg PAGENAME      Read the config from the specified\n" .
 	     "                              wikipage"                             .
+	     "          --debug             increase verbosity\n"                 .
 	     "          --help              Show this message and quit.\n"        .
 	     " Example:\n"                                                        .
 	     "          {$argv[0]} --wiki itwiki --list Wikipedia:PDC/Elenco\n\n" .
@@ -82,6 +84,11 @@ use \web\MediaWikis;
 use \mw\Wikilink;
 use \mw\Ns;
 use \mw\API\ProtectedPageException;
+
+// increase verbosity
+if( isset( $opts[ 'debug' ] ) ) {
+	Log::$DEBUG = true;
+}
 
 // wiki identifier
 $wiki_uid =
