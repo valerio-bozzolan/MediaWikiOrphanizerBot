@@ -81,6 +81,7 @@ use \cli\Input;
 use \web\MediaWikis;
 use \mw\Wikilink;
 use \mw\Ns;
+use \mw\API\ProtectedPageException;
 
 // wiki identifier
 $wiki_uid =
@@ -279,19 +280,23 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 			// check for changes and save
 			if( $wikitext->isChanged() ) {
-				Log::info( "changes:" );
+				Log::info( "changes on page $pageid:" );
 				foreach( $wikitext->getHumanUniqueSobstitutions() as $sobstitution ) {
 					Log::info( "\t $sobstitution" );
 				}
 				if( 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
-					$wiki->login()->edit( [
-						'pageid'    => $pageid,
-						'text'      => $wikitext->getWikitext(),
-						'summary'   => $SUMMARY,
-						'timestamp' => $timestamp,
-						'minor'     => 1,
-						'bot'       => 1,
-					] );
+					try {
+						$wiki->login()->edit( [
+							'pageid'    => $pageid,
+							'text'      => $wikitext->getWikitext(),
+							'summary'   => $SUMMARY,
+							'timestamp' => $timestamp,
+							'minor'     => 1,
+							'bot'       => 1,
+						] );
+					} catch( ProtectedPageException $e ) {
+						Log::warn( "skip protected page $pageid" );
+					}
 				}
 				// end confirmation
 
