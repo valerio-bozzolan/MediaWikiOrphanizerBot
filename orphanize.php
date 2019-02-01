@@ -99,6 +99,7 @@ $wiki_uid =
 // wiki instance
 $wiki = Mediawikis::findFromUid( $wiki_uid );
 
+// retrieve config page (that's a JSON page)
 Log::info( "reading $CFG_PAGE" );
 $cfgRevs =
 	$wiki->fetch( [
@@ -128,32 +129,31 @@ $NS =
 	     ? $cfg->ns
 	     : null;
 
-// query last revision
 Log::info( "reading $TITLE_SOURCE" );
-$links =
-	$wiki->fetch( [
+
+// query titles to be orphanized alongside the last revision of the list
+$responses =
+	$wiki->createQuery( [
 		'action'  => 'query',
-		'prop'    => 'links',
 		'titles'  => $TITLE_SOURCE,
+		'prop'    => 'links',
 	] );
 
-$titles_to_be_orphanized = isset( reset( $links->query->pages )->links )
-	? reset( $links->query->pages )->links
-	: null;
-if ( $titles_to_be_orphanized === null ) {
-	Log::error( 'check links list' );
-	exit( 1 );
-} elseif ( count( $titles_to_be_orphanized ) === 0 ) {
-	Log::error( 'wtf' );
-	exit( 1 );
+// collect links
+$titles_to_be_orphanized = [];
+foreach( $responses as $response ) {
+	foreach( $response->query->pages as $page ) {
+		foreach( $page->links as $link ) {
+			$titles_to_be_orphanized[] = Ns::defaultCanonicalName( $link->ns ) . $link->title;
+		}
+	}
 }
 
-$titles_to_be_orphanized = array_map(
-	function( $t ) {
-		return Ns::defaultCanonicalName( $t->ns ) . $t->title;
-	},
-	$titles_to_be_orphanized
-);
+// die if no links
+if( ! $titles_to_be_orphanized ) {
+	Log::info( 'empty list' );
+	exit( 1 );
+}
 
 // keep a copy
 $involved_pagetitles = $titles_to_be_orphanized;
