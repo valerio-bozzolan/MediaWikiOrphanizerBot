@@ -134,7 +134,7 @@ $links =
 	$wiki->fetch( [
 		'action'  => 'query',
 		'prop'    => 'links',
-		'titles'  => $TITLE_SOURCE
+		'titles'  => $TITLE_SOURCE,
 	] );
 
 $titles_to_be_orphanized = isset( reset( $links->query->pages )->links )
@@ -170,13 +170,13 @@ $involved_pageids = [];
 // note that the API accepts a maximum trance of titles
 while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0, MAX_TRANCHE_TITLES ) ) {
 
-	// API argumento for the linksto query
+	// API arguments for the linkshere query
 	$linksto_args = [
-			'action'      => 'query',
-			'titles'      => $less_titles_to_be_orphanized,
-			'prop'        => 'linkshere',
-			'lhprop'      => 'pageid',
-			'lhlimit'     => 300,
+			'action'  => 'query',
+			'titles'  => $less_titles_to_be_orphanized,
+			'prop'    => 'linkshere',
+			'lhprop'  => 'pageid',
+			'lhlimit' => 300,
 	];
 
 	// limit to certain namespaces
