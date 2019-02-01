@@ -51,7 +51,7 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 	     "          --list PAGENAME     Specify a pagename that should\n"     .
 	     "                              contain the wikilinks to be\n"        .
 	     "                              orphanized by this bot.\n"            .
-	     "          --cfg PAGENAME      Read the config from the specified\n" .    
+	     "          --cfg PAGENAME      Read the config from the specified\n" .
 	     "                              wikipage"                             .
 	     "          --help              Show this message and quit.\n"        .
 	     " Example:\n"                                                        .
@@ -99,22 +99,25 @@ $cfgRevs =
 		'rvslots' => 'main',
 		'rvprop'  => 'content',
 	] );
+
 $cfgRev = reset( $cfgRevs->query->pages )->revisions[0];
 if ( $cfgRev->slots->main->contentmodel !== 'json' ) {
 	Log::error( 'The cfg page must have JSON content model.' );
 	exit( 1 );
 }
-$cfg = json_decode( $cfgRev->slots->main->{ '*' }, true );
+$cfg = json_decode( $cfgRev->slots->main->{ '*' } );
 
 // edit summary
-$SUMMARY = isset( $cfg['summary'] )
-	? $cfg['summary']
-	: "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
+$SUMMARY =
+	isset( $cfg->summary )
+	     ? $cfg->summary
+	     : "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
 
 // limit to a certain namespace (default is every namespace)
-$NS = isset( $cfg['ns'] )
-	? $cfg['ns']
-	: null;
+$NS =
+	isset( $cfg->ns )
+	     ? $cfg->ns
+	     : null;
 
 // query last revision
 Log::info( "reading $TITLE_SOURCE" );
@@ -129,7 +132,7 @@ $titles_to_be_orphanized = isset( reset( $links->query->pages )->links )
 	? reset( $links->query->pages )->links
 	: null;
 if ( $titles_to_be_orphanized === null ) {
-	Log::error( 'Check links list.' );
+	Log::error( 'check links list' );
 	exit( 1 );
 } elseif ( count( $titles_to_be_orphanized ) === 0 ) {
 	Log::error( 'wtf' );
