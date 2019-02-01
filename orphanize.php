@@ -51,8 +51,8 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 	     "          --list PAGENAME     Specify a pagename that should\n"     .
 	     "                              contain the wikilinks to be\n"        .
 	     "                              orphanized by this bot.\n"            .
-	     "          --ns 0              Limit to a certain namespace ID.\n"   .
-	     "          --summary TEXT      Edit summary.\n"                      .
+	     "          --cfg PAGENAME      Read the config from the specified\n" .    
+	     "                              wikipage"                             .
 	     "          --help              Show this message and quit.\n"        .
 	     " Example:\n"                                                        .
 	     "          {$argv[0]} --wiki itwiki --list Wikipedia:PDC/Elenco\n\n" .
@@ -66,17 +66,11 @@ $TITLE_SOURCE =
 	     ? $opts[ 'list' ]
 	     : 'Utente:.avgas/Wikilink da orfanizzare';
 
-// edit summary
-$SUMMARY =
-	isset( $opts[ 'summary' ] )
-	     ? $opts[ 'summary' ]
-	     : "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
-
-// limit to a certain namespace (default none)
-$NS =
-	isset( $opts[ 'ns' ] )
-	     ? $opts[ 'ns' ]
-	     : null;
+// cfg page
+$CFG_PAGE =
+	isset( $opts[ 'cfg' ] )
+	     ? $opts[ 'cfg' ]
+	     : 'Utente:OrfanizzaBot/Configurazione';
 
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
@@ -96,112 +90,101 @@ $wiki_uid =
 // wiki instance
 $wiki = Mediawikis::findFromUid( $wiki_uid );
 
-// query last revision
-Log::info( "reading $TITLE_SOURCE" );
-$revision =
+Log::info( "reading $CFG_PAGE" );
+$cfgRevs =
 	$wiki->fetch( [
 		'action'  => 'query',
+		'titles'  => $CFG_PAGE,
 		'prop'    => 'revisions',
-		'titles'  => $TITLE_SOURCE,
 		'rvslots' => 'main',
 		'rvprop'  => 'content',
-		'rvlimit' => 1,
+	] );
+$cfgRev = reset( $cfgRevs->query->pages )->revisions[0];
+if ( $cfgRev->slots->main->contentmodel !== 'json' ) {
+	Log::error( 'The cfg page must have JSON content model.' );
+	exit( 1 );
+}
+$cfg = json_decode( $cfgRev->slots->main->{ '*' }, true );
+
+// edit summary
+$SUMMARY = isset( $cfg['summary'] )
+	? $cfg['summary']
+	: "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
+
+// limit to a certain namespace (default is every namespace)
+$NS = isset( $cfg['ns'] )
+	? $cfg['ns']
+	: null;
+
+// query last revision
+Log::info( "reading $TITLE_SOURCE" );
+$links =
+	$wiki->fetch( [
+		'action'  => 'query',
+		'prop'    => 'links',
+		'titles'  => $TITLE_SOURCE
 	] );
 
-// array of page titles to be orphanized
-$involved_pagetitles = [];
+$titles_to_be_orphanized = isset( reset( $links->query->pages )->links )
+	? reset( $links->query->pages )->links
+	: null;
+if ( $titles_to_be_orphanized === null ) {
+	Log::error( 'Check links list.' );
+	exit( 1 );
+} elseif ( count( $titles_to_be_orphanized ) === 0 ) {
+	Log::error( 'wtf' );
+	exit( 1 );
+}
+
+$titles_to_be_orphanized = array_map(
+	function( $t ) {
+		return Ns::defaultCanonicalName( $t->ns ) . $t->title;
+	},
+	$titles_to_be_orphanized
+);
+
+// keep a copy
+$involved_pagetitles = $titles_to_be_orphanized;
+
+// log titles
+Log::info( 'read ' . count( $titles_to_be_orphanized ) . ' pages to be orphanized:' );
+foreach( $titles_to_be_orphanized as $title ) {
+	Log::info( " $title" );
+}
 
 // associative array of page IDs as key and a boolean as value containg pages to be orphanized
 $involved_pageids = [];
 
-// for each page (well, just one)
-foreach( $revision->query->pages as $sourcepage ) {
+// note that the API accepts a maximum trance of titles
+while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0, MAX_TRANCHE_TITLES ) ) {
 
-	// for each revision (well, just one)
-	foreach( $sourcepage->revisions as $revision ) {
+	// API argumento for the linksto query
+	$linksto_args = [
+			'action'      => 'query',
+			'titles'      => $less_titles_to_be_orphanized,
+			'prop'        => 'linkshere',
+			'lhprop'      => 'pageid',
+			'lhlimit'     => 300,
+	];
 
-		// pure wikitext
-		$wikitextRaw = $revision->slots->main->{ '*' };
+	// limit to certain namespaces
+	if( $NS !== null ) {
+		$linksto_args[ 'lhnamespace' ] = implode( '|', $NS );
+	}
 
-		// wikitext object
-		$wikitext = $wiki->createWikitext( $revision->slots->main->{ '*' } );
-
-		// identify wikilinks
-		$n = $wikitext->pregMatchAll( '~\[\[(.*?)\]\]~', $matches );
-		if( $n === false ) {
-			Log::error( 'wtf' );
-			exit( 1 );
-		}
-
-		// collect these titles
-		$titles_to_be_orphanized = [];
-		for( $i = 0; $i < $n; $i++ ) {
-
-			// can be both 'title' and 'title|alias'
-			$wlink = $matches[ 1 ][ $i ];
-
-			// just the page title
-			$title = explode( '|', $wlink )[0];
-
-			// normalize titles
-			$title = str_replace( '_', ' ', ucfirst( $title ) );
-
-			// append
-			$titles_to_be_orphanized[] = $title;
-		}
-
-		// drop duplicates
-		$titles_to_be_orphanized = array_unique( $titles_to_be_orphanized );
-
-		// order
-		sort( $titles_to_be_orphanized, SORT_STRING );
-
-		// keep a copy
-		$involved_pagetitles = $titles_to_be_orphanized;
-
-		// log titles
-		Log::info( "read $n pages to be orphanized:" );
-		foreach( $titles_to_be_orphanized as $title ) {
-			Log::info( " $title" );
-		}
-
-		// note that the API accepts a maximum trance of titles
-		while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0, MAX_TRANCHE_TITLES ) ) {
-
-			// API argumento for the linksto query
-			$linksto_args = [
-					'action'      => 'query',
-					'titles'      => $less_titles_to_be_orphanized,
-					'prop'        => 'linkshere',
-					'lhprop'      => 'pageid',
-					'lhlimit'     => 300,
-			];
-
-			// limit to certain namespaces
-			if( isset( $NS ) ) {
-				$linksto_args[ 'lhnamespace' ] = $NS;
-			}
-
-			// cumulate the linkshere page ids
-			Log::info( "requesting linkshere..." );
-			$linksto = $wiki->createQuery( $linksto_args );
-			foreach( $linksto as $response ) {
-				foreach( $response->query->pages as $page ) {
-					if( isset( $page->linkshere ) ) {
-						foreach( $page->linkshere as $linkingpage ) {
-							$pageid = (int) $linkingpage->pageid;
-							$involved_pageids[ $pageid ] = false;
-						}
-					}
+	// cumulate the linkshere page ids
+	Log::info( "requesting linkshere..." );
+	$linksto = $wiki->createQuery( $linksto_args );
+	foreach( $linksto as $response ) {
+		foreach( $response->query->pages as $page ) {
+			if( isset( $page->linkshere ) ) {
+				foreach( $page->linkshere as $linkingpage ) {
+					$involved_pageids[] = (int) $linkingpage->pageid;
 				}
 			}
-
 		}
 	}
 }
-
-// create a clean array or page ids
-$involved_pageids = array_keys( $involved_pageids );
 
 // count of involved pages
 Log::info( sprintf(
@@ -236,81 +219,80 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 			$pageid = $page->pageid;
 
 			// does it have a revision?
-			if( isset( $page->revisions[ 0 ] ) ) {
+			if( !isset( $page->revisions[ 0 ] ) ) {
+				continue;
+			}
 
-				// the first revision
-				$revision = $page->revisions[ 0 ];
+			// the first revision
+			$revision = $page->revisions[ 0 ];
 
-				// timestamp of the revision useful to avoid edit conflicts
-				$timestamp = $revision->timestamp;
+			// timestamp of the revision useful to avoid edit conflicts
+			$timestamp = $revision->timestamp;
 
-				// wikitext from the main slot of this revision
-				$wikitext_raw = $revision->slots->main->{ '*' };
+			// wikitext from the main slot of this revision
+			$wikitext_raw = $revision->slots->main->{ '*' };
 
-				// create a Wikitext object
-				$wikitext = $wiki->createWikitext( $wikitext_raw );
+			// create a Wikitext object
+			$wikitext = $wiki->createWikitext( $wikitext_raw );
 
-				// for each of the titles to be orphanized
-				foreach( $involved_pagetitles as $involved_pagetitle ) {
+			// for each of the titles to be orphanized
+			foreach( $involved_pagetitles as $involved_pagetitle ) {
 
-					// parse the orphanizing title
-					$title = $wiki->createTitleParsing( $involved_pagetitle );
+				// parse the orphanizing title
+				$title = $wiki->createTitleParsing( $involved_pagetitle );
 
-					// a wikilink with and without alias
-					$wikilink_simple = $wiki->createWikilink( $title, Wikilink::NO_ALIAS );
-					$wikilink_alias  = $wiki->createWikilink( $title, Wikilink::WHATEVER_ALIAS );
+				// a wikilink with and without alias
+				$wikilink_simple = $wiki->createWikilink( $title, Wikilink::NO_ALIAS );
+				$wikilink_alias  = $wiki->createWikilink( $title, Wikilink::WHATEVER_ALIAS );
 
-					// sobstitute simple links e.g. [[Hello]]
-					$wikilink_regex_simple = $wikilink_simple->getRegex( [
-						'title-group-name' => 'title',
-					] );
+				// replace simple links e.g. [[Hello]]
+				$wikilink_regex_simple = $wikilink_simple->getRegex( [
+					'title-group-name' => 'title',
+				] );
 
-					// sobstitute links with alias e.g. [[Hello|whatever]]
-					$wikilink_regex_alias = $wikilink_alias->getRegex( [
-						'alias-group-name' => 'alias',
-					] );
+				// replace links with alias e.g. [[Hello|whatever]]
+				$wikilink_regex_alias = $wikilink_alias->getRegex( [
+					'alias-group-name' => 'alias',
+				] );
 
-					Log::debug( "regex simple wikilink:" );
-					Log::debug( $wikilink_regex_simple );
+				Log::debug( "regex simple wikilink:" );
+				Log::debug( $wikilink_regex_simple );
 
-					Log::debug( "regex wikilink aliased:" );
-					Log::debug( $wikilink_regex_alias );
+				Log::debug( "regex wikilink aliased:" );
+				Log::debug( $wikilink_regex_alias );
 
-					// convert '[[Hello]]' to 'Hello'
-					$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
-						return $matches[ 'title' ];
-					} );
+				// convert '[[Hello]]' to 'Hello'
+				$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
+					return $matches[ 'title' ];
+				} );
 
-					// convert '[[Hello|world]]' to 'world'
-					$wikitext->pregReplaceCallback( "/$wikilink_regex_alias/", function ( $matches ) {
-						return $matches[ 'alias' ];
-					} );
+				// convert '[[Hello|world]]' to 'world'
+				$wikitext->pregReplaceCallback( "/$wikilink_regex_alias/", function ( $matches ) {
+					return $matches[ 'alias' ];
+				} );
+			}
+			// end loop titles to be orphanized
+
+			// check for changes and save
+			if( $wikitext->isChanged() ) {
+				Log::info( "changes:" );
+				foreach( $wikitext->getHumanUniqueSobstitutions() as $sobstitution ) {
+					Log::info( "\t $sobstitution" );
 				}
-				// end loop titles to be orphanized
-
-				// check for changes and save
-				if( $wikitext->isChanged() ) {
-					Log::info( "changes:" );
-					foreach( $wikitext->getHumanUniqueSobstitutions() as $sobstitution ) {
-						Log::info( "\t $sobstitution" );
-					}
-					if( 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
-						$wiki->login()->edit( [
-							'pageid'    => $pageid,
-							'text'      => $wikitext->getWikitext(),
-							'summary'   => $SUMMARY,
-							'timestamp' => $timestamp,
-							'minor'     => 1,
-							'bot'       => 1,
-						] );
-					}
-					// end confirmation
-
+				if( 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
+					$wiki->login()->edit( [
+						'pageid'    => $pageid,
+						'text'      => $wikitext->getWikitext(),
+						'summary'   => $SUMMARY,
+						'timestamp' => $timestamp,
+						'minor'     => 1,
+						'bot'       => 1,
+					] );
 				}
-				// end save
+				// end confirmation
 
 			}
-			// end revision check
+			// end save
 
 		}
 		// end loop pages
