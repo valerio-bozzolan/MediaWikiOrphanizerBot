@@ -38,6 +38,7 @@ Welcome in your MediaWiki Orphanizer bot!
                               orphanized by this bot.
           --cfg PAGENAME      Read the config from the specified
                               wikipage
+          --debug             increase verbosity
           --help              Show this message and quit.
  Example:
           ./orphanize.php --wiki itwiki --list Wikipedia:PDC/Elenco
