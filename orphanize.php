@@ -80,6 +80,7 @@ use \cli\Log;
 use \cli\Input;
 use \web\MediaWikis;
 use \mw\Wikilink;
+use \mw\Ns;
 
 // wiki identifier
 $wiki_uid =
