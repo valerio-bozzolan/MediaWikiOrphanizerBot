@@ -47,6 +47,26 @@ Welcome in your MediaWiki Orphanizer bot!
  Have fun! by Valerio Bozzolan
 ```
 
+## On-wiki configuration
+
+The bot supports on-wiki configuration. An example:
+
+```
+{
+    "summary": "Bot: orphanizing links",
+    "ns": [
+        0
+    ],
+    "warmup": 120,
+    "cooldown": 10
+}
+```
+
+* `summary` is the edit summary
+* `ns` if provided, list of whitelisted namespaces
+* `warmup` if provided, number of __seconds__ to wait before starting (after last edit on the list)
+* `cooldown` if provided, number of __edits__ to do until shutdown (you may want to re-schedule)
+
 ## License
 
 Copyright (C) 2019 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan)
