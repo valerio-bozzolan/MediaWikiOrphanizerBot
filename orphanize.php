@@ -90,6 +90,8 @@ use \mw\Wikilink;
 use \mw\Ns;
 use \mw\API\ProtectedPageException;
 
+Log::info( "start" );
+
 // increase verbosity
 if( isset( $opts[ 'debug' ] ) ) {
 	Log::$DEBUG = true;
@@ -365,3 +367,5 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 }
 // end loop involved page IDs
+
+Log::info( "end" );
