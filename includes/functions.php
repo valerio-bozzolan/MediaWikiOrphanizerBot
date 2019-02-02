@@ -94,7 +94,7 @@ function wiki_option( $name, $default = null ) {
 	// retrieve the option if exists
 	return isset( $config->{ $name } )
 	            ? $config->{ $name }
-	            : null;
+	            : $default;
 }
 
 /**
