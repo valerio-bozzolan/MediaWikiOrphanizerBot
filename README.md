@@ -31,7 +31,7 @@ and one with generic config (to be passed via `cfg`). The latter should be a JSO
 ```
 Welcome in your MediaWiki Orphanizer bot!
 
-Available options:
+Available options, most of them also on-wiki:
  --wiki=VALUE
  	Specify a wiki from it's UID
  --cfg=VALUE
@@ -57,13 +57,7 @@ Available options:
  Example:
  	./orphanize.php --wiki=itwiki --list=Wikipedia:PDC/Elenco
 
- Have fun! by Valerio Bozzolan
-```
-
-## On-wiki configuration
-
-The bot supports on-wiki configuration. An example:
-
+ Have fun! by Valerio Bozzolan, Daimona Eaytoy
 ```
 {
     "summary": "Bot: orphanizing links",

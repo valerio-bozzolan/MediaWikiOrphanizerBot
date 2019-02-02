@@ -66,7 +66,7 @@ $opts = Opts::instance()->register( [
 	new ParamFlag(   'no-interaction', null, 'Do not confirm every change' ),
 ] );
 
-// show help
+// show help screen
 if( $opts->getArg( 'help' ) ) {
 	show_help();
 }
@@ -77,9 +77,6 @@ $NO_INTERACTION = $opts->getArg( 'no-interaction' );
 // title source
 $TITLE_SOURCE = $opts->getArg( 'list', 'Utente:.avgas/Wikilink da orfanizzare' );
 
-// cfg page
-$CFG_PAGE = $opts->getArg( 'cfg', 'Utente:OrfanizzaBot/Configurazione' );
-
 Log::info( "start" );
 
 // increase verbosity
@@ -87,53 +84,23 @@ if( $opts->getArg( 'debug' ) ) {
 	Log::$DEBUG = true;
 }
 
-// wiki identifier
-$wiki_uid = $opts->getArg( 'wiki', 'itwiki' );
-
 // wiki instance
-$wiki = Mediawikis::findFromUid( $wiki_uid );
+$wiki = Mediawikis::findFromUid( $opts->getArg( 'wiki', 'itwiki' ) );
 
-// retrieve config page (that's a JSON page)
-Log::info( "reading $CFG_PAGE" );
-$cfgRevs =
-	$wiki->fetch( [
-		'action'  => 'query',
-		'titles'  => $CFG_PAGE,
-		'prop'    => 'revisions',
-		'rvslots' => 'main',
-		'rvprop'  => 'content',
-	] );
-
-$cfgRev = reset( $cfgRevs->query->pages )->revisions[0];
-if ( $cfgRev->slots->main->contentmodel !== 'json' ) {
-	Log::error( 'The cfg page must have JSON content model.' );
-	exit( 1 );
-}
-$cfg = json_decode( $cfgRev->slots->main->{ '*' } );
+// load the wiki config
+wiki_config();
 
 // edit summary
-$SUMMARY =
-	isset( $cfg->summary )
-	     ? $cfg->summary
-	     : "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
+$SUMMARY = option( 'summary', "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]" );
 
 // limit to a certain namespace (default is every namespace)
-$NS =
-	isset( $cfg->ns )
-	     ? $cfg->ns
-	     : null;
+$NS = option( 'ns' );
 
 // number of seconds of pause after last edit to the list (default is immediately)
-$WARMUP =
-	isset( $cfg->warmup )
-	     ? $cfg->warmup
-	     : -1;
+$WARMUP = option( 'warmup', -1 );
 
 // limit to a certain number of edits (default 1000 edits)
-$COOLDOWN =
-	isset( $cfg->cooldown )
-	     ? $cfg->cooldown
-	     : 1000;
+$COOLDOWN = option( 'cooldown', 1000 );
 
 // query titles to be orphanized alongside the last revision of the list
 $responses =
