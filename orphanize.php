@@ -35,73 +35,90 @@ file_exists( $config_path = __DIR__ . '/config.php' )
 
 require $config_path;
 
-// allowed options
-$opts = getopt( 'h', [
-	'wiki:',
-	'list:',
-	'summary:',
-	'no-interaction',
-	'debug',
-	'help',
-] );
-
-// show help
-if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
-	echo "Welcome in your MediaWiki Orphanizer bot!\n\n"                      .
-	     " Usage:   {$argv[0]} [OPTIONS]\n"                                   .
-	     " Options: --wiki UID          Specify a wiki from it's UID.\n"      .
-	     "          --list PAGENAME     Specify a pagename that should\n"     .
-	     "                              contain the wikilinks to be\n"        .
-	     "                              orphanized by this bot.\n"            .
-	     "          --cfg PAGENAME      Read the config from the specified\n" .
-	     "                              wikipage\n"                           .
-	     "          --no-interaction    do not confirm every change\n"        .
-	     "          --debug             increase verbosity\n"                 .
-	     "          --help              Show this message and quit.\n"        .
-	     " Example:\n"                                                        .
-	     "          {$argv[0]} --wiki itwiki --list Wikipedia:PDC/Elenco\n\n" .
-	     " Have fun! by Valerio Bozzolan\n"                                   ;
-	exit( 1 );
-}
-
-// disable interaction
-$NO_INTERACTION = isset( $opts[ 'no-interaction' ] );
-
-// title source
-$TITLE_SOURCE =
-	isset( $opts[ 'list' ] )
-	     ? $opts[ 'list' ]
-	     : 'Utente:.avgas/Wikilink da orfanizzare';
-
-// cfg page
-$CFG_PAGE =
-	isset( $opts[ 'cfg' ] )
-	     ? $opts[ 'cfg' ]
-	     : 'Utente:OrfanizzaBot/Configurazione';
-
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
 
 // classes used
-use \cli\Log;
 use \cli\Input;
+use \cli\Opts;
+use \cli\ParamFlag;
+use \cli\ParamValued;
+use \cli\Log;
 use \web\MediaWikis;
 use \mw\Wikilink;
 use \mw\Ns;
 use \mw\API\ProtectedPageException;
 
+// register available options
+$opts = Opts::instance()->register( [
+	// register arguments with a value
+	new ParamValued( 'wiki',           null, 'Specify a wiki from it\'s UID' ),
+	new ParamValued( 'cfg',            null, 'Title of an on-wiki configuration page with JSON content model' ),
+	new ParamValued( 'list',           null, 'Specify a pagename that should contain the wikilinks to be orphanized' ),
+	new ParamValued( 'summary',        null, 'Edit summary' ),
+	new ParamValued( 'ns',             null, 'Namespace whitelist' ),
+	new ParamValued( 'warmup',         null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
+	new ParamValued( 'cooldown',       null, 'End early when reaching this number of edits' ),
+
+	// register arguments without a value
+	new ParamFlag(   'debug',          null, 'Increase verbosity' ),
+	new ParamFlag(   'help',           'h',  'Show this message and quit' ),
+	new ParamFlag(   'no-interaction', null, 'Do not confirm every change' ),
+] );
+
+// show help
+if( $opts->getArg( 'help' ) ) {
+	echo "Welcome in your MediaWiki Orphanizer bot!\n\n";
+	echo "Available options:\n";
+	foreach( Opts::instance()->getParams() as $param ) {
+
+		// long option
+		if( $param->hasLongName() ) {
+			echo " --{$param->getLongName()}";
+			if( $param->isValueRequired() ) {
+				echo "=VALUE";
+			}
+			echo "\n";
+		}
+
+		// short option
+		if( $param->hasShortName() ) {
+			echo " -{$param->getShortName()}";
+			if( $param->isValueRequired() ) {
+				echo "=VALUE";
+			}
+			echo "\n";
+		}
+
+		// description
+		echo " \t{$param->getDescription()}\n";
+	}
+
+	echo "\n Example:\n"                                               .
+	     " \t{$argv[0]} --wiki=itwiki --list=Wikipedia:PDC/Elenco\n\n" .
+	     " Have fun! by Valerio Bozzolan\n"                            ;
+
+	exit( 0 );
+}
+
+// disable interaction
+$NO_INTERACTION = $opts->getArg( 'no-interaction' );
+
+// title source
+$TITLE_SOURCE = $opts->getArg( 'list', 'Utente:.avgas/Wikilink da orfanizzare' );
+
+// cfg page
+$CFG_PAGE = $opts->getArg( 'cfg', 'Utente:OrfanizzaBot/Configurazione' );
+
 Log::info( "start" );
 
 // increase verbosity
-if( isset( $opts[ 'debug' ] ) ) {
+if( $opts->getArg( 'debug' ) ) {
 	Log::$DEBUG = true;
 }
 
 // wiki identifier
-$wiki_uid =
-	isset( $opts[ 'wiki' ] )
-	     ? $opts[ 'wiki' ]
-	     : 'itwiki';
+$wiki_uid = $opts->getArg( 'wiki', 'itwiki' );
 
 // wiki instance
 $wiki = Mediawikis::findFromUid( $wiki_uid );

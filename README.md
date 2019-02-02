@@ -31,18 +31,31 @@ and one with generic config (to be passed via `cfg`). The latter should be a JSO
 ```
 Welcome in your MediaWiki Orphanizer bot!
 
- Usage:   ./orphanize.php [OPTIONS]
- Options: --wiki UID          Specify a wiki from it's UID.
-          --list PAGENAME     Specify a pagename that should
-                              contain the wikilinks to be
-                              orphanized by this bot.
-          --cfg PAGENAME      Read the config from the specified
-                              wikipage
-          --no-interaction    do not confirm every change
-          --debug             increase verbosity
-          --help              Show this message and quit.
+Available options:
+ --wiki=VALUE
+ 	Specify a wiki from it's UID
+ --cfg=VALUE
+ 	Title of an on-wiki configuration page with JSON content model
+ --list=VALUE
+ 	Specify a pagename that should contain the wikilinks to be orphanized
+ --summary=VALUE
+ 	Edit summary
+ --ns=VALUE
+ 	Namespace whitelist
+ --warmup=VALUE
+ 	Start only if the last edit on the list was done at least $warmup seconds ago
+ --cooldown=VALUE
+ 	End early when reaching this number of edits
+ --debug
+ 	Increase verbosity
+ --help
+ -h
+ 	Show this message and quit
+ --no-interaction
+ 	Do not confirm every change
+
  Example:
-          ./orphanize.php --wiki itwiki --list Wikipedia:PDC/Elenco
+ 	./orphanize.php --wiki=itwiki --list=Wikipedia:PDC/Elenco
 
  Have fun! by Valerio Bozzolan
 ```
