@@ -13,5 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+// load some common functions
+require __DIR__ . '/functions.php';
+
 // autoload boz-mw classes
 require __DIR__ . '/boz-mw/autoload.php';

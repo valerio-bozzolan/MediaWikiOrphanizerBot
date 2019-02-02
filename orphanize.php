@@ -68,37 +68,7 @@ $opts = Opts::instance()->register( [
 
 // show help
 if( $opts->getArg( 'help' ) ) {
-	echo "Welcome in your MediaWiki Orphanizer bot!\n\n";
-	echo "Available options:\n";
-	foreach( Opts::instance()->getParams() as $param ) {
-
-		// long option
-		if( $param->hasLongName() ) {
-			echo " --{$param->getLongName()}";
-			if( $param->isValueRequired() ) {
-				echo "=VALUE";
-			}
-			echo "\n";
-		}
-
-		// short option
-		if( $param->hasShortName() ) {
-			echo " -{$param->getShortName()}";
-			if( $param->isValueRequired() ) {
-				echo "=VALUE";
-			}
-			echo "\n";
-		}
-
-		// description
-		echo " \t{$param->getDescription()}\n";
-	}
-
-	echo "\n Example:\n"                                               .
-	     " \t{$argv[0]} --wiki=itwiki --list=Wikipedia:PDC/Elenco\n\n" .
-	     " Have fun! by Valerio Bozzolan\n"                            ;
-
-	exit( 0 );
+	show_help();
 }
 
 // disable interaction
