@@ -211,6 +211,7 @@ while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0
 			'titles'  => $less_titles_to_be_orphanized,
 			'prop'    => 'linkshere',
 			'lhprop'  => 'pageid',
+			'lhshow'  => '!redirect',
 			'lhlimit' => 300,
 	];
 
