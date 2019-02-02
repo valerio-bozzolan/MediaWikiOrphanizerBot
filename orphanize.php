@@ -40,6 +40,7 @@ $opts = getopt( 'h', [
 	'wiki:',
 	'list:',
 	'summary:',
+	'no-interaction',
 	'debug',
 	'help',
 ] );
@@ -54,6 +55,7 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 	     "                              orphanized by this bot.\n"            .
 	     "          --cfg PAGENAME      Read the config from the specified\n" .
 	     "                              wikipage\n"                           .
+	     "          --no-interaction    do not confirm every change\n"        .
 	     "          --debug             increase verbosity\n"                 .
 	     "          --help              Show this message and quit.\n"        .
 	     " Example:\n"                                                        .
@@ -61,6 +63,9 @@ if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
 	     " Have fun! by Valerio Bozzolan\n"                                   ;
 	exit( 1 );
 }
+
+// disable interaction
+$NO_INTERACTION = isset( $opts[ 'no-interaction' ] );
 
 // title source
 $TITLE_SOURCE =
@@ -313,8 +318,10 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				foreach( $wikitext->getHumanUniqueSobstitutions() as $sobstitution ) {
 					Log::info( "\t $sobstitution" );
 				}
-				if( 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
+				if( $NO_INTERACTION || 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
 					try {
+
+						// eventually login and save
 						$wiki->login()->edit( [
 							'pageid'    => $pageid,
 							'text'      => $wikitext->getWikitext(),
@@ -323,6 +330,9 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 							'minor'     => 1,
 							'bot'       => 1,
 						] );
+
+						$edits++;
+
 					} catch( ProtectedPageException $e ) {
 						Log::warn( "skip protected page $pageid" );
 					}
