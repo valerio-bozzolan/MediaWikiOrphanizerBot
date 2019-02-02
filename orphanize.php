@@ -129,20 +129,42 @@ $NS =
 	     ? $cfg->ns
 	     : null;
 
-Log::info( "reading $TITLE_SOURCE" );
+// number of seconds of pause after last edit to the list (default is immediately)
+$WARMUP =
+	isset( $cfg->warmup )
+	     ? $cfg->warmup
+	     : -1;
 
 // query titles to be orphanized alongside the last revision of the list
 $responses =
 	$wiki->createQuery( [
 		'action'  => 'query',
 		'titles'  => $TITLE_SOURCE,
-		'prop'    => 'links',
+		'prop'    => [
+			'links',
+			'revisions',
+		],
+		'rvslots' => 'main',
+		'rvprop'  => 'timestamp',
 	] );
 
-// collect links
+// collect links and take the last edit timestamp
 $titles_to_be_orphanized = [];
+
+Log::info( "reading $TITLE_SOURCE" );
 foreach( $responses as $response ) {
 	foreach( $response->query->pages as $page ) {
+
+		// check warmup
+		$timestamp = reset( $page->revisions )->timestamp;
+		$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
+		$seconds = time() - $timestamp->getTimestamp();
+		if( $seconds < $WARMUP ) {
+			Log::info( "edited just $seconds seconds ago: quit until warmup $WARMUP" );
+			exit( 1 );
+		}
+
+		// collect links
 		foreach( $page->links as $link ) {
 			$titles_to_be_orphanized[] = Ns::defaultCanonicalName( $link->ns ) . $link->title;
 		}
