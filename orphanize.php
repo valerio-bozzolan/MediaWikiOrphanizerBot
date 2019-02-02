@@ -140,6 +140,12 @@ $WARMUP =
 	     ? $cfg->warmup
 	     : -1;
 
+// limit to a certain number of edits (default 1000 edits)
+$COOLDOWN =
+	isset( $cfg->cooldown )
+	     ? $cfg->cooldown
+	     : 1000;
+
 // query titles to be orphanized alongside the last revision of the list
 $responses =
 	$wiki->createQuery( [
@@ -232,6 +238,9 @@ Log::info( sprintf(
 	count( $involved_pagetitles )
 ) );
 
+// number of edited pages
+$edits = 0;
+
 // note that the API accepts a maximum tranche of IDs
 while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_TITLES ) ) {
 
@@ -253,6 +262,12 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 		// for each page
 		foreach( $response->query->pages as $page ) {
+
+			// avoid too many edits
+			if( $edits > $COOLDOWN ) {
+				Log::info( "reached cooldown: stop" );
+				exit( 0 );
+			}
 
 			// page ID to be edited
 			$pageid = $page->pageid;
