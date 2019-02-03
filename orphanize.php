@@ -292,7 +292,8 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 				// convert '[[Hello]]' to 'Hello'
 				$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
-					return $matches[ 'title' ];
+					// avoid [[:hello]] to ":hello" to avoid unwanted indentations
+					return ltrim( $matches[ 'title' ], ':' );
 				} );
 
 				// convert '[[Hello|world]]' to 'world'
