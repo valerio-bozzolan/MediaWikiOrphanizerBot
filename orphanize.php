@@ -48,6 +48,7 @@ use \web\MediaWikis;
 use \mw\Wikilink;
 use \mw\Ns;
 use \mw\API\ProtectedPageException;
+use \regex\Generic as Regex;
 
 // register available options
 $opts = Opts::instance()->register( [
@@ -60,6 +61,7 @@ $opts = Opts::instance()->register( [
 	new ParamValued( 'delay',          null, 'Additional delay between each edit' ),
 	new ParamValued( 'warmup',         null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
 	new ParamValued( 'cooldown',       null, 'End early when reaching this number of edits' ),
+	new ParamValued( 'seealso',        null, 'Title of your local "See also" section' ),
 
 	// register arguments without a value
 	new ParamFlag(   'debug',          null, 'Increase verbosity' ),
@@ -95,6 +97,7 @@ $NS       = option( 'ns' );
 $WARMUP   = option( 'warmup', -1 );
 $COOLDOWN = option( 'cooldown', 1000 );
 $DELAY    = option( 'delay', 0 );
+$SEEALSO  = option( 'seealso', 'Voci correlate' );
 
 // query titles to be orphanized alongside the last revision of the list
 $responses =
@@ -260,11 +263,30 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 					'alias-group-name' => 'alias',
 				] );
 
+				// replace entry from "See also" section
+				$wikilink_regex_clean = $wikilink_simple->getRegex();
+				$wikilink_regex_clean = Regex::spaceBurger( $wikilink_regex_clean );
+				$seealso = preg_quote( $SEEALSO );
+				$seealso_regex =
+					'/' .
+						Regex::groupNamed( "\\n== *$seealso *==.*?\\n",                         'sectionstart' ) .
+						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}[ \\t]*\\n", 'wlink'        ) .
+						Regex::groupNamed( '.*?\n(?>=|$)',                                      'sectionend'   ) .
+					'/s'; // flag to match newlines with dot
+
 				Log::debug( "regex simple wikilink:" );
 				Log::debug( $wikilink_regex_simple );
 
 				Log::debug( "regex wikilink aliased:" );
 				Log::debug( $wikilink_regex_alias );
+
+				Log::debug( "regex see also:" );
+				Log::debug( $seealso_regex );
+
+				// strip out the entry from «See also» section
+				$wikitext->pregReplaceCallback( $seealso_regex, function ( $matches ) {
+					return $matches[ 'sectionstart' ] . $matches[ 'sectionend' ];
+				} );
 
 				// convert '[[Hello]]' to 'Hello'
 				$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
