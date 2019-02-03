@@ -294,13 +294,15 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 				// convert '[[Hello]]' to 'Hello'
 				$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
-					// avoid [[:hello]] to ":hello" to avoid unwanted indentations
-					return ltrim( $matches[ 'title' ], ':' );
+					// fix unwanted indentations
+					$title = ltrim( $matches[ 'title' ], ':' );
+					return trim(  $title );
 				} );
 
 				// convert '[[Hello|world]]' to 'world'
 				$wikitext->pregReplaceCallback( "/$wikilink_regex_alias/", function ( $matches ) {
-					return $matches[ 'alias' ];
+					// fix unwanted indentations
+					return trim( $matches[ 'alias' ] );
 				} );
 			}
 			// end loop titles to be orphanized
