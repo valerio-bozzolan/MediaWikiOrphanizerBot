@@ -269,10 +269,9 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				$seealso = preg_quote( $SEEALSO );
 				$seealso_regex =
 					'/' .
-						Regex::groupNamed( "\\n== *$seealso *==.*?\\n",                         'sectionstart' ) .
-						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}[ \\t]*\\n", 'wlink'        ) .
-						Regex::groupNamed( '.*?\n(?>=|$)',                                      'sectionend'   ) .
-					'/s'; // flag to match newlines with dot
+						Regex::groupNamed( "\\n== *$seealso *== *((?!=).*\n)*",                 'keep' ) .
+						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}[ \\t]*\\n", 'wlink'  ) .
+					'/';
 
 				Log::debug( "regex simple wikilink:" );
 				Log::debug( $wikilink_regex_simple );
@@ -285,7 +284,7 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 				// strip out the entry from «See also» section
 				$wikitext->pregReplaceCallback( $seealso_regex, function ( $matches ) {
-					return $matches[ 'sectionstart' ] . $matches[ 'sectionend' ];
+					return $matches[ 'keep' ];
 				} );
 
 				// convert '[[Hello]]' to 'Hello'
