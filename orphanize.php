@@ -57,6 +57,7 @@ $opts = Opts::instance()->register( [
 	new ParamValued( 'list',           null, 'Specify a pagename that should contain the wikilinks to be orphanized' ),
 	new ParamValued( 'summary',        null, 'Edit summary' ),
 	new ParamValued( 'ns',             null, 'Namespace whitelist' ),
+	new ParamValued( 'delay',          null, 'Additional delay between each edit' ),
 	new ParamValued( 'warmup',         null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
 	new ParamValued( 'cooldown',       null, 'End early when reaching this number of edits' ),
 
@@ -71,11 +72,9 @@ if( $opts->getArg( 'help' ) ) {
 	show_help();
 }
 
-// disable interaction
+// cli-only parameters
 $NO_INTERACTION = $opts->getArg( 'no-interaction' );
-
-// title source
-$TITLE_SOURCE = $opts->getArg( 'list', 'Utente:.avgas/Wikilink da orfanizzare' );
+$TITLE_SOURCE   = $opts->getArg( 'list', 'Utente:.avgas/Wikilink da orfanizzare' );
 
 Log::info( "start" );
 
@@ -90,17 +89,12 @@ $wiki = Mediawikis::findFromUid( $opts->getArg( 'wiki', 'itwiki' ) );
 // load the wiki config
 wiki_config();
 
-// edit summary
-$SUMMARY = option( 'summary', "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]" );
-
-// limit to a certain namespace (default is every namespace)
-$NS = option( 'ns' );
-
-// number of seconds of pause after last edit to the list (default is immediately)
-$WARMUP = option( 'warmup', -1 );
-
-// limit to a certain number of edits (default 1000 edits)
+// parameters available both from cli and on-wiki
+$SUMMARY  = option( 'summary', "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]" );
+$NS       = option( 'ns' );
+$WARMUP   = option( 'warmup', -1 );
 $COOLDOWN = option( 'cooldown', 1000 );
+$DELAY    = option( 'delay', 0 );
 
 // query titles to be orphanized alongside the last revision of the list
 $responses =
@@ -290,8 +284,19 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				foreach( $wikitext->getHumanUniqueSobstitutions() as $sobstitution ) {
 					Log::info( "\t $sobstitution" );
 				}
+
 				if( $NO_INTERACTION || 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
 					try {
+
+						// the entire world absolutely needs this shitty ASCII animation - trust me
+						if( $edits && $DELAY ) {
+							Log::info( "delay $DELAY seconds", [ 'newline' => false ] );
+							for( $i = 0; $i < $DELAY; $i++ ) {
+								sleep( 1 );
+								echo '.';
+							}
+							echo "\n";
+						}
 
 						// eventually login and save
 						$wiki->login()->edit( [

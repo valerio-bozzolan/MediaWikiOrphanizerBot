@@ -21,10 +21,27 @@ You know you should provide your bot credentials in order to use a tool.
 You need two pages: one with a list of links pointing to the pages to orphanize (pass its title via the `list` parameter),
 and one with generic config (to be passed via `cfg`). The latter should be a JSON page and can have the following options:
 
- * `summary` (string) - The summary to use when editing.
- * `ns` (array) - To only edit pages on the given namespaces. `null` means all namespaces.
+* `summary` (string) - The summary to use when editing.
+* `ns` (array) - To only edit pages on the given namespaces. `null` means all namespaces.
+* `warmup` (int) - number of __seconds__ to wait before starting (after last edit on the list)
+* `cooldown` (int) - number of __edits__ to do until shutdown (you may want to re-schedule)
+* `delay` (int) - number of __seconds__ to wait before saving
 
-## Usage
+An example:
+
+```
+{
+    "summary": "Bot: orphanizing links",
+    "ns": [
+        0
+    ],
+    "warmup": 120,
+    "cooldown": 10,
+    "delay": 30
+}
+```
+
+## Usage from command line
 
 	./orphanizer.php --help
 
@@ -42,6 +59,8 @@ Available options, most of them also on-wiki:
  	Edit summary
  --ns=VALUE
  	Namespace whitelist
+ --delay=VALUE
+ 	Additional delay between each edit
  --warmup=VALUE
  	Start only if the last edit on the list was done at least $warmup seconds ago
  --cooldown=VALUE
@@ -59,20 +78,6 @@ Available options, most of them also on-wiki:
 
  Have fun! by Valerio Bozzolan, Daimona Eaytoy
 ```
-{
-    "summary": "Bot: orphanizing links",
-    "ns": [
-        0
-    ],
-    "warmup": 120,
-    "cooldown": 10
-}
-```
-
-* `summary` is the edit summary
-* `ns` if provided, list of whitelisted namespaces
-* `warmup` if provided, number of __seconds__ to wait before starting (after last edit on the list)
-* `cooldown` if provided, number of __edits__ to do until shutdown (you may want to re-schedule)
 
 ## License
 
