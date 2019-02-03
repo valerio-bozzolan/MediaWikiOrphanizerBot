@@ -129,9 +129,11 @@ foreach( $responses as $response ) {
 			exit( 1 );
 		}
 
-		// collect links
-		foreach( $page->links as $link ) {
-			$titles_to_be_orphanized[] = Ns::defaultCanonicalName( $link->ns ) . $link->title;
+		// collect links (if any)
+		if( isset( $page->links ) ) {
+			foreach( $page->links as $link ) {
+				$titles_to_be_orphanized[] = Ns::defaultCanonicalName( $link->ns ) . $link->title;
+			}
 		}
 	}
 }
