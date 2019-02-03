@@ -303,7 +303,7 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 							'pageid'    => $pageid,
 							'text'      => $wikitext->getWikitext(),
 							'summary'   => $SUMMARY,
-							'timestamp' => $timestamp,
+							'basetimestamp' => $timestamp,
 							'minor'     => 1,
 							'bot'       => 1,
 						] );
