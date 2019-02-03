@@ -35,118 +35,111 @@ file_exists( $config_path = __DIR__ . '/config.php' )
 
 require $config_path;
 
-// allowed options
-$opts = getopt( 'h', [
-	'wiki:',
-	'list:',
-	'summary:',
-	'help'
-] );
-
-// show help
-if( isset( $opts[ 'h' ] ) || isset( $opts[ 'help' ] ) ) {
-	echo "Welcome in your MediaWiki Orphanizer bot!\n\n"                      .
-	     " Usage:   {$argv[0]} [OPTIONS]\n"                                   .
-	     " Options: --wiki UID          Specify a wiki from it's UID.\n"      .
-	     "          --list PAGENAME     Specify a pagename that should\n"     .
-	     "                              contain the wikilinks to be\n"        .
-	     "                              orphanized by this bot.\n"            .
-	     "          --cfg PAGENAME      Read the config from the specified\n" .
-	     "                              wikipage"                             .
-	     "          --help              Show this message and quit.\n"        .
-	     " Example:\n"                                                        .
-	     "          {$argv[0]} --wiki itwiki --list Wikipedia:PDC/Elenco\n\n" .
-	     " Have fun! by Valerio Bozzolan\n"                                   ;
-	exit( 1 );
-}
-
-// title source
-$TITLE_SOURCE =
-	isset( $opts[ 'list' ] )
-	     ? $opts[ 'list' ]
-	     : 'Utente:.avgas/Wikilink da orfanizzare';
-
-// cfg page
-$CFG_PAGE =
-	isset( $opts[ 'cfg' ] )
-	     ? $opts[ 'cfg' ]
-	     : 'Utente:OrfanizzaBot/Configurazione';
-
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
 
 // classes used
-use \cli\Log;
 use \cli\Input;
+use \cli\Opts;
+use \cli\ParamFlag;
+use \cli\ParamValued;
+use \cli\Log;
 use \web\MediaWikis;
 use \mw\Wikilink;
 use \mw\Ns;
 use \mw\API\ProtectedPageException;
+use \regex\Generic as Regex;
 
-// wiki identifier
-$wiki_uid =
-	isset( $opts[ 'wiki' ] )
-	     ? $opts[ 'wiki' ]
-	     : 'itwiki';
+// register available options
+$opts = Opts::instance()->register( [
+	// register arguments with a value
+	new ParamValued( 'wiki',           null, 'Specify a wiki from it\'s UID' ),
+	new ParamValued( 'cfg',            null, 'Title of an on-wiki configuration page with JSON content model' ),
+	new ParamValued( 'list',           null, 'Specify a pagename that should contain the wikilinks to be orphanized' ),
+	new ParamValued( 'summary',        null, 'Edit summary' ),
+	new ParamValued( 'ns',             null, 'Namespace whitelist' ),
+	new ParamValued( 'delay',          null, 'Additional delay between each edit' ),
+	new ParamValued( 'warmup',         null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
+	new ParamValued( 'cooldown',       null, 'End early when reaching this number of edits' ),
+	new ParamValued( 'seealso',        null, 'Title of your local "See also" section' ),
+
+	// register arguments without a value
+	new ParamFlag(   'debug',          null, 'Increase verbosity' ),
+	new ParamFlag(   'help',           'h',  'Show this message and quit' ),
+	new ParamFlag(   'no-interaction', null, 'Do not confirm every change' ),
+] );
+
+// show help screen
+if( $opts->getArg( 'help' ) ) {
+	show_help();
+}
+
+// cli-only parameters
+$NO_INTERACTION = $opts->getArg( 'no-interaction' );
+$TITLE_SOURCE   = $opts->getArg( 'list', 'Utente:.avgas/Wikilink da orfanizzare' );
+
+Log::info( "start" );
+
+// increase verbosity
+if( $opts->getArg( 'debug' ) ) {
+	Log::$DEBUG = true;
+}
 
 // wiki instance
-$wiki = Mediawikis::findFromUid( $wiki_uid );
+$wiki = Mediawikis::findFromUid( $opts->getArg( 'wiki', 'itwiki' ) );
 
-Log::info( "reading $CFG_PAGE" );
-$cfgRevs =
-	$wiki->fetch( [
+// load the wiki config
+wiki_config();
+
+// parameters available both from cli and on-wiki
+$SUMMARY  = option( 'summary', "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]" );
+$NS       = option( 'ns' );
+$WARMUP   = option( 'warmup', -1 );
+$COOLDOWN = option( 'cooldown', 1000 );
+$DELAY    = option( 'delay', 0 );
+$SEEALSO  = option( 'seealso', 'Voci correlate' );
+
+// query titles to be orphanized alongside the last revision of the list
+$responses =
+	$wiki->createQuery( [
 		'action'  => 'query',
-		'titles'  => $CFG_PAGE,
-		'prop'    => 'revisions',
+		'titles'  => $TITLE_SOURCE,
+		'prop'    => [
+			'links',
+			'revisions',
+		],
 		'rvslots' => 'main',
-		'rvprop'  => 'content',
+		'rvprop'  => 'timestamp',
 	] );
 
-$cfgRev = reset( $cfgRevs->query->pages )->revisions[0];
-if ( $cfgRev->slots->main->contentmodel !== 'json' ) {
-	Log::error( 'The cfg page must have JSON content model.' );
-	exit( 1 );
-}
-$cfg = json_decode( $cfgRev->slots->main->{ '*' } );
+// collect links and take the last edit timestamp
+$titles_to_be_orphanized = [];
 
-// edit summary
-$SUMMARY =
-	isset( $cfg->summary )
-	     ? $cfg->summary
-	     : "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]";
-
-// limit to a certain namespace (default is every namespace)
-$NS =
-	isset( $cfg->ns )
-	     ? $cfg->ns
-	     : null;
-
-// query last revision
 Log::info( "reading $TITLE_SOURCE" );
-$links =
-	$wiki->fetch( [
-		'action'  => 'query',
-		'prop'    => 'links',
-		'titles'  => $TITLE_SOURCE
-	] );
+foreach( $responses as $response ) {
+	foreach( $response->query->pages as $page ) {
 
-$titles_to_be_orphanized = isset( reset( $links->query->pages )->links )
-	? reset( $links->query->pages )->links
-	: null;
-if ( $titles_to_be_orphanized === null ) {
-	Log::error( 'check links list' );
-	exit( 1 );
-} elseif ( count( $titles_to_be_orphanized ) === 0 ) {
-	Log::error( 'wtf' );
-	exit( 1 );
+		// check warmup
+		$timestamp = reset( $page->revisions )->timestamp;
+		$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
+		$seconds = time() - $timestamp->getTimestamp();
+		if( $seconds < $WARMUP ) {
+			Log::info( "edited just $seconds seconds ago: quit until warmup $WARMUP" );
+			exit( 1 );
+		}
+
+		// collect links
+		foreach( $page->links as $link ) {
+			$titles_to_be_orphanized[] = Ns::defaultCanonicalName( $link->ns ) . $link->title;
+		}
+	}
 }
 
-$titles_to_be_orphanized = array_map(
-	function( $t ) {
-		return Ns::defaultCanonicalName( $t->ns ) . $t->title;
-	},
-	$titles_to_be_orphanized
-);
+// die if no links
+if( ! $titles_to_be_orphanized ) {
+	Log::info( 'empty list' );
+	exit( 1 );
+}
 
 // keep a copy
 $involved_pagetitles = $titles_to_be_orphanized;
@@ -163,13 +156,14 @@ $involved_pageids = [];
 // note that the API accepts a maximum trance of titles
 while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0, MAX_TRANCHE_TITLES ) ) {
 
-	// API argumento for the linksto query
+	// API arguments for the linkshere query
 	$linksto_args = [
-			'action'      => 'query',
-			'titles'      => $less_titles_to_be_orphanized,
-			'prop'        => 'linkshere',
-			'lhprop'      => 'pageid',
-			'lhlimit'     => 300,
+			'action'  => 'query',
+			'titles'  => $less_titles_to_be_orphanized,
+			'prop'    => 'linkshere',
+			'lhprop'  => 'pageid',
+			'lhshow'  => '!redirect',
+			'lhlimit' => 300,
 	];
 
 	// limit to certain namespaces
@@ -198,6 +192,9 @@ Log::info( sprintf(
 	count( $involved_pagetitles )
 ) );
 
+// number of edited pages
+$edits = 0;
+
 // note that the API accepts a maximum tranche of IDs
 while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_TITLES ) ) {
 
@@ -219,6 +216,12 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 		// for each page
 		foreach( $response->query->pages as $page ) {
+
+			// avoid too many edits
+			if( $edits > $COOLDOWN ) {
+				Log::info( "reached cooldown: stop" );
+				exit( 0 );
+			}
 
 			// page ID to be edited
 			$pageid = $page->pageid;
@@ -260,11 +263,29 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 					'alias-group-name' => 'alias',
 				] );
 
+				// replace entry from "See also" section
+				$wikilink_regex_clean = $wikilink_simple->getRegex();
+				$wikilink_regex_clean = Regex::spaceBurger( $wikilink_regex_clean );
+				$seealso = preg_quote( $SEEALSO );
+				$seealso_regex =
+					'/' .
+						Regex::groupNamed( "\\n== *$seealso *== *((?!=).*\n)*",            'keep'   ) .
+						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}.*\\n", 'wlink'  ) .
+					'/';
+
 				Log::debug( "regex simple wikilink:" );
 				Log::debug( $wikilink_regex_simple );
 
 				Log::debug( "regex wikilink aliased:" );
 				Log::debug( $wikilink_regex_alias );
+
+				Log::debug( "regex see also:" );
+				Log::debug( $seealso_regex );
+
+				// strip out the entry from «See also» section
+				$wikitext->pregReplaceCallback( $seealso_regex, function ( $matches ) {
+					return $matches[ 'keep' ];
+				} );
 
 				// convert '[[Hello]]' to 'Hello'
 				$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
@@ -284,16 +305,32 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				foreach( $wikitext->getHumanUniqueSobstitutions() as $sobstitution ) {
 					Log::info( "\t $sobstitution" );
 				}
-				if( 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
+
+				if( $NO_INTERACTION || 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
 					try {
+
+						// the entire world absolutely needs this shitty ASCII animation - trust me
+						if( $edits && $DELAY ) {
+							Log::info( "delay $DELAY seconds", [ 'newline' => false ] );
+							for( $i = 0; $i < $DELAY; $i++ ) {
+								sleep( 1 );
+								echo '.';
+							}
+							echo "\n";
+						}
+
+						// eventually login and save
 						$wiki->login()->edit( [
-							'pageid'    => $pageid,
-							'text'      => $wikitext->getWikitext(),
-							'summary'   => $SUMMARY,
-							'timestamp' => $timestamp,
-							'minor'     => 1,
-							'bot'       => 1,
+							'pageid'        => $pageid,
+							'text'          => $wikitext->getWikitext(),
+							'summary'       => $SUMMARY,
+							'basetimestamp' => $timestamp,
+							'minor'         => 1,
+							'bot'           => 1,
 						] );
+
+						$edits++;
+
 					} catch( ProtectedPageException $e ) {
 						Log::warn( "skip protected page $pageid" );
 					}
@@ -311,3 +348,5 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 }
 // end loop involved page IDs
+
+Log::info( "end" );
