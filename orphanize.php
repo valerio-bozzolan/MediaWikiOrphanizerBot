@@ -119,6 +119,7 @@ Log::info( "reading $TITLE_SOURCE" );
 foreach( $responses as $response ) {
 	foreach( $response->query->pages as $page ) {
 
+		$list_pageid = $page->pageid;
 		// check warmup
 		$timestamp = reset( $page->revisions )->timestamp;
 		$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
@@ -178,7 +179,9 @@ while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0
 		foreach( $response->query->pages as $page ) {
 			if( isset( $page->linkshere ) ) {
 				foreach( $page->linkshere as $linkingpage ) {
-					$involved_pageids[] = (int) $linkingpage->pageid;
+					if ( (int)$linkingpage->pageid !== $list_pageid ) {
+						$involved_pageids[] = (int) $linkingpage->pageid;
+					}
 				}
 			}
 		}
@@ -348,5 +351,52 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 }
 // end loop involved page IDs
+
+// done! remove the link from the list
+Log::info( "removing orphanized pages from list" );
+
+// fetch a fresh version of the list
+$response =
+	$wiki->fetch( [
+		'action'  => 'query',
+		'titles'  => $TITLE_SOURCE,
+		'prop'    => 'revisions',
+		'rvprop'  => 'content',
+		'rvslots' => 'main',
+	] );
+
+// content of the list
+$content = reset( $response->query->pages )->revisions[0]->slots->main->{ '*' };
+$wikitext = $wiki->createWikitext( $content );
+
+// remove each entry from the list
+foreach( $involved_pagetitles as $title_raw ) {
+
+	$title = $wiki->createTitleParsing( $title_raw );
+	$wlink = $wiki->createWikilink( $title, Wikilink::WHATEVER_ALIAS )
+	              ->getRegex();
+
+	// strip out the whole related line and sobstitute with something else
+	$from = "/.*$wlink.*/";
+
+	// TODO: put in config
+	$to   = "* [[Special:WhatLinksHere/$title_raw]]: ora verifica ed elimina manualmente";
+	$wikitext->pregReplace( $from, $to );
+}
+
+// update list
+if( $wikitext->isChanged() ) {
+	try {
+		$wiki->login()->edit( [
+			'title'   => $TITLE_SOURCE,
+			'text'    => $wikitext->getWikitext(),
+			'summary' => "aggiornamento elenco", // TODO: put in config
+			'bot'     => 1,
+		] );
+	} catch( ProtectedPageException $e ) {
+		Log::warn( "can't update list because of protection" );
+	}
+}
+
 
 Log::info( "end" );
