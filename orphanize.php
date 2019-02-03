@@ -300,12 +300,12 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 						// eventually login and save
 						$wiki->login()->edit( [
-							'pageid'    => $pageid,
-							'text'      => $wikitext->getWikitext(),
-							'summary'   => $SUMMARY,
+							'pageid'        => $pageid,
+							'text'          => $wikitext->getWikitext(),
+							'summary'       => $SUMMARY,
 							'basetimestamp' => $timestamp,
-							'minor'     => 1,
-							'bot'       => 1,
+							'minor'         => 1,
+							'bot'           => 1,
 						] );
 
 						$edits++;
