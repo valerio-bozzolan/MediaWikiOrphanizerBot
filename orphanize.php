@@ -269,8 +269,8 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				$seealso = preg_quote( $SEEALSO );
 				$seealso_regex =
 					'/' .
-						Regex::groupNamed( "\\n== *$seealso *== *((?!=).*\n)*",                 'keep' ) .
-						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}[ \\t]*\\n", 'wlink'  ) .
+						Regex::groupNamed( "\\n== *$seealso *== *((?!=).*\n)*",            'keep'   ) .
+						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}.*\\n", 'wlink'  ) .
 					'/';
 
 				Log::debug( "regex simple wikilink:" );
