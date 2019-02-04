@@ -23,6 +23,7 @@ and one with generic config (to be passed via `cfg`). The latter should be a JSO
 
 * `summary` (string) - The summary to use when editing.
 * `list-summary` (string) - The summary to use when editing the page list.
+* `done-text` (string) - What to replace a processed wlink with. $1 is the pointed title.
 * `ns` (array) - To only edit pages on the given namespaces. `null` means all namespaces.
 * `warmup` (int) - number of __seconds__ to wait before starting (after last edit on the list)
 * `cooldown` (int) - number of __edits__ to do until shutdown (you may want to re-schedule)
@@ -33,7 +34,8 @@ An example:
 ```
 {
     "summary": "Bot: orphanizing links",
-    "list-summary": "Updating list"
+    "list-summary": "Updating list",
+    "done-text": "* [[Special:WhatLinksHere/$1]] - {{done}}"
     "ns": [
         0
     ],
@@ -60,7 +62,7 @@ Available options, most of them also on-wiki:
  --summary=VALUE
  	Edit summary
  --list-summary=VALUE
- 	Edit summary for editing the page list
+ 	Edit summary for editing the list
  --ns=VALUE
  	Namespace whitelist
  --delay=VALUE
