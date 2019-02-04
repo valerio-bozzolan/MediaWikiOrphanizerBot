@@ -54,7 +54,7 @@ Welcome in your MediaWiki Orphanizer bot!
 
 Available options, most of them also on-wiki:
  --wiki=VALUE
- 	Specify a wiki from it's UID
+ 	Specify a wiki from its UID
  --cfg=VALUE
  	Title of an on-wiki configuration page with JSON content model
  --list=VALUE
