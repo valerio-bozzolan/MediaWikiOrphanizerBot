@@ -386,6 +386,8 @@ foreach( $involved_pagetitles as $title_raw ) {
 	// strip out the whole related line and replace with something else
 	$from = "/.*$wlink.*/";
 
+	// @todo In case done-text contains the full link to a page, and it has already been
+	// replaced in a previous run, don't replace it again.
 	$to = str_replace( '$1', $title_raw, $DONE_TEXT );
 	$wikitext->pregReplace( $from, $to );
 }
