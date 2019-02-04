@@ -96,6 +96,7 @@ wiki_config();
 // parameters available both from cli and on-wiki
 $SUMMARY      = option( 'summary', "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]" );
 $LIST_SUMMARY = option( 'list-summary', "Aggiornamento elenco" );
+$DONE_TEXT    = option( 'done-text', "* [[Special:WhatLinksHere/$1]] - {{done}}" );
 $NS           = option( 'ns' );
 $WARMUP       = option( 'warmup', -1 );
 $COOLDOWN     = option( 'cooldown', 1000 );
@@ -385,8 +386,7 @@ foreach( $involved_pagetitles as $title_raw ) {
 	// strip out the whole related line and replace with something else
 	$from = "/.*$wlink.*/";
 
-	// TODO: put in config
-	$to   = "* [[Special:WhatLinksHere/$title_raw]]: ora verifica ed elimina manualmente";
+	$to = str_replace( '$1', $title_raw, $DONE_TEXT );
 	$wikitext->pregReplace( $from, $to );
 }
 
