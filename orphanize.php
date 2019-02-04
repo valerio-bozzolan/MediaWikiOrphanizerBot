@@ -53,7 +53,7 @@ use \regex\Generic as Regex;
 // register available options
 $opts = Opts::instance()->register( [
 	// register arguments with a value
-	new ParamValued( 'wiki',           null, 'Specify a wiki from it\'s UID' ),
+	new ParamValued( 'wiki',           null, 'Specify a wiki from its UID' ),
 	new ParamValued( 'cfg',            null, 'Title of an on-wiki configuration page with JSON content model' ),
 	new ParamValued( 'list',           null, 'Specify a pagename that should contain the wikilinks to be orphanized' ),
 	new ParamValued( 'summary',        null, 'Edit summary' ),
