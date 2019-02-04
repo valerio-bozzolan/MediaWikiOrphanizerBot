@@ -122,6 +122,13 @@ $titles_to_be_orphanized = [];
 Log::info( "reading $TITLE_SOURCE" );
 foreach( $responses as $response ) {
 	foreach( $response->query->pages as $page ) {
+
+		// check if list is unexisting
+		if( isset( $page->missing ) ) {
+			Log::error( "missing list $TITLE_SOURCE" );
+			exit( 1 );
+		}
+
 		// check warmup
 		$timestamp = reset( $page->revisions )->timestamp;
 		$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
