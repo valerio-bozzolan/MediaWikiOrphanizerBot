@@ -129,9 +129,11 @@ foreach( $responses as $response ) {
 			exit( 1 );
 		}
 
-		// collect links
-		foreach( $page->links as $link ) {
-			$titles_to_be_orphanized[] = Ns::defaultCanonicalName( $link->ns ) . $link->title;
+		// collect links (if any)
+		if( isset( $page->links ) ) {
+			foreach( $page->links as $link ) {
+				$titles_to_be_orphanized[] = Ns::defaultCanonicalName( $link->ns ) . $link->title;
+			}
 		}
 	}
 }
@@ -292,12 +294,15 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 
 				// convert '[[Hello]]' to 'Hello'
 				$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
-					return $matches[ 'title' ];
+					// fix unwanted indentations
+					$title = ltrim( $matches[ 'title' ], ':' );
+					return trim(  $title );
 				} );
 
 				// convert '[[Hello|world]]' to 'world'
 				$wikitext->pregReplaceCallback( "/$wikilink_regex_alias/", function ( $matches ) {
-					return $matches[ 'alias' ];
+					// fix unwanted indentations
+					return trim( $matches[ 'alias' ] );
 				} );
 			}
 			// end loop titles to be orphanized
@@ -352,24 +357,51 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 }
 // end loop involved page IDs
 
-// Done! Remove the link from the list
-Log::info( 'removing page from the list' );
-// Fetch a fresh version of the page
-$res =
-	$wiki->createQuery( [
+// done! remove the link from the list
+Log::info( "removing orphanized pages from list" );
+
+// fetch a fresh version of the list
+$response =
+	$wiki->fetch( [
 		'action'  => 'query',
 		'titles'  => $TITLE_SOURCE,
 		'prop'    => 'revisions',
-		'rvslots' => 'main'
+		'rvprop'  => 'content',
+		'rvslots' => 'main',
 	] );
-$content = $res->query->pages[$list_pageid]->revisions[0]->slots->main->{ '*' };
+
+// content of the list
+$content = reset( $response->query->pages )->revisions[0]->slots->main->{ '*' };
 $wikitext = $wiki->createWikitext( $content );
-foreach ( $involved_pagetitles as $title_raw ) {
+
+// remove each entry from the list
+foreach( $involved_pagetitles as $title_raw ) {
+
 	$title = $wiki->createTitleParsing( $title_raw );
-	// Hopefully no alias has been used
-	$wlink = $wiki->createWikilink( $title, Wikilink::NO_ALIAS );
-	$reg = '!\**\s*' . $wlink->getRegex() . ',?\s*!';
-	$wikitext->pregReplace( $reg, '' );
+	$wlink = $wiki->createWikilink( $title, Wikilink::WHATEVER_ALIAS )
+	              ->getRegex();
+
+	// strip out the whole related line and sobstitute with something else
+	$from = "/.*$wlink.*/";
+
+	// TODO: put in config
+	$to   = "* [[Special:WhatLinksHere/$title_raw]]: ora verifica ed elimina manualmente";
+	$wikitext->pregReplace( $from, $to );
 }
+
+// update list
+if( $wikitext->isChanged() ) {
+	try {
+		$wiki->login()->edit( [
+			'title'   => $TITLE_SOURCE,
+			'text'    => $wikitext->getWikitext(),
+			'summary' => "aggiornamento elenco", // TODO: put in config
+			'bot'     => 1,
+		] );
+	} catch( ProtectedPageException $e ) {
+		Log::warn( "can't update list because of protection" );
+	}
+}
+
 
 Log::info( "end" );
