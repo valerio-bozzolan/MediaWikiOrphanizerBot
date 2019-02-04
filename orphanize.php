@@ -118,8 +118,6 @@ $titles_to_be_orphanized = [];
 Log::info( "reading $TITLE_SOURCE" );
 foreach( $responses as $response ) {
 	foreach( $response->query->pages as $page ) {
-
-		$list_pageid = $page->pageid;
 		// check warmup
 		$timestamp = reset( $page->revisions )->timestamp;
 		$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
@@ -181,7 +179,7 @@ while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0
 		foreach( $response->query->pages as $page ) {
 			if( isset( $page->linkshere ) ) {
 				foreach( $page->linkshere as $linkingpage ) {
-					if ( (int)$linkingpage->pageid !== $list_pageid ) {
+					if ( $linkingpage->title !== $TITLE_SOURCE ) {
 						$involved_pageids[] = (int) $linkingpage->pageid;
 					}
 				}
