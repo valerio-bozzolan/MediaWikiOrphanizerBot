@@ -249,7 +249,7 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 			// for each of the titles to be orphanized
 			foreach( $involved_pagetitles as $involved_pagetitle ) {
 
-				// parse the orphanizing title
+				// parse the title being orphanized
 				$title = $wiki->createTitleParsing( $involved_pagetitle );
 
 				// a wikilink with and without alias
@@ -308,8 +308,8 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 			// check for changes and save
 			if( $wikitext->isChanged() ) {
 				Log::info( "changes on page $pageid:" );
-				foreach( $wikitext->getHumanUniqueSobstitutions() as $sobstitution ) {
-					Log::info( "\t $sobstitution" );
+				foreach( $wikitext->getHumanUniqueSobstitutions() as $substitution ) {
+					Log::info( "\t $substitution" );
 				}
 
 				if( $NO_INTERACTION || 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
@@ -379,7 +379,7 @@ foreach( $involved_pagetitles as $title_raw ) {
 	$wlink = $wiki->createWikilink( $title, Wikilink::WHATEVER_ALIAS )
 	              ->getRegex();
 
-	// strip out the whole related line and sobstitute with something else
+	// strip out the whole related line and replace with something else
 	$from = "/.*$wlink.*/";
 
 	// TODO: put in config
