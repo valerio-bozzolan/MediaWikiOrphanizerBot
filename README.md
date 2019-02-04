@@ -63,6 +63,8 @@ Available options, most of them also on-wiki:
  	Edit summary
  --list-summary=VALUE
  	Edit summary for editing the list
+ --done-text=VALUE
+ 	Replacement for the wikilink in the list
  --ns=VALUE
  	Namespace whitelist
  --delay=VALUE
