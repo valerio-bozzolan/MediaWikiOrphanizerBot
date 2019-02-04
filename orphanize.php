@@ -57,6 +57,7 @@ $opts = Opts::instance()->register( [
 	new ParamValued( 'cfg',            null, 'Title of an on-wiki configuration page with JSON content model' ),
 	new ParamValued( 'list',           null, 'Specify a pagename that should contain the wikilinks to be orphanized' ),
 	new ParamValued( 'summary',        null, 'Edit summary' ),
+	new ParamValued( 'list-summary',   null, 'Edit summary for editing the page list' ),
 	new ParamValued( 'ns',             null, 'Namespace whitelist' ),
 	new ParamValued( 'delay',          null, 'Additional delay between each edit' ),
 	new ParamValued( 'warmup',         null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
@@ -92,12 +93,13 @@ $wiki = Mediawikis::findFromUid( $opts->getArg( 'wiki', 'itwiki' ) );
 wiki_config();
 
 // parameters available both from cli and on-wiki
-$SUMMARY  = option( 'summary', "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]" );
-$NS       = option( 'ns' );
-$WARMUP   = option( 'warmup', -1 );
-$COOLDOWN = option( 'cooldown', 1000 );
-$DELAY    = option( 'delay', 0 );
-$SEEALSO  = option( 'seealso', 'Voci correlate' );
+$SUMMARY      = option( 'summary', "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]" );
+$LIST_SUMMARY = option( 'list-summary', "Aggiornamento elenco" );
+$NS           = option( 'ns' );
+$WARMUP       = option( 'warmup', -1 );
+$COOLDOWN     = option( 'cooldown', 1000 );
+$DELAY        = option( 'delay', 0 );
+$SEEALSO      = option( 'seealso', 'Voci correlate' );
 
 // query titles to be orphanized alongside the last revision of the list
 $responses =
@@ -393,7 +395,7 @@ if( $wikitext->isChanged() ) {
 		$wiki->login()->edit( [
 			'title'   => $TITLE_SOURCE,
 			'text'    => $wikitext->getWikitext(),
-			'summary' => "aggiornamento elenco", // TODO: put in config
+			'summary' => $LIST_SUMMARY,
 			'bot'     => 1,
 		] );
 	} catch( ProtectedPageException $e ) {
