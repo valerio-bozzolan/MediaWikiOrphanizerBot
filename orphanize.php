@@ -138,12 +138,14 @@ foreach( $responses as $response ) {
 		}
 
 		// check warmup
-		$timestamp = reset( $page->revisions )->timestamp;
-		$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
-		$seconds = time() - $timestamp->getTimestamp();
-		if( $seconds < $WARMUP ) {
-			Log::info( "edited just $seconds seconds ago: quit until warmup $WARMUP" );
-			exit( 1 );
+		if( isset( $page->revisions ) ) {
+			$timestamp = reset( $page->revisions )->timestamp;
+			$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
+			$seconds = time() - $timestamp->getTimestamp();
+			if( $seconds < $WARMUP ) {
+				Log::info( "edited just $seconds seconds ago: quit until warmup $WARMUP" );
+				exit( 1 );
+			}
 		}
 
 		// collect links (if any)
