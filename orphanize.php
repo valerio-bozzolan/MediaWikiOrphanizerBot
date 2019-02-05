@@ -78,7 +78,7 @@ if( $opts->getArg( 'help' ) ) {
 
 // cli-only parameters
 $NO_INTERACTION = $opts->getArg( 'no-interaction' );
-$TITLE_SOURCE   = $opts->getArg( 'list', 'Utente:OrfanizzaBot/Pannello' );
+$TITLE_SOURCE   = $opts->getArg( 'list', 'Utente:OrfanizzaBot/Wikilink da orfanizzare' );
 
 Log::info( "start" );
 
