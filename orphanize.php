@@ -266,7 +266,7 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				$title = $wiki->createTitleParsing( $involved_pagetitle );
 
 				// if it's a category, remove it
-				if( $title->getTitle()->getNs()->getID() === 14 ) {
+				if( $title->getNs()->getID() === 14 ) {
 					$wikitext->removeCategory( $title->getTitle() );
 				}
 
