@@ -118,7 +118,6 @@ $responses =
 
 // collect links and take the last edit timestamp
 $titles_to_be_orphanized = [];
-
 Log::info( "reading $TITLE_SOURCE" );
 foreach( $responses as $response ) {
 	foreach( $response->query->pages as $page ) {
@@ -141,6 +140,7 @@ foreach( $responses as $response ) {
 		// collect links (if any)
 		if( isset( $page->links ) ) {
 			foreach( $page->links as $link ) {
+				// @TODO: does $link->title also contain the namespace itself? I think yes.
 				$titles_to_be_orphanized[] = Ns::defaultCanonicalName( $link->ns ) . $link->title;
 			}
 		}
@@ -386,8 +386,8 @@ $wikitext = $wiki->createWikitext( $content );
 // remove each entry from the list
 foreach( $involved_pagetitles as $title_raw ) {
 
-	$title = $wiki->createTitleParsing( $title_raw );
-	$wlink = $wiki->createWikilink( $title, Wikilink::WHATEVER_ALIAS )
+	$wlink = $wiki->createTitleParsing( $title_raw )
+	              ->createWikilink( Wikilink::WHATEVER_ALIAS )
 	              ->getRegex();
 
 	// strip out the whole related line and replace with something else
@@ -396,6 +396,7 @@ foreach( $involved_pagetitles as $title_raw ) {
 	// @todo In case done-text contains the full link to a page, and it has already been
 	// replaced in a previous run, don't replace it again.
 	$to = str_replace( '$1', $title_raw, $DONE_TEXT );
+
 	$wikitext->pregReplace( $from, $to );
 }
 
