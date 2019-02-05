@@ -192,7 +192,7 @@ while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0
 		foreach( $response->query->pages as $page ) {
 			if( isset( $page->linkshere ) ) {
 				foreach( $page->linkshere as $linkingpage ) {
-					if ( $linkingpage->title !== $TITLE_SOURCE ) {
+					if( $linkingpage->title !== $TITLE_SOURCE ) {
 						$involved_pageids[] = (int) $linkingpage->pageid;
 					}
 				}
