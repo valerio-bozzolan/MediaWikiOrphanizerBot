@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-namespace itwikidelbot;
+namespace orphanizerbot;
 
 // die on whatever error
 set_error_handler( function( $errno, $errstr, $errfile, $errline ) {
@@ -87,8 +87,17 @@ if( $opts->getArg( 'debug' ) ) {
 	Log::$DEBUG = true;
 }
 
+
+// wiki uid (from command line or from configuration file)
+$wiki_uid = Config::instance()->get( 'wiki' );
+$wiki_uid = $opts->getArg( 'wiki', $wiki_uid );
+if( ! $wiki_uid ) {
+	Log::error( "please choose the wiki! exit" );
+	exit( 1 );
+}
+
 // wiki instance
-$wiki = Mediawikis::findFromUid( $opts->getArg( 'wiki', 'itwiki' ) );
+$wiki = Mediawikis::findFromUid( $wiki_uid );
 
 // load the wiki config
 wiki_config();

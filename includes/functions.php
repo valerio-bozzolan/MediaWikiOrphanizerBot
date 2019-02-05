@@ -15,6 +15,7 @@
 
 use \cli\Log;
 use \cli\Opts;
+use \orphanizerbot\Config;
 
 /**
  * Show the help message and die
@@ -62,20 +63,29 @@ function show_help() {
 /**
  * Get an option value
  *
- * It's retrieved from a command line argument,
- * or from the on-wiki configuration page,
- * or from the default value provided.
+ * It's retrieved with this priority from greater to lower:
+ * 	1. the command line argument
+ * 	2. the on-wiki configuration page
+ * 	3. from the static configuration
+ * 	4. from the default value provided
  *
  * @param $name string
  * @param $default mixed Default value
  */
 function option( $name, $default = null ) {
 
-	// try the wiki option, then the $default
-	$value = wiki_option( $name, $default );
+	$value = $default;
 
-	// try the cli option, then wiki option
-	return Opts::instance()->getArg( $name, $value );
+	// try the hardcooded option first, then the $default
+	$value = Config::instance()->get( $name, $value );
+
+	// try the wiki option, then the hardcoded option
+	$value = wiki_option( $name, $value );
+
+	// try the cli option, then the wiki option
+	$value = Opts::instance()->getArg( $name, $value );
+
+	return $value;
 }
 
 /**

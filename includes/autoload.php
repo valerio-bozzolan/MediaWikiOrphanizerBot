@@ -18,3 +18,7 @@ require __DIR__ . '/functions.php';
 
 // autoload boz-mw classes
 require __DIR__ . '/boz-mw/autoload.php';
+
+// load the dummy config class
+require __DIR__ . '/class-Config.php';
+
