@@ -94,14 +94,14 @@ $wiki = Mediawikis::findFromUid( $opts->getArg( 'wiki', 'itwiki' ) );
 wiki_config();
 
 // parameters available both from cli and on-wiki
-$SUMMARY      = option( 'summary', "Bot TEST: orfanizzazione voci eliminate in seguito a [[WP:RPC|consenso cancellazione]]" );
-$LIST_SUMMARY = option( 'list-summary', "Aggiornamento elenco" );
+$SUMMARY      = option( 'summary', "Bot: pages orphanization" );
+$LIST_SUMMARY = option( 'list-summary', "Bot: orphanization list update" );
 $DONE_TEXT    = option( 'done-text', "* [[Special:WhatLinksHere/$1]] - {{done}}" );
 $NS           = option( 'ns' );
 $WARMUP       = option( 'warmup', -1 );
 $COOLDOWN     = option( 'cooldown', 1000 );
 $DELAY        = option( 'delay', 0 );
-$SEEALSO      = option( 'seealso', 'Voci correlate' );
+$SEEALSO      = option( 'seealso', 'See also' );
 
 // query titles to be orphanized alongside the last revision of the list
 $responses =
