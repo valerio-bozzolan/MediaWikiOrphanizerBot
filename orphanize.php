@@ -187,7 +187,7 @@ foreach( $responses as $response ) {
 
 // die if no links
 if( ! $titles_to_be_orphanized ) {
-	Log::info( 'empty list' );
+	Log::info( "empty list: quit" );
 	exit( 1 );
 }
 
