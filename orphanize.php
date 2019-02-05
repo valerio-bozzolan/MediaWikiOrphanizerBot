@@ -112,6 +112,9 @@ $COOLDOWN     = option( 'cooldown', 1000 );
 $DELAY        = option( 'delay', 0 );
 $SEEALSO      = option( 'seealso', 'See also' );
 
+// hardcoded values (@TODO: consider an option)
+$GROUP        = 'sysop';
+
 // query titles to be orphanized alongside the last revision of the list
 $responses =
 	$wiki->createQuery( [
@@ -122,7 +125,10 @@ $responses =
 			'revisions',
 		],
 		'rvslots' => 'main',
-		'rvprop'  => 'timestamp',
+		'rvprop'  => [
+			'user',
+			'timestamp',
+		],
 	] );
 
 // collect links and take the last edit timestamp
@@ -145,6 +151,27 @@ foreach( $responses as $response ) {
 			$seconds = time() - $timestamp->getTimestamp();
 			if( $seconds < $WARMUP ) {
 				Log::info( "edited just $seconds seconds ago: quit until warmup $WARMUP" );
+				exit( 1 );
+			}
+
+			// check user
+			$lastuser = $revision->user;
+			$rights =
+				$wiki->fetch( [
+					'action'  => 'query',
+					'list'    => 'users',
+					'usprop'  => 'groups',
+					'ususers' => $lastuser,
+				] );
+
+			Log::info( "$lastuser was the last editor" );
+
+			// @TODO: dedicate a parameter to dot hardcode this(?)
+			$groups = reset( $rights->query->users )->groups;
+			if( in_array( $GROUP, $groups, true ) ) {
+				Log::info( "$lastuser accepted as $GROUP" );
+			} else {
+				Log::error( "$lastuser not a $GROUP: quit" );
 				exit( 1 );
 			}
 		}
