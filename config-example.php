@@ -7,6 +7,6 @@ mw\API::$DEFAULT_PASSWORD = 'Bar';
 date_default_timezone_set( 'Europe/Rome' );
 
 // set other common configurations (see --help)
-Config::instance()
+orphanizerbot\Config::instance()
 	->set( 'wiki',    'itwiki' )
 	->set( 'seealso', 'Voci correlate' );
