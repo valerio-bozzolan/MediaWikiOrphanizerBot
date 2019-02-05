@@ -140,8 +140,7 @@ foreach( $responses as $response ) {
 		// collect links (if any)
 		if( isset( $page->links ) ) {
 			foreach( $page->links as $link ) {
-				// @TODO: does $link->title also contain the namespace itself? I think yes.
-				$titles_to_be_orphanized[] = Ns::defaultCanonicalName( $link->ns ) . $link->title;
+				$titles_to_be_orphanized[] = $link->title;
 			}
 		}
 	}
