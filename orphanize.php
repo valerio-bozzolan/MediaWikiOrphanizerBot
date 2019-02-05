@@ -137,9 +137,10 @@ foreach( $responses as $response ) {
 			exit( 1 );
 		}
 
-		// check warmup
 		if( isset( $page->revisions ) ) {
-			$timestamp = reset( $page->revisions )->timestamp;
+			// check warmup
+			$revision = reset( $page->revisions );
+			$timestamp = $revision->timestamp;
 			$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
 			$seconds = time() - $timestamp->getTimestamp();
 			if( $seconds < $WARMUP ) {
