@@ -262,11 +262,11 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				// parse the title being orphanized
 				$title = $wiki->createTitleParsing( $involved_pagetitle );
 
-				// If it's a category, remove it
-				if ( $title->getTitle()->getNs()->getID() === 14 ) {
+				// if it's a category, remove it
+				if( $title->getTitle()->getNs()->getID() === 14 ) {
 					$wikitext->removeCategory( $title->getTitle() );
 				}
-				
+
 				// a wikilink with and without alias
 				$wikilink_simple = $wiki->createWikilink( $title, Wikilink::NO_ALIAS );
 				$wikilink_alias  = $wiki->createWikilink( $title, Wikilink::WHATEVER_ALIAS );
@@ -417,6 +417,5 @@ if( $wikitext->isChanged() ) {
 		Log::warn( "can't update list because of protection" );
 	}
 }
-
 
 Log::info( "end" );
