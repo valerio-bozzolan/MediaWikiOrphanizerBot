@@ -172,7 +172,10 @@ while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0
 			'action'  => 'query',
 			'titles'  => $less_titles_to_be_orphanized,
 			'prop'    => 'linkshere',
-			'lhprop'  => 'pageid',
+			'lhprop'  => [
+				'pageid',
+				'title',
+			],
 			'lhshow'  => '!redirect',
 			'lhlimit' => 300,
 	];
