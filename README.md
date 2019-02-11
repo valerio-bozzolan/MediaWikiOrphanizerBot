@@ -1,8 +1,8 @@
 # MediaWiki Orphanizer bot
 
-This software is an Italian Wikipedia bot. It delinks page titles.
+This software is an Italian Wikipedia bot. It delinks page titles. Infos:
 
-Actually this is just a proof-of-concept from an idea of [Parma1983](https://it.wikipedia.org/wiki/Utente:Parma1983) and [.avgas](https://it.wikipedia.org/wiki/Utente:.avgas) and other awesome wikiguys.
+* https://it.wikipedia.org/wiki/Utente:OrfanizzaBot
 
 ## Installation
 
