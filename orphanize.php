@@ -63,6 +63,7 @@ $opts = Opts::instance()->register( [
 	new ParamValued( 'delay',          null, 'Additional delay between each edit' ),
 	new ParamValued( 'warmup',         null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
 	new ParamValued( 'cooldown',       null, 'End early when reaching this number of edits' ),
+	new ParamValued( 'turbofresa',     null, 'If the list is older than this number of seconds a turbofresa will be spawned to clear the list' ),
 	new ParamValued( 'seealso',        null, 'Title of your local "See also" section' ),
 
 	// register arguments without a value
@@ -111,6 +112,7 @@ $WARMUP       = option( 'warmup', -1 );
 $COOLDOWN     = option( 'cooldown', 1000 );
 $DELAY        = option( 'delay', 0 );
 $SEEALSO      = option( 'seealso', 'See also' );
+$TURBOFRESA   = option( 'turbofresa', 86400 );
 
 // hardcoded values (@TODO: consider an option)
 $GROUP        = 'sysop';
@@ -150,7 +152,24 @@ foreach( $responses as $response ) {
 			$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
 			$seconds = time() - $timestamp->getTimestamp();
 			if( $seconds < $WARMUP ) {
-				Log::info( "edited just $seconds seconds ago: quit until warmup $WARMUP" );
+				Log::info( "list edited just $seconds seconds ago: quit until warmup $WARMUP" );
+				exit( 1 );
+			}
+
+			// eventually clear list
+			if( $seconds > $TURBOFRESA ) {
+				Log::info( "list edited $seconds seconds ago: spawning a turbofresa to clear the list" );
+
+				// TODO: dedicated customizable summary
+				// TODO: customizable content
+				$wiki->login()->edit( [
+					'title'         => $TITLE_SOURCE,
+					'summary'       => $LIST_SUMMARY,
+					'text'          => '* ...',
+					'basetimestamp' => $timestamp,
+					'bot'           => 1,
+				] );
+
 				exit( 1 );
 			}
 

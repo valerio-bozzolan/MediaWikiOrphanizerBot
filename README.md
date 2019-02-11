@@ -73,6 +73,8 @@ Available options, most of them also on-wiki:
  	Start only if the last edit on the list was done at least $warmup seconds ago
  --cooldown=VALUE
  	End early when reaching this number of edits
+ --turbofresa=VALUE
+ 	If the list is older than this number of seconds a turbofresa will be spawned to clear the list
  --seealso=VALUE
  	Title of your local "See also" section
  --debug
