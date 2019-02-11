@@ -28,6 +28,7 @@ and one with generic config (to be passed via `cfg`). The latter should be a JSO
 * `warmup` (int) - number of __seconds__ to wait before starting (after last edit on the list)
 * `cooldown` (int) - number of __edits__ to do until shutdown (you may want to re-schedule)
 * `delay` (int) - number of __seconds__ to wait before saving
+* `turbofresa` (int) - if the list is older than this number of seconds, a turbofresa will be spawned to clear the list
 
 An example:
 
