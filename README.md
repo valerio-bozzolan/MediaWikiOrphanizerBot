@@ -75,7 +75,9 @@ Available options, most of them also on-wiki:
  --cooldown=VALUE
  	End early when reaching this number of edits
  --turbofresa=VALUE
- 	If the list is older than this number of seconds a turbofresa will be spawned to clear the list
+ 	If the list is older than this number of seconds a turbofresa will be spawned to reset the list
+ --turbofresa-text=VALUE
+ 	Text that will be saved to replace an old list
  --seealso=VALUE
  	Title of your local "See also" section
  --debug

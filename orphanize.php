@@ -53,23 +53,24 @@ use \regex\Generic as Regex;
 // register available options
 $opts = Opts::instance()->register( [
 	// register arguments with a value
-	new ParamValued( 'wiki',           null, 'Specify a wiki from its UID' ),
-	new ParamValued( 'cfg',            null, 'Title of an on-wiki configuration page with JSON content model' ),
-	new ParamValued( 'list',           null, 'Specify a pagename that should contain the wikilinks to be orphanized' ),
-	new ParamValued( 'summary',        null, 'Edit summary' ),
-	new ParamValued( 'list-summary',   null, 'Edit summary for editing the list' ),
-	new ParamValued( 'done-text',      null, 'Replacement for the wikilink in the list' ),
-	new ParamValued( 'ns',             null, 'Namespace whitelist' ),
-	new ParamValued( 'delay',          null, 'Additional delay between each edit' ),
-	new ParamValued( 'warmup',         null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
-	new ParamValued( 'cooldown',       null, 'End early when reaching this number of edits' ),
-	new ParamValued( 'turbofresa',     null, 'If the list is older than this number of seconds a turbofresa will be spawned to clear the list' ),
-	new ParamValued( 'seealso',        null, 'Title of your local "See also" section' ),
+	new ParamValued( 'wiki',            null, 'Specify a wiki from its UID' ),
+	new ParamValued( 'cfg',             null, 'Title of an on-wiki configuration page with JSON content model' ),
+	new ParamValued( 'list',            null, 'Specify a pagename that should contain the wikilinks to be orphanized' ),
+	new ParamValued( 'summary',         null, 'Edit summary' ),
+	new ParamValued( 'list-summary',    null, 'Edit summary for editing the list' ),
+	new ParamValued( 'done-text',       null, 'Replacement for the wikilink in the list' ),
+	new ParamValued( 'ns',              null, 'Namespace whitelist' ),
+	new ParamValued( 'delay',           null, 'Additional delay between each edit' ),
+	new ParamValued( 'warmup',          null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
+	new ParamValued( 'cooldown',        null, 'End early when reaching this number of edits' ),
+	new ParamValued( 'turbofresa',      null, 'If the list is older than this number of seconds a turbofresa will be spawned to reset the list' ),
+	new ParamValued( 'turbofresa-text', null, 'Text that will be saved to replace an old list' ),
+	new ParamValued( 'seealso',         null, 'Title of your local "See also" section' ),
 
 	// register arguments without a value
-	new ParamFlag(   'debug',          null, 'Increase verbosity' ),
-	new ParamFlag(   'help',           'h',  'Show this message and quit' ),
-	new ParamFlag(   'no-interaction', null, 'Do not confirm every change' ),
+	new ParamFlag(   'debug',           null, 'Increase verbosity' ),
+	new ParamFlag(   'help',            'h',  'Show this message and quit' ),
+	new ParamFlag(   'no-interaction',  null, 'Do not confirm every change' ),
 ] );
 
 // show help screen
@@ -113,6 +114,7 @@ $COOLDOWN     = option( 'cooldown', 1000 );
 $DELAY        = option( 'delay', 0 );
 $SEEALSO      = option( 'seealso', 'See also' );
 $TURBOFRESA   = option( 'turbofresa', 86400 );
+$LIST_EXAMPLE = option( 'list-example', "## List\n* ..." );
 
 // hardcoded values (@TODO: consider an option)
 $GROUP        = 'sysop';
@@ -165,7 +167,7 @@ foreach( $responses as $response ) {
 				$wiki->login()->edit( [
 					'title'         => $TITLE_SOURCE,
 					'summary'       => $LIST_SUMMARY,
-					'text'          => '* ...',
+					'text'          => $LIST_EXAMPLE,
 					'basetimestamp' => $timestamp,
 					'bot'           => 1,
 				] );
