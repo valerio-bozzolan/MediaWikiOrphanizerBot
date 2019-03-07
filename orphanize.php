@@ -54,24 +54,25 @@ use \regex\Generic as Regex;
 // register available options
 $opts = Opts::instance()->register( [
 	// register arguments with a value
-	new ParamValued( 'wiki',            null, 'Specify a wiki from its UID' ),
-	new ParamValued( 'cfg',             null, 'Title of an on-wiki configuration page with JSON content model' ),
-	new ParamValued( 'list',            null, 'Specify a pagename that should contain the wikilinks to be orphanized' ),
-	new ParamValued( 'summary',         null, 'Edit summary' ),
-	new ParamValued( 'list-summary',    null, 'Edit summary for editing the list' ),
-	new ParamValued( 'done-text',       null, 'Replacement for the wikilink in the list' ),
-	new ParamValued( 'ns',              null, 'Namespace whitelist' ),
-	new ParamValued( 'delay',           null, 'Additional delay between each edit' ),
-	new ParamValued( 'warmup',          null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
-	new ParamValued( 'cooldown',        null, 'End early when reaching this number of edits' ),
-	new ParamValued( 'turbofresa',      null, 'If the list is older than this number of seconds a turbofresa will be spawned to reset the list' ),
-	new ParamValued( 'turbofresa-text', null, 'Text that will be saved to replace an old list' ),
-	new ParamValued( 'seealso',         null, 'Title of your local "See also" section' ),
+	new ParamValued( 'wiki',               null, 'Specify a wiki from its UID' ),
+	new ParamValued( 'cfg',                null, 'Title of an on-wiki configuration page with JSON content model' ),
+	new ParamValued( 'list',               null, 'Specify a pagename that should contain the wikilinks to be orphanized' ),
+	new ParamValued( 'summary',            null, 'Edit summary' ),
+	new ParamValued( 'list-summary',       null, 'Edit summary for editing the list' ),
+	new ParamValued( 'done-text',          null, 'Replacement for the wikilink in the list' ),
+	new ParamValued( 'ns',                 null, 'Namespace whitelist' ),
+	new ParamValued( 'delay',              null, 'Additional delay between each edit' ),
+	new ParamValued( 'warmup',             null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
+	new ParamValued( 'cooldown',           null, 'End early when reaching this number of edits' ),
+	new ParamValued( 'turbofresa',         null, 'If the list is older than this number of seconds a turbofresa will be spawned to clean the list' ),
+	new ParamValued( 'turbofresa-text',    null, 'Text that will be saved to clean an old list' ),
+	new ParamValued( 'turbofresa-summary', null, 'Edit summary to be used when cleaning an old list' ),
+	new ParamValued( 'seealso',            null, 'Title of your local "See also" section' ),
 
 	// register arguments without a value
-	new ParamFlag(   'debug',           null, 'Increase verbosity' ),
-	new ParamFlag(   'help',            'h',  'Show this message and quit' ),
-	new ParamFlag(   'no-interaction',  null, 'Do not confirm every change' ),
+	new ParamFlag(   'debug',              null, 'Increase verbosity' ),
+	new ParamFlag(   'help',               'h',  'Show this message and quit' ),
+	new ParamFlag(   'no-interaction',     null, 'Do not confirm every change' ),
 ] );
 
 // show help screen
@@ -106,16 +107,17 @@ $wiki = Mediawikis::findFromUid( $wiki_uid );
 wiki_config();
 
 // parameters available both from cli and on-wiki
-$SUMMARY      = option( 'summary', "Bot: pages orphanization" );
-$LIST_SUMMARY = option( 'list-summary', "Bot: orphanization list update" );
-$DONE_TEXT    = option( 'done-text', "* [[Special:WhatLinksHere/$1]] - {{done}}" );
-$NS           = option( 'ns' );
-$WARMUP       = option( 'warmup', -1 );
-$COOLDOWN     = option( 'cooldown', 1000 );
-$DELAY        = option( 'delay', 0 );
-$SEEALSO      = option( 'seealso', 'See also' );
-$TURBOFRESA   = option( 'turbofresa', 86400 );
-$LIST_EXAMPLE = option( 'turbofresa-text', "== List ==\n* ..." );
+$SUMMARY            = option( 'summary',      "Bot: pages orphanization" );
+$LIST_SUMMARY       = option( 'list-summary', "Bot: orphanization list update" );
+$DONE_TEXT          = option( 'done-text',    "* [[Special:WhatLinksHere/$1]] - {{done}}" );
+$NS                 = option( 'ns' );
+$WARMUP             = option( 'warmup', -1 );
+$COOLDOWN           = option( 'cooldown', 1000 );
+$DELAY              = option( 'delay', 0 );
+$SEEALSO            = option( 'seealso', "See also" );
+$TURBOFRESA         = option( 'turbofresa', 86400 );
+$TURBOFRESA_TEXT    = option( 'turbofresa-text', "== List ==\n* ..." );
+$TURBOFRESA_SUMMARY = option( 'turbofresa-summary', "Bot: list clean" );
 
 // hardcoded values (@TODO: consider an option)
 $GROUP        = 'sysop';
@@ -134,8 +136,9 @@ $responses =
 		],
 		'rvslots' => 'main',
 		'rvprop'  => [
-			'user',
-			'timestamp',
+			'comment',   // the edit summary is used to detect if the list was already cleaned
+			'user',      // the username     is used to detect if the last user is allowed
+			'timestamp', // the timestamp    is used to check the age of the last edit
 		],
 	] );
 
@@ -164,19 +167,24 @@ foreach( $responses as $response ) {
 
 			// eventually clear list
 			if( $seconds > $TURBOFRESA ) {
-				Log::info( "list edited $seconds seconds ago: spawning a turbofresa to clear the list" );
+				if( $revision->comment === $TURBOFRESA_SUMMARY ) {
+					Log::info( "list edited $seconds seconds ago. already cleared. quit" );
+				} else {
+					Log::info( "list edited $seconds seconds ago. spawning a turbofresa to clear the list. quit" );
 
-				// TODO: dedicated customizable summary
-				// TODO: customizable content
-				$wiki->login()->edit( [
-					'title'         => $TITLE_SOURCE,
-					'summary'       => $LIST_SUMMARY,
-					'text'          => $LIST_EXAMPLE,
-					'basetimestamp' => $timestamp,
-					'bot'           => 1,
-				] );
+					// TODO: dedicated customizable summary
+					// TODO: customizable content
+					$wiki->login()->edit( [
+						'title'         => $TITLE_SOURCE,
+						'summary'       => $TURBOFRESA_SUMMARY,
+						'text'          => $TURBOFRESA_TEXT,
+						'basetimestamp' => $timestamp,
+						'bot'           => 1,
+					] );
 
-				exit( 1 );
+				}
+
+				exit( 0 );
 			}
 
 			// check user
