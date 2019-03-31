@@ -60,7 +60,7 @@ $opts = Opts::instance()->register( [
 	new ParamValued( 'summary',            null, 'Edit summary' ),
 	new ParamValued( 'list-summary',       null, 'Edit summary for editing the list' ),
 	new ParamValued( 'done-text',          null, 'Replacement for the wikilink in the list' ),
-	new ParamValued( 'ns',                 null, 'Namespace whitelist' ),
+	new ParamValued( 'ns',                 null, 'Namespace whitelist (values separated by pipe)' ),
 	new ParamValued( 'delay',              null, 'Additional delay between each edit' ),
 	new ParamValued( 'warmup',             null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
 	new ParamValued( 'cooldown',           null, 'End early when reaching this number of edits' ),
@@ -256,9 +256,9 @@ while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0
 			'lhlimit' => 300,
 	];
 
-	// limit to certain namespaces
+	// limit to certain namespaces from command line
 	if( $NS !== null ) {
-		$linksto_args[ 'lhnamespace' ] = implode( '|', $NS );
+		$linksto_args[ 'lhnamespace' ] = $NS;
 	}
 
 	// cumulate the linkshere page ids
