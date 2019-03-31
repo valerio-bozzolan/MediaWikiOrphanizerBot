@@ -154,3 +154,10 @@ function fetch_json_page( $pagename ) {
 
 	return json_decode( $revision->slots->main->{ '*' } );
 }
+
+/**
+ * Dump the configuration
+ */
+function dump_config() {
+
+}
