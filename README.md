@@ -67,7 +67,7 @@ Available options, most of them also on-wiki:
  --done-text=VALUE
  	Replacement for the wikilink in the list
  --ns=VALUE
- 	Namespace whitelist
+ 	Namespace whitelist (values separated by pipe)
  --delay=VALUE
  	Additional delay between each edit
  --warmup=VALUE
