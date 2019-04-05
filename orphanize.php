@@ -47,6 +47,7 @@ use \cli\Log;
 use \web\MediaWikis;
 use \mw\Wikilink;
 use \mw\Ns;
+use \mw\API;
 use \mw\API\ProtectedPageException;
 use \regex\Generic as Regex;
 
@@ -114,10 +115,13 @@ $COOLDOWN     = option( 'cooldown', 1000 );
 $DELAY        = option( 'delay', 0 );
 $SEEALSO      = option( 'seealso', 'See also' );
 $TURBOFRESA   = option( 'turbofresa', 86400 );
-$LIST_EXAMPLE = option( 'list-example', "## List\n* ..." );
+$LIST_EXAMPLE = option( 'turbofresa-text', "== List ==\n* ..." );
 
 // hardcoded values (@TODO: consider an option)
 $GROUP        = 'sysop';
+
+// my username (well, it's not so important, just used to have a friendlier log message)
+$ME = explode( '@', API::$DEFAULT_USERNAME, 2 )[ 0 ];
 
 // query titles to be orphanized alongside the last revision of the list
 $responses =
@@ -151,8 +155,8 @@ foreach( $responses as $response ) {
 			// check warmup
 			$revision = reset( $page->revisions );
 			$timestamp = $revision->timestamp;
-			$timestamp = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
-			$seconds = time() - $timestamp->getTimestamp();
+			$timestamp_datetime = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
+			$seconds = time() - $timestamp_datetime->getTimestamp();
 			if( $seconds < $WARMUP ) {
 				Log::info( "list edited just $seconds seconds ago: quit until warmup $WARMUP" );
 				exit( 1 );
@@ -185,15 +189,19 @@ foreach( $responses as $response ) {
 					'ususers' => $lastuser,
 				] );
 
-			Log::info( "$lastuser was the last editor" );
-
-			// @TODO: dedicate a parameter to dot hardcode this(?)
+			// warn about that above user and eventually quit
+			$lastuser_was = "$lastuser was the last editor: ";
 			$groups = reset( $rights->query->users )->groups;
 			if( in_array( $GROUP, $groups, true ) ) {
-				Log::info( "$lastuser accepted as $GROUP" );
+				Log::info( $lastuser_was . "a $GROUP. OK" );
 			} else {
-				Log::error( "$lastuser not a $GROUP: quit" );
-				exit( 1 );
+				if( $wiki->isLogged() && $lastuser === $wiki->getUsername() || $lastuser === $ME ) {
+					Log::info( $lastuser_was . "It's-a me, Mario! quit" );
+					exit( 0 );
+				} else {
+					Log::error( $lastuser_was . "not a $GROUP. quit" );
+					exit( 1 );
+				}
 			}
 		}
 
