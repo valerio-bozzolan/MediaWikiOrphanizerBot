@@ -70,6 +70,7 @@ $opts = Opts::instance()->register( [
 	new ParamValued( 'seealso',            null, 'Title of your local "See also" section' ),
 
 	// register arguments without a value
+	new ParamFlag(   'skip-permissions',   null, 'Execute the bot even if the list was last edited by a non-sysop (or by the bot itself)' ),
 	new ParamFlag(   'debug',              null, 'Increase verbosity' ),
 	new ParamFlag(   'help',               'h',  'Show this message and quit' ),
 	new ParamFlag(   'no-interaction',     null, 'Do not confirm every change' ),
@@ -118,6 +119,7 @@ $SEEALSO            = option( 'seealso', "See also" );
 $TURBOFRESA         = option( 'turbofresa', 86400 );
 $TURBOFRESA_TEXT    = option( 'turbofresa-text', "== List ==\n* ..." );
 $TURBOFRESA_SUMMARY = option( 'turbofresa-summary', "Bot: list clean" );
+$SKIP_PERMISSIONS   = option( 'skip-permissions' );
 
 // hardcoded values (@TODO: consider an option)
 $GROUP        = 'sysop';
@@ -203,12 +205,19 @@ foreach( $responses as $response ) {
 			if( in_array( $GROUP, $groups, true ) ) {
 				Log::info( $lastuser_was . "a $GROUP. OK" );
 			} else {
-				if( $wiki->isLogged() && $lastuser === $wiki->getUsername() || $lastuser === $ME ) {
+				// show a friendly message if it's just me
+				$its_me = $wiki->isLogged() && $lastuser === $wiki->getUsername() || $lastuser === $ME;
+				if( $its_me ) {
 					Log::info( $lastuser_was . "It's-a me, Mario! quit" );
-					exit( 0 );
 				} else {
 					Log::error( $lastuser_was . "not a $GROUP. quit" );
-					exit( 1 );
+				}
+
+				if( $SKIP_PERMISSIONS ) {
+					Log::warn( "contine anyway because of 'skip-permissions' option enabled" );
+				} else {
+					// it's me? exit normally.
+					exit( $its_me ? 0 : 1 );
 				}
 			}
 		}

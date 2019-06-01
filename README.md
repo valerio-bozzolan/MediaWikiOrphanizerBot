@@ -82,6 +82,8 @@ Available options, most of them also on-wiki:
  	Edit summary to be used when cleaning an old list
  --seealso=VALUE
  	Title of your local "See also" section
+ --skip-permissions
+ 	Execute the bot even if the list was last edited by a non-sysop (or by the bot itself)
  --debug
  	Increase verbosity
  --help
