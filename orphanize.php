@@ -49,6 +49,7 @@ use \mw\Wikilink;
 use \mw\Ns;
 use \mw\API;
 use \mw\API\ProtectedPageException;
+use \mw\API\EditConflictException;
 use \regex\Generic as Regex;
 
 // register available options
@@ -91,7 +92,6 @@ Log::info( "start" );
 if( $opts->getArg( 'debug' ) ) {
 	Log::$DEBUG = true;
 }
-
 
 // wiki uid (from command line or from configuration file)
 $wiki_uid = Config::instance()->get( 'wiki' );
@@ -141,13 +141,19 @@ $responses =
 			'comment',   // the edit summary is used to detect if the list was already cleaned
 			'user',      // the username     is used to detect if the last user is allowed
 			'timestamp', // the timestamp    is used to check the age of the last edit
+			'content',   // page content
 		],
 	] );
+
+// remember this to avoid edit conflicts
+$list_timestamp = null;
+$list_content = null;
 
 // collect links and take the last edit timestamp
 $titles_to_be_orphanized = [];
 Log::info( "reading $TITLE_SOURCE" );
 foreach( $responses as $response ) {
+
 	foreach( $response->query->pages as $page ) {
 
 		// check if list is unexisting
@@ -157,10 +163,15 @@ foreach( $responses as $response ) {
 		}
 
 		if( isset( $page->revisions ) ) {
-			// check warmup
+			// there is just one revision
 			$revision = reset( $page->revisions );
-			$timestamp = $revision->timestamp;
-			$timestamp_datetime = \DateTime::createFromFormat( \DateTime::ISO8601, $timestamp );
+
+			// save list content
+			$list_content = $revision->slots->main->{ '*' };
+
+			// check warmup
+			$list_timestamp = $revision->timestamp;
+			$timestamp_datetime = \DateTime::createFromFormat( \DateTime::ISO8601, $list_timestamp );
 			$seconds = time() - $timestamp_datetime->getTimestamp();
 			if( $seconds < $WARMUP ) {
 				Log::info( "list edited just $seconds seconds ago: quit until warmup $WARMUP" );
@@ -180,7 +191,7 @@ foreach( $responses as $response ) {
 						'title'         => $TITLE_SOURCE,
 						'summary'       => $TURBOFRESA_SUMMARY,
 						'text'          => $TURBOFRESA_TEXT,
-						'basetimestamp' => $timestamp,
+						'basetimestamp' => $list_timestamp,
 						'bot'           => 1,
 					] );
 
@@ -214,7 +225,7 @@ foreach( $responses as $response ) {
 				}
 
 				if( $SKIP_PERMISSIONS ) {
-					Log::warn( "contine anyway because of 'skip-permissions' option enabled" );
+					Log::warn( "skip list permission failure because of 'skip-permissions' option enabled" );
 				} else {
 					// it's me? exit normally.
 					exit( $its_me ? 0 : 1 );
@@ -231,19 +242,15 @@ foreach( $responses as $response ) {
 	}
 }
 
-// die if no links
-if( ! $titles_to_be_orphanized ) {
-	Log::info( "empty list: quit" );
-	exit( 1 );
-}
-
 // keep a copy
 $involved_pagetitles = $titles_to_be_orphanized;
 
 // log titles
-Log::info( 'read ' . count( $titles_to_be_orphanized ) . ' pages to be orphanized:' );
-foreach( $titles_to_be_orphanized as $title ) {
-	Log::info( " $title" );
+if( $titles_to_be_orphanized ) {
+	Log::info( 'found ' . count( $titles_to_be_orphanized ) . ' pages to be orphanized:' );
+	foreach( $titles_to_be_orphanized as $title ) {
+		Log::info( " $title" );
+	}
 }
 
 // associative array of page IDs as key and a boolean as value containg pages to be orphanized
@@ -287,11 +294,13 @@ while( $less_titles_to_be_orphanized = array_splice( $titles_to_be_orphanized, 0
 }
 
 // count of involved pages
-Log::info( sprintf(
-	"found %d pages containing the %d involved wlinks",
-	count( $involved_pageids ),
-	count( $involved_pagetitles )
-) );
+if( $involved_pagetitles ) {
+	Log::info( sprintf(
+		"found %d pages containing the %d involved wlinks",
+		count( $involved_pageids ),
+		count( $involved_pagetitles )
+	) );
+}
 
 // number of edited pages
 $edits = 0;
@@ -458,22 +467,8 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 }
 // end loop involved page IDs
 
-// done! remove the link from the list
-Log::info( "removing orphanized pages from list" );
-
-// fetch a fresh version of the list
-$response =
-	$wiki->fetch( [
-		'action'  => 'query',
-		'titles'  => $TITLE_SOURCE,
-		'prop'    => 'revisions',
-		'rvprop'  => 'content',
-		'rvslots' => 'main',
-	] );
-
 // content of the list
-$content = reset( $response->query->pages )->revisions[0]->slots->main->{ '*' };
-$wikitext = $wiki->createWikitext( $content );
+$wikitext = $wiki->createWikitext( $list_content );
 
 // remove each entry from the list
 foreach( $involved_pagetitles as $title_raw ) {
@@ -494,16 +489,23 @@ foreach( $involved_pagetitles as $title_raw ) {
 
 // update list
 if( $wikitext->isChanged() ) {
+	Log::info( "removing orphanized pages from list" );
+
 	try {
 		$wiki->login()->edit( [
-			'title'   => $TITLE_SOURCE,
-			'text'    => $wikitext->getWikitext(),
-			'summary' => $LIST_SUMMARY,
-			'bot'     => 1,
+			'title'         => $TITLE_SOURCE,
+			'text'          => $wikitext->getWikitext(),
+			'summary'       => $LIST_SUMMARY,
+			'basetimestamp' => $list_timestamp,
+			'bot'           => 1,
 		] );
 	} catch( ProtectedPageException $e ) {
 		Log::warn( "can't update list because of protection" );
+	} catch( EditConflictException $e ) {
+		Log::warn( "ARGHHHH! Is someone editing my list? MY PRECIOUSss LIST!?!? WHAAT?? I will find you, and I will rewrite your edit. Damn human beings... asd." );
 	}
+} else {
+	Log::info( "nothing to be done" );
 }
 
 Log::info( "end" );
