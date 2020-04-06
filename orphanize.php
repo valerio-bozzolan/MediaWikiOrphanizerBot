@@ -104,8 +104,19 @@ if( ! $wiki_uid ) {
 // wiki instance
 $wiki = Mediawikis::findFromUid( $wiki_uid );
 
-// load the wiki config
-wiki_config();
+// try to load the wiki config
+try {
+	wiki_config();
+} catch( \Exception $e ) {
+
+	// I don't have any clue about this but sometime happen
+	Log::error( sprintf(
+		"failed reading wiki configuration: %s",
+		$e->getMessage()
+	) );
+
+	exit( 1 );
+}
 
 // parameters available both from cli and on-wiki
 $SUMMARY            = option( 'summary',      "Bot: pages orphanization" );
