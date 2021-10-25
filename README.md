@@ -98,6 +98,16 @@ Available options, most of them also on-wiki:
  Have fun! by Valerio Bozzolan, Daimona Eaytoy
 ```
 
+Basic usage:
+
+    ./orphanizer.php
+
+Have fun!
+
+## Questions
+
+https://it.wikipedia.org/wiki/Discussioni_utente:OrfanizzaBot
+
 ## License
 
 Copyright (C) 2019, 2020, 2021 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan)
