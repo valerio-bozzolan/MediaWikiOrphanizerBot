@@ -29,12 +29,6 @@ isset( $argv[ 0 ] ) or exit( 1 );
 // autoload classes
 require __DIR__ . '/includes/autoload.php';
 
-// require config file
-file_exists( $config_path = __DIR__ . '/config.php' )
-	or die( "Please provide the configuration file at $config_path\n" );
-
-require $config_path;
-
 // how much titles at time requesting - this is a MediaWiki limit
 define( 'MAX_TRANCHE_TITLES', 50 );
 
