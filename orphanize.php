@@ -358,15 +358,28 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 			// create a Wikitext object
 			$wikitext = $wiki->createWikitext( $wikitext_raw );
 
+			// array of pagetitles really involved by a real edit
+			// this is used for the summary
+			$involved_pagetitle_toucheds = [];
+
 			// for each of the titles to be orphanized
 			foreach( $involved_pagetitles as $involved_pagetitle ) {
+
+				// check if this pagetitle was really involved
+				$involved_pagetitle_touched = false;
 
 				// parse the title being orphanized
 				$title = $wiki->createTitleParsing( $involved_pagetitle );
 
 				// if it's a category, remove it
-				if( $title->getNs()->getID() === 14 ) {
-					$wikitext->removeCategory( $title->getTitle() );
+				if( $title->getNs()->isCategory() ) {
+
+					// try to remove the Category
+					if( $wikitext->removeCategory( $title->getTitle() ) ) {
+
+						// yeah! touched
+						$involved_pagetitle_touched = true;
+					}
 				}
 
 				// a wikilink with and without alias
@@ -389,8 +402,8 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				$seealso = preg_quote( $SEEALSO );
 				$seealso_regex =
 					'/' .
-						Regex::groupNamed( "\\n== *$seealso *== *((?!=).*\\n)*",           'keep'   ) .
-						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}.*\\n", 'wlink'  ) .
+						Regex::groupNamed( "\\n== *$seealso *== *((?!=).*\\n)*",           'keep'  ) .
+						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}.*\\n", 'wlink' ) .
 					'/';
 
 				Log::debug( "regex simple wikilink:" );
@@ -403,33 +416,65 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				Log::debug( $seealso_regex );
 
 				// strip out the entry from «See also» section
-				$wikitext->pregReplaceCallback( $seealso_regex, function ( $matches ) {
+				$wikitext->pregReplaceCallback( $seealso_regex, function ( $matches ) use ( & $involved_pagetitle_touched ) {
+
+					// yeah! touched
+					$involved_pagetitle_touched = true;
+
 					return $matches[ 'keep' ];
 				} );
 
 				// convert '[[Hello]]' to 'Hello'
-				$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) {
+				$wikitext->pregReplaceCallback( "/$wikilink_regex_simple/", function ( $matches ) use ( & $involved_pagetitle_touched ) {
+
+					// yeah! touched
+					$involved_pagetitle_touched = true;
+
 					// fix unwanted indentations
 					$title = ltrim( $matches[ 'title' ], ':' );
-					return trim(  $title );
+					return trim( $title );
 				} );
 
 				// convert '[[Hello|world]]' to 'world'
-				$wikitext->pregReplaceCallback( "/$wikilink_regex_alias/", function ( $matches ) {
+				$wikitext->pregReplaceCallback( "/$wikilink_regex_alias/", function ( $matches ) use ( & $involved_pagetitle_touched ) {
+
+					// yeah! touched
+					$involved_pagetitle_touched = true;
+
 					// fix unwanted indentations
 					return trim( $matches[ 'alias' ] );
 				} );
+
+				// add this title to the list of touched titles (to build a cute summary)
+				if( $involved_pagetitle_touched ) {
+					$involved_pagetitle_toucheds[] = $title->getCompleteTitle();
+				}
 			}
 			// end loop titles to be orphanized
 
 			// check for changes and save
 			if( $wikitext->isChanged() ) {
+
+				// build a cute summary
+				$summary = $SUMMARY;
+
+				// append to the summary a list of deleted pages "-Foo -Bar -Etc"
+				if( $involved_pagetitle_toucheds ) {
+					$summary .= ':';
+					foreach( $involved_pagetitle_toucheds as $involved_pagetitle_touched ) {
+						$summary .= " -$involved_pagetitle_touched";
+					}
+				}
+
 				Log::info( "changes on page $pageid:" );
+				Log::info( "  summary: $summary" );
+
 				foreach( $wikitext->getHumanUniqueSobstitutions() as $substitution ) {
 					Log::info( "\t $substitution" );
 				}
 
 				if( $NO_INTERACTION || 'n' !== Input::yesNoQuestion( "confirm changes" ) ) {
+
 					try {
 
 						// the entire world absolutely needs this shitty ASCII animation - trust me
@@ -446,7 +491,7 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 						$wiki->login()->edit( [
 							'pageid'        => $pageid,
 							'text'          => $wikitext->getWikitext(),
-							'summary'       => $SUMMARY,
+							'summary'       => $summary,
 							'basetimestamp' => $timestamp,
 							'minor'         => 1,
 							'bot'           => 1,
