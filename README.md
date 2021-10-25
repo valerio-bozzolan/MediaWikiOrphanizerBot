@@ -1,6 +1,6 @@
 # MediaWiki Orphanizer bot
 
-This software is an Italian Wikipedia bot. It delinks page titles. Infos:
+This software is an Italian Wikipedia bot. It delinks page titles. Info:
 
 * https://it.wikipedia.org/wiki/Utente:OrfanizzaBot
 
@@ -55,52 +55,52 @@ Welcome in your MediaWiki Orphanizer bot!
 
 Available options, most of them also on-wiki:
  --wiki=VALUE
- 	Specify a wiki from its UID
+        Specify a wiki from its UID
  --cfg=VALUE
- 	Title of an on-wiki configuration page with JSON content model
+        Title of an on-wiki configuration page with JSON content model
  --list=VALUE
- 	Specify a pagename that should contain the wikilinks to be orphanized
+        Specify a pagename that should contain the wikilinks to be orphanized
  --summary=VALUE
- 	Edit summary
+        Edit summary
  --list-summary=VALUE
- 	Edit summary for editing the list
+        Edit summary for editing the list
  --done-text=VALUE
- 	Replacement for the wikilink in the list
+        Replacement for the wikilink in the list
  --ns=VALUE
- 	Namespace whitelist (values separated by pipe)
+        Namespace whitelist (values separated by pipe)
  --delay=VALUE
- 	Additional delay between each edit
+        Additional delay between each edit
  --warmup=VALUE
- 	Start only if the last edit on the list was done at least $warmup seconds ago
+        Start only if the last edit on the list was done at least $warmup seconds ago
  --cooldown=VALUE
- 	End early when reaching this number of edits
+        End early when reaching this number of edits
  --turbofresa=VALUE
- 	If the list is older than this number of seconds a turbofresa will be spawned to clean the list
+        If the list is older than this number of seconds a turbofresa will be spawned to clean the list
  --turbofresa-text=VALUE
- 	Text that will be saved to clean an old list
+        Text that will be saved to clean an old list
  --turbofresa-summary=VALUE
- 	Edit summary to be used when cleaning an old list
+        Edit summary to be used when cleaning an old list
  --seealso=VALUE
- 	Title of your local "See also" section
+        Title of your local "See also" section
  --skip-permissions
- 	Execute the bot even if the list was last edited by a non-sysop (or by the bot itself)
+        Execute the bot even if the list was last edited by a non-sysop (or by the bot itself)
  --debug
- 	Increase verbosity
+        Increase verbosity
  --help
  -h
- 	Show this message and quit
+        Show this message and quit
  --no-interaction
- 	Do not confirm every change
+        Do not confirm every change
 
  Example:
- 	./orphanize.php --wiki=itwiki --list=Wikipedia:PDC/Elenco
+        ./orphanize.php --wiki=itwiki --list=Wikipedia:PDC/Elenco
 
  Have fun! by Valerio Bozzolan, Daimona Eaytoy
 ```
 
 ## License
 
-Copyright (C) 2019 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan)
+Copyright (C) 2019, 2020, 2021 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as

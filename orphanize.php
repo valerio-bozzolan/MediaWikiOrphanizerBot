@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-# Copyright (C) 2019 Valerio Bozzolan, Daimona Eaytoy
+# Copyright (C) 2019, 2020, 2021 Valerio Bozzolan, Daimona Eaytoy
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
@@ -395,7 +395,7 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				$seealso = preg_quote( $SEEALSO );
 				$seealso_regex =
 					'/' .
-						Regex::groupNamed( "\\n== *$seealso *== *((?!=).*\n)*",            'keep'   ) .
+						Regex::groupNamed( "\\n== *$seealso *== *((?!=).*\\n)*",           'keep'   ) .
 						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}.*\\n", 'wlink'  ) .
 					'/';
 
