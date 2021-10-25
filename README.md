@@ -6,14 +6,16 @@ This software is an Italian Wikipedia bot. It delinks page titles. Info:
 
 ## Installation
 
-	sudo apt install git php-cli
-	git clone --recursive https://github.com/valerio-bozzolan/MediaWikiOrphanizerBot.git
+```
+sudo apt install git php-cli
+git clone --recursive https://gitpull.it/source/MediaWikiOrphanizerBot/
+```
 
 ## Configuration
 
 You know you should provide your bot credentials in order to use a tool.
 
-1. Open the file [`config-example.php`](config-example.php) with a text editor
+1. Open the file `config-example.php` with a text editor
 2. Fill your bot credentials
 3. Save-as `config.php`
 
@@ -48,7 +50,9 @@ An example:
 
 ## Usage from command line
 
-	./orphanizer.php --help
+```
+./orphanizer.php --help
+```
 
 ```
 Welcome in your MediaWiki Orphanizer bot!
@@ -100,7 +104,9 @@ Available options, most of them also on-wiki:
 
 Basic usage:
 
-    ./orphanizer.php
+```
+./orphanizer.php
+```
 
 Have fun!
 
