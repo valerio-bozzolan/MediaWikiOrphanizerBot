@@ -154,7 +154,7 @@ Example debug manual run:
 	--skip-permissions
 ```
 
-In this way you can operate on the namespace 4 (that is `Wikipedia:`) simulating a Wikipedia articles with links
+In this way you can operate on the namespace 4 (that is `Wikipedia:`) simulating Wikipedia articles with links
 to be orphanized.
 
 Example sandbox Wikipedia article (that will be edited):
@@ -173,7 +173,7 @@ Example sandbox configuration (that will be read):
 
 https://it.wikipedia.org/wiki/Utente:OrfanizzaBot/Configurazione/Sandbox
 
-IMPORTANT: Only test nonsenses titles like `[[Yeah Foo Bar Nonsense Tests]]` in order to do NOT touch any unrelated page.
+IMPORTANT: Only try to orphanize nonsenses titles like `[[Puffolo test]]` in order to do NOT touch any unrelated page.
 
 ## Update Production
 
