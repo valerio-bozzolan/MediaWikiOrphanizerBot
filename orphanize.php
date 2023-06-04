@@ -540,7 +540,7 @@ foreach( $involved_pagetitles as $title_raw ) {
 }
 
 // update list
-if( $wikitext->isChanged() && false ) {
+if( $wikitext->isChanged() ) {
 	Log::info( "removing orphanized pages from list" );
 
 	try {
