@@ -122,9 +122,21 @@ Have fun!
 
 https://it.wikipedia.org/wiki/Discussioni_utente:OrfanizzaBot
 
+## Framework
+
+This tool uses the `boz-mw` framework. Source code:
+
+https://gitpull.it/source/boz-mw/
+
+Official documentation of `boz-mw`:
+
+https://gitpull.it/w/first_steps_with_boz-mw/
+
 ## License
 
-Copyright (C) 2019, 2020, 2021 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan)
+Copyright (C) 2020-2023 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan) and contributors
+
+Copyright (C) 2019 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan), Daimona Eaytoy and contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
