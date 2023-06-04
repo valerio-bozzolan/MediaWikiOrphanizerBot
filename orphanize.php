@@ -130,7 +130,8 @@ $SKIP_PERMISSIONS   = option( 'skip-permissions' );
 // hardcoded values (@TODO: consider an option)
 $GROUP        = 'sysop';
 
-// my username (well, it's not so important, just used to have a friendlier log message)
+// my username
+// used to discover if we are the last user who edited something
 $ME = explode( '@', API::$DEFAULT_USERNAME, 2 )[ 0 ];
 
 // query titles to be orphanized alongside the last revision of the list
@@ -539,7 +540,7 @@ foreach( $involved_pagetitles as $title_raw ) {
 }
 
 // update list
-if( $wikitext->isChanged() ) {
+if( $wikitext->isChanged() && false ) {
 	Log::info( "removing orphanized pages from list" );
 
 	try {

@@ -32,6 +32,7 @@ You need two pages: one with a list of links pointing to the pages to orphanize 
 and one with generic config (to be passed via `cfg`). The latter should be a JSON page and can have the following options:
 
 * `summary` (string) - The summary to use when editing.
+* `seealso` (string) - The canonical text for the "See also" section
 * `list-summary` (string) - The summary to use when editing the page list.
 * `done-text` (string) - What to replace a processed wlink with. $1 is the pointed title.
 * `ns` (array|string) - To only edit pages on the given namespaces. `null` means all namespaces. You can specify also a string with values separated by a pipe, like in command line.
@@ -55,6 +56,10 @@ An example:
     "delay": 30
 }
 ```
+
+A live example:
+
+https://it.wikipedia.org/wiki/Utente:OrfanizzaBot/Configurazione
 
 ## Usage from command line
 
