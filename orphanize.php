@@ -1,6 +1,7 @@
 #!/usr/bin/php
 <?php
-# Copyright (C) 2019, 2020, 2021 Valerio Bozzolan, Daimona Eaytoy
+# Copyright (C) 2020-2023 Valerio Bozzolan and contributors
+# Copyright (C) 2019      Valerio Bozzolan, Daimona Eaytoy and contributors
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the

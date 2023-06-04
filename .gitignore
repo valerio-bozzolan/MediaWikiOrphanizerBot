@@ -1,1 +1,6 @@
-config.php
+# configuration file with API credentials
+/config.php
+
+# this directory can be just a "git clone" of boz-mw, or a symbolic link to boz-mw
+#       git clone gitpull.it/source/boz-mw/
+/includes/boz-mw

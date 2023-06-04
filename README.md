@@ -6,9 +6,17 @@ This software is an Italian Wikipedia bot. It delinks page titles. Info:
 
 ## Installation
 
+Preparation:
+
 ```
 sudo apt install git php-cli
-git clone --recursive https://gitpull.it/source/MediaWikiOrphanizerBot/
+```
+
+Installation:
+
+```
+git clone https://gitlab.wikimedia.org/valeriobozzolan/mediawiki-orphanizer-bot.git
+git clone https://gitpull.it/source/boz-mw/ mediawiki-orphanizer-bot/includes/boz-mw
 ```
 
 ## Configuration
