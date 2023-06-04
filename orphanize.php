@@ -85,7 +85,7 @@ Log::info( "start" );
 
 // increase verbosity
 if( $opts->getArg( 'debug' ) ) {
-	Log::$DEBUG = true;
+	bozmw_debug();
 }
 
 // wiki uid (from command line or from configuration file)
