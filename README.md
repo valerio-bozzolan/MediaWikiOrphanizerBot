@@ -113,7 +113,7 @@ Available options, most of them also on-wiki:
 Basic usage:
 
 ```
-./orphanizer.php
+./orphanize.php --wiki=itwiki
 ```
 
 Have fun!
