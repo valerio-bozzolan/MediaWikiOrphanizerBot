@@ -137,6 +137,44 @@ Official documentation of `boz-mw`:
 
 https://gitpull.it/w/first_steps_with_boz-mw/
 
+## Debugging and Troubleshooting
+
+You do not need any particular technical permission to test this bot in a sandbox.
+
+Example debug manual run:
+
+```
+./orphanize.php \
+	--debug \
+	--wiki=itwiki \
+	--ns=4 \
+	--cfg=Utente:OrfanizzaBot/Configurazione/Sandbox \
+	--list=Utente:OrfanizzaBot/Wikilink_da_orfanizzare/Sandbox \
+	--summary="[TEST] Orphanizing things" \
+	--skip-permissions
+```
+
+In this way you can operate on the namespace 4 (that is `Wikipedia:`) simulating a Wikipedia articles with links
+to be orphanized.
+
+Example sandbox Wikipedia article (that will be edited):
+
+https://it.wikipedia.org/wiki/Wikipedia:Pagina_delle_prove
+
+https://it.wikipedia.org/w/index.php?title=Wikipedia:Pagina_delle_prove&oldid=133820814
+
+Example sandbox list (that will be edited):
+
+https://it.wikipedia.org/wiki/Utente:OrfanizzaBot/Wikilink_da_orfanizzare/Sandbox
+
+https://it.wikipedia.org/w/index.php?title=Utente:OrfanizzaBot/Wikilink_da_orfanizzare/Sandbox&oldid=133820805
+
+Example sandbox configuration (that will be read):
+
+https://it.wikipedia.org/wiki/Utente:OrfanizzaBot/Configurazione/Sandbox
+
+IMPORTANT: Only test nonsenses titles like `[[Yeah Foo Bar Nonsense Tests]]` in order to do NOT touch any unrelated page.
+
 ## Update Production
 
 To update the bot in production hosted by Wikimedia Toolforge, you need access to the Tool:itwiki. Documentation:
