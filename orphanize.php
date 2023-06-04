@@ -232,7 +232,7 @@ foreach( $responses as $response ) {
 				}
 
 				if( $SKIP_PERMISSIONS ) {
-					Log::warn( "skip list permission failure because of 'skip-permissions' option enabled" );
+					Log::warn( "skip list permission check because of 'skip-permissions' option enabled" );
 				} else {
 					// it's me? exit normally.
 					exit( $its_me ? 0 : 1 );
@@ -408,14 +408,14 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}.*\\n", 'wlink' ) .
 					'/';
 
+				Log::debug( "regex see also:" );
+				Log::debug( $seealso_regex );
+
 				Log::debug( "regex simple wikilink:" );
 				Log::debug( $wikilink_regex_simple );
 
 				Log::debug( "regex wikilink aliased:" );
 				Log::debug( $wikilink_regex_alias );
-
-				Log::debug( "regex see also:" );
-				Log::debug( $seealso_regex );
 
 				// strip out the entry from «See also» section
 				$wikitext->pregReplaceCallback( $seealso_regex, function ( $matches ) use ( & $involved_pagetitle_touched ) {
