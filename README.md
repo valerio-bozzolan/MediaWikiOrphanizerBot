@@ -132,6 +132,22 @@ Official documentation of `boz-mw`:
 
 https://gitpull.it/w/first_steps_with_boz-mw/
 
+## Update Production
+
+To update the bot in production hosted by Wikimedia Toolforge, you need access to the Tool:itwiki. Documentation:
+
+https://wikitech.wikimedia.org/wiki/Tool:Itwiki
+
+Then just run this command from your computer:
+
+```
+ssh login.toolforge.org <<EOF
+  become itwiki
+  cd orphanizerbot
+  git pull
+EOF
+```
+
 ## License
 
 Copyright (C) 2020-2023 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan) and contributors
