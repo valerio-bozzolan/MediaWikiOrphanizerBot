@@ -398,6 +398,9 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 					'alias-group-name' => 'alias',
 				] );
 
+				// a non-capturing group to catch a single newline, or the end of the string
+				$NEWLINE_OR_END = '(?:\n|$)';
+
 				// replace entry from "See also" section
 				$wikilink_regex_clean = $wikilink_simple->getRegex();
 				$wikilink_regex_clean = Regex::spaceBurger( $wikilink_regex_clean );
@@ -405,7 +408,7 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 				$seealso_regex =
 					'/' .
 						Regex::groupNamed( "\\n== *$seealso *== *((?!=).*\\n)*",           'keep'  ) .
-						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}.*\\n", 'wlink' ) .
+						Regex::groupNamed( "[ \\t]*\*[ \\t]*{$wikilink_regex_clean}.*$NEWLINE_OR_END", 'wlink' ) .
 					'/';
 
 				Log::debug( "regex see also:" );
