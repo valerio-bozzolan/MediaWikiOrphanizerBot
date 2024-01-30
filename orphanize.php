@@ -310,6 +310,10 @@ if( $involved_pagetitles ) {
 	) );
 }
 
+// List of pages that we have not changed, for example for an edit conflict.
+// Better to re-process these later.
+$incomplete_pagetitles = [];
+
 // number of edited pages
 $edits = 0;
 
@@ -506,7 +510,21 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 						$edits++;
 
 					} catch( ProtectedPageException $e ) {
-						Log::warn( "skip protected page $pageid" );
+						// A protected page cannot be processed by the bot. Just silently ignore.
+						// Probably also a human being will ignore this case. Or, they will just
+						// manually double-check the [[Special:WhatLinksHere]].
+						Log::warn( sprintf(
+							"skip protected page [[%s]]",
+							$title->getCompleteTitle()
+						) );
+					} catch( EditConflictException $e ) {
+						Log::warn( sprintf(
+							"skip edit conflict on page [[%s]]",
+							$title->getCompleteTitle()
+						) );
+
+						// Better to re-process this page soon.
+						$incomplete_pagetitles[] = $involved_pagetitle;
 					}
 				}
 				// end confirmation
@@ -526,21 +544,24 @@ while( $less_involved_pageids = array_splice( $involved_pageids, 0, MAX_TRANCHE_
 // content of the list
 $wikitext = $wiki->createWikitext( $list_content );
 
-// remove each entry from the list
+// remove each entry from the list if it was processed successfully
 foreach( $involved_pagetitles as $title_raw ) {
+	$is_page_still_needing_edit = in_array( $title_raw, $incomplete_pagetitles );
+	if( !$is_page_still_needing_edit) {
 
-	$wlink = $wiki->createTitleParsing( $title_raw )
-	              ->createWikilink( Wikilink::WHATEVER_ALIAS )
-	              ->getRegex();
+		$wlink = $wiki->createTitleParsing( $title_raw )
+		              ->createWikilink( Wikilink::WHATEVER_ALIAS )
+		              ->getRegex();
 
-	// strip out the whole related line and replace with something else
-	$from = "/.*$wlink.*/";
+		// strip out the whole related line and replace with something else
+		$from = "/.*$wlink.*/";
 
-	// @todo In case done-text contains the full link to a page, and it has already been
-	// replaced in a previous run, don't replace it again.
-	$to = str_replace( '$1', $title_raw, $DONE_TEXT );
+		// @todo In case done-text contains the full link to a page, and it has already been
+		// replaced in a previous run, don't replace it again.
+		$to = str_replace( '$1', $title_raw, $DONE_TEXT );
 
-	$wikitext->pregReplace( $from, $to );
+		$wikitext->pregReplace( $from, $to );
+	}
 }
 
 // update list
