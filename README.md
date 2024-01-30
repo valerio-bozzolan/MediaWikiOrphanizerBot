@@ -123,6 +123,31 @@ Basic usage:
 
 Have fun!
 
+## Sandboxed Tests
+
+Example sandboxed usage:
+
+```
+./orphanize.php --ns=2 --list="User:Foo/SandboxList" --skip-permissions
+```
+
+So you can have a page like `User:Foo/SandboxList` with this content:
+
+```
+* [[ACME COMPANY SELLINGS NONSENSE THINGS]]
+```
+
+And then creating a fake article in `User:Foo/ExampleArticle` with:
+
+```
+Yeah I'm a Wikipedia Article that talks about things
+including [[ACME COMPANY SELLINGS NONSENSE THINGS]] but not limited to
+[[ACME COMPANY SELLINGS NONSENSE THINGS|things]]. Yeah. This is a test.
+The links will be orphanized soon probably. But not [[this one]].
+```
+
+Have fun!
+
 ## Questions
 
 https://it.wikipedia.org/wiki/Discussioni_utente:OrfanizzaBot
