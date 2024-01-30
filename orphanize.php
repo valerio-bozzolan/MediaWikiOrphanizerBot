@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-# Copyright (C) 2020-2023 Valerio Bozzolan and contributors
+# Copyright (C) 2020-2024 Valerio Bozzolan and contributors
 # Copyright (C) 2019      Valerio Bozzolan, Daimona Eaytoy and contributors
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,11 +18,12 @@
 namespace orphanizerbot;
 
 // die on whatever error
-set_error_handler( function( $errno, $errstr, $errfile, $errline ) {
-	if( error_reporting() !== 0 ) {
-		throw new \ErrorException( $errstr, 0, $errno, $errfile, $errline );
-	}
-} );
+// disabled since this may be problematic - sometime the script is stuck in unclear state.
+#set_error_handler( function( $errno, $errstr, $errfile, $errline ) {
+#	if( error_reporting() !== 0 ) {
+#		throw new \ErrorException( $errstr, 0, $errno, $errfile, $errline );
+#	}
+#} );
 
 // do not expose from web
 isset( $argv[ 0 ] ) or exit( 1 );
