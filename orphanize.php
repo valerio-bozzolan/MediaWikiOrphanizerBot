@@ -57,7 +57,7 @@ $opts = Opts::instance()->register( [
 	new ParamValued( 'summary',            null, 'Edit summary' ),
 	new ParamValued( 'list-summary',       null, 'Edit summary for editing the list' ),
 	new ParamValued( 'done-text',          null, 'Replacement for the wikilink in the list' ),
-	new ParamValued( 'ns',                 null, 'Namespace whitelist (values separated by pipe)' ),
+	new ParamValued( 'ns',                 null, 'Namespace whitelist (numeric values separated by pipe)' ),
 	new ParamValued( 'delay',              null, 'Additional delay between each edit' ),
 	new ParamValued( 'warmup',             null, 'Start only if the last edit on the list was done at least $warmup seconds ago' ),
 	new ParamValued( 'cooldown',           null, 'End early when reaching this number of edits' ),
