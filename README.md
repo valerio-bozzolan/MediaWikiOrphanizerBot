@@ -64,7 +64,7 @@ https://it.wikipedia.org/wiki/Utente:OrfanizzaBot/Configurazione
 ## Usage from command line
 
 ```
-./orphanizer.php --help
+./orphanize.php --help
 ```
 
 ```
