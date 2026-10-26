@@ -218,7 +218,7 @@ EOF
 
 ## License
 
-Copyright (C) 2020-2023 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan) and contributors
+Copyright (C) 2020-2026 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan) and contributors
 
 Copyright (C) 2019 [Valerio Bozzolan](https://it.wikipedia.org/wiki/Utente:Valerio_Bozzolan), Daimona Eaytoy and contributors
 
